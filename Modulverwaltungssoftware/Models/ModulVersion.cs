@@ -1,20 +1,22 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Modulverwaltungssoftware
 {
     internal class ModulVersion
     {
-        int versionID { get; set; }
-        string gueltigAbSemester { get; set; }
-        enum Status { Entwurf, InPruefungKoordination, InPruefungGremium, Aenderungsbedarf, Freigegeben, Archiviert}
-        string lernergebnisse { get; set; }
-        string inhaltsgliederung { get; set; }
-        int workloadPraesenz { get; set; }
-        int workloadSelbststudium { get; set; }
-        int ectsPunkte { get; set; }
-        string pruefungsform { get; set; }
-        string literatur { get; set; }
-        Benutzer ersteller { get; set; }
+        public int VersionID { get; set; }
+        public string GueltigAbSemester { get; set; }
+        public enum Status { Entwurf, InPruefungKoordination, InPruefungGremium, Aenderungsbedarf, Freigegeben, Archiviert}
+        public List<string> Lernergebnisse { get; set; }
+        public List<string> Inhaltsgliederung { get; set; }
+        public int WorkloadPraesenz { get; set; }
+        public int WorkloadSelbststudium { get; set; }
+        public int EctsPunkte { get; set; }
+        public string Pruefungsform { get; set; }
+        public List<string> Literatur { get; set; }
+        public Benutzer Ersteller { get; set; }
+        public List<int> KommentarIDs { get; set; } = new List<int>();
         public void setStatus()
         {
             throw new NotImplementedException();

@@ -139,6 +139,7 @@
     <Compile Include="Models\Modul.cs" />
     <Compile Include="Models\ModulVersion.cs" />
     <Compile Include="Models\Rolle.cs" />
+    <Compile Include="Models\RollenKonfiguration.cs" />
     <Compile Include="Models\Studiengang.cs" />
     <Compile Include="Services\BenachrichtigungsService.cs" />
     <Compile Include="Services\ModulController.cs" />

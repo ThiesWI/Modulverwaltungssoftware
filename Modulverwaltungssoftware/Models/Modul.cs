@@ -1,13 +1,16 @@
-﻿namespace Modulverwaltungssoftware
+﻿using System.Collections.Generic;
+
+namespace Modulverwaltungssoftware
 {
     internal class Modul
     {
-        string modulnummer { get; set; }
-        string modulnameDE { get; set; }
-        string modulnameEN { get; set; }
-        enum Modultyp { Placeholder }
-        int empfohlenesSemester { get; set; }
-        enum Turnus { JedesSemester, NurWintersemester, NurSommersemester}
-        int dauerInSemestern { get; set; }
+        public List<ModulVersion> ModulVersionen { get; set; }
+        public int Modulnummer { get; set; }
+        public string ModulnameDE { get; set; }
+        public string ModulnameEN { get; set; }
+        public enum Modultyp { Placeholder }
+        public int EmpfohlenesSemester { get; set; }
+        public enum Turnus { JedesSemester, NurWintersemester, NurSommersemester}
+        public int DauerInSemestern { get; set; }
     }
 }

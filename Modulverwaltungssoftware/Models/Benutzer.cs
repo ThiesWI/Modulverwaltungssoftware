@@ -2,9 +2,10 @@
 {
     internal class Benutzer
     {
-        string benutzerID { get; set; }
-        string name { get; set; }
-        string email { get; set; }
-        string passwort { get; set; }
+        public string BenutzerID { get; set; }
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public string Passwort { get; set; }
+        public Rolle Rolle { get; set; }
     }
 }

@@ -4,12 +4,12 @@ namespace Modulverwaltungssoftware
 {
     internal class Studiengang
     {
-        string kuerzel { get; set; }
-        string nameDE { get; set; }
-        string nameEN { get; set; }
-        int gesamtECTS { get; set; }
-        DateTime gueltigAb { get; set; }
-        Benutzer verantwortlicher { get; set; }
+        public string Kuerzel { get; set; }
+        public string NameDE { get; set; }
+        public string NameEN { get; set; }
+        public int GesamtECTS { get; set; }
+        public DateTime GueltigAb { get; set; }
+        public Benutzer Verantwortlicher { get; set; }
         public void getAktuelleModule() 
         {
             throw new NotImplementedException();
