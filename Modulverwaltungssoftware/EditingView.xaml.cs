@@ -13,32 +13,16 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-
 namespace Modulverwaltungssoftware
 {
     /// <summary>
-    /// Interaktionslogik für MainWindow.xaml
+    /// Interaktionslogik für EditingView.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class EditingView : Page
     {
-        public MainWindow()
+        public EditingView()
         {
             InitializeComponent();
-        }
-
-        private void LogoButton_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void NeuesModulButton_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void OeffnenButton_Click(object sender, RoutedEventArgs e)
-        {
-
         }
     }
 }
