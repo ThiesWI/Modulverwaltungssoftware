@@ -2,7 +2,7 @@
 
 namespace Modulverwaltungssoftware
 {
-    internal class Studiengang
+    public class Studiengang
     {
         public string Kuerzel { get; set; }
         public string NameDE { get; set; }

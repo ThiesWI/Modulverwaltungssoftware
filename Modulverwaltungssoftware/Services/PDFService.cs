@@ -7,7 +7,7 @@ using QuestPDF.Infrastructure;
 
 namespace PDF_Test
 {
-    internal class PDFService
+    public class PDFService
     {
         public static void ErstellePDF(string titel, string modultyp, int semester, string pruefungsform, string turnus, int ects, int workloadPraesenz, int workloadSelbststudium, string verantwortlicher, string voraussetzungen, List<string> lernziele, List<string> lehrinhalte, int version, List<string> literatur = null)
         {

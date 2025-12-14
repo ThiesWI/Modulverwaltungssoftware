@@ -2,7 +2,7 @@
 
 namespace Modulverwaltungssoftware
 {
-    internal class WorkflowController
+    public class WorkflowController
     {
         public void starteGenehmigung(string modulID, int aktuellerBenutzer)
         {

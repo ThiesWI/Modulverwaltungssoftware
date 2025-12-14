@@ -95,6 +95,9 @@
     <Reference Include="QuestPDF, Version=2025.12.0.0, Culture=neutral, PublicKeyToken=0f3c2b2315ff52c8, processorArchitecture=MSIL">
       <HintPath>..\packages\QuestPDF.2025.12.0\lib\netstandard2.0\QuestPDF.dll</HintPath>
     </Reference>
+    <Reference Include="SQLite.CodeFirst, Version=1.7.0.36, Culture=neutral, PublicKeyToken=eb96ba0a78d831a7, processorArchitecture=MSIL">
+      <HintPath>..\packages\SQLite.CodeFirst.1.7.0.36\lib\net45\SQLite.CodeFirst.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
@@ -154,6 +157,7 @@
     <Compile Include="Models\RollenKonfiguration.cs" />
     <Compile Include="Models\Studiengang.cs" />
     <Compile Include="Services\BenachrichtigungsService.cs" />
+    <Compile Include="Services\DatabaseContext.cs" />
     <Compile Include="Services\LoginService.cs" />
     <Compile Include="Services\ModulController.cs" />
     <Compile Include="Services\ModulRepository.cs" />

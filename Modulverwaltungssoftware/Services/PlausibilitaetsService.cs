@@ -2,7 +2,7 @@
 
 namespace Modulverwaltungssoftware
 {
-    internal class PlausibilitaetsService
+    public class PlausibilitaetsService
     {
         public string pruefeWorkloadStandard(int stunden, int ects)
         {

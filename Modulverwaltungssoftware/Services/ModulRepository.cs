@@ -2,7 +2,7 @@
 
 namespace Modulverwaltungssoftware
 {
-    internal class ModulRepository
+    public class ModulRepository
     {
         public ModulVersion getModulVersion(string modulID)
         {

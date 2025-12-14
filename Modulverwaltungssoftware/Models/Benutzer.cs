@@ -1,6 +1,6 @@
 ﻿namespace Modulverwaltungssoftware
 {
-    internal class Benutzer
+    public class Benutzer
     {
         public string BenutzerID { get; set; }
         public string Name { get; set; }

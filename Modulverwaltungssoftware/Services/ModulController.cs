@@ -4,7 +4,7 @@ using System.Data;
 
 namespace Modulverwaltungssoftware
 {
-    internal class ModulController
+    public class ModulController
     {
         public void ErstelleModulVersion(string titel, string sprache, string pruefungsleistung, int sws, string modulCode, string turnus, int ects, int workloadPraesenz, int workloadSelbststudium, List<string> voraussetzungen, string verantwortlicher, List<string> lernziele, List<string> lehrinhalte, List<string> literatur)
         {

@@ -1,6 +1,6 @@
 ﻿namespace Modulverwaltungssoftware.Services
 {
-    internal class LoginService
+    public class LoginService
     {
         public string Login(string benutzername, string passwort) // DB einbinden
         {

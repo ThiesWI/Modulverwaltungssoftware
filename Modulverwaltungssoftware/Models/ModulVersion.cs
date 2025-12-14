@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Modulverwaltungssoftware
 {
-    internal class ModulVersion
+    public class ModulVersion
     {
         public int VersionID { get; set; }
         public string GueltigAbSemester { get; set; }

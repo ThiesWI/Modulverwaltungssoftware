@@ -2,7 +2,7 @@
 
 namespace Modulverwaltungssoftware
 {
-    internal class BenachrichtigungsService
+    public class BenachrichtigungsService
     {
         public void SendeBenachrichtigung(Benutzer benutzer, string nachricht)
         {

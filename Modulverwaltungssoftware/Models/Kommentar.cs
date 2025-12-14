@@ -4,7 +4,7 @@ using System.Security.Policy;
 
 namespace Modulverwaltungssoftware
 {
-    internal class Kommentar
+    public class Kommentar
     {
         
         public int KommentarID { get; private set; }
