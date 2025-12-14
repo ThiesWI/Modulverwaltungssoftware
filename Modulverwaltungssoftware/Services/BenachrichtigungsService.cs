@@ -6,11 +6,11 @@ namespace Modulverwaltungssoftware
     {
         public void SendeBenachrichtigung(Benutzer benutzer, string nachricht)
         {
-            throw new NotImplementedException();
+            // In-App Benachrichtigung an Benutzer senden
         }
         public void SendeInfo(Benutzer benutzer, string nachricht)
         {
-            throw new NotImplementedException();
+            // redundant?
         }
     }
 }

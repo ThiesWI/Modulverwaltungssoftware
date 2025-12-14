@@ -17,13 +17,13 @@ namespace Modulverwaltungssoftware
         public List<string> Literatur { get; set; }
         public Benutzer Ersteller { get; set; }
         public List<int> KommentarIDs { get; set; } = new List<int>();
-        public void setStatus()
+        public void setStatus(int versionID)
         {
-            throw new NotImplementedException();
+            // Status der ModulVersion in DB updaten
         }
         public void setDaten()
         {
-            throw new NotImplementedException();
+            // Alle Daten der ModulVersion in DB updaten
         }
     }
 }

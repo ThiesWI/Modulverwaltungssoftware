@@ -12,19 +12,19 @@ namespace Modulverwaltungssoftware
         public Benutzer Verantwortlicher { get; set; }
         public void getAktuelleModule() 
         {
-            throw new NotImplementedException();
+            // Get alle Module mit dem Status "Freigegeben"
         }
         public void addModul(Modul modul)
         {
-            throw new NotImplementedException();
+            // Instanz von Modul und ModulVersion in DB hinzufügen
         }
         public void removeModul(Modul modul)
         {
-            throw new NotImplementedException();
-        }   
+            // Modul und alle zugehörigen ModulVersionen aus DB entfernen -> Override für Löschen von Versionen erstellen
+        }
         public bool istKomplett()
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException(); // Redundant, PlausibilitätsService erledigt den Job bei der Eingabe im UI, DB so konfigurieren, dass relevante Daten nicht null sein dürfen!
         }
     }
 }

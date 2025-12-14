@@ -113,7 +113,7 @@ namespace Modulverwaltungssoftware
 
             return fehler;
         }
-        internal string fehlerListe(bool workload, bool typ, bool semester, bool pruefung, bool turnus, bool verantwortlicher, bool lehrinhalte, bool lernziele)
+        private string fehlerListe(bool workload, bool typ, bool semester, bool pruefung, bool turnus, bool verantwortlicher, bool lehrinhalte, bool lernziele)
         {
             string fehlerMeldungen = "Fehler gefunden in folgenden Bereichen:\n";
             if (workload && typ && semester && pruefung && turnus && verantwortlicher && lehrinhalte && lernziele == true) 

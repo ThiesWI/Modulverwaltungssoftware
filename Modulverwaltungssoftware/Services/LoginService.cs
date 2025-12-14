@@ -2,7 +2,7 @@
 {
     internal class LoginService
     {
-        public string Login(string benutzername, string passwort)
+        public string Login(string benutzername, string passwort) // DB einbinden
         {
             if (benutzername == "admin" && passwort == "admin123")
             {
