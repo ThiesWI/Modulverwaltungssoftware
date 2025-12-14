@@ -7,5 +7,6 @@
         public string Email { get; set; }
         public string Passwort { get; set; }
         public Rolle Rolle { get; set; }
+        public int AktuellerBenutzer { get; set; }
     }
 }
