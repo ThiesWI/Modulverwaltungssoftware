@@ -6,7 +6,7 @@ namespace Modulverwaltungssoftware.Models
 {
     public static class RollenKonfiguration
     {
-        public static List<Rolle> Rollen = new List<Rolle>
+        public static readonly List<Rolle> Rollen = new List<Rolle>
         {
             new Rolle
             {

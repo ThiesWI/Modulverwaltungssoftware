@@ -4,6 +4,7 @@ namespace Modulverwaltungssoftware
 {
     public class Studiengang
     {
+        public int StudiengangID { get; set; }
         public string Kuerzel { get; set; }
         public string NameDE { get; set; }
         public string NameEN { get; set; }

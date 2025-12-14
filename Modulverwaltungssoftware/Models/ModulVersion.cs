@@ -1,22 +1,35 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Modulverwaltungssoftware
 {
     public class ModulVersion
     {
-        public int VersionID { get; set; }
+        public int ModulVersionID { get; set; }
+        public int ModulId { get; set; }
+        public virtual Modul Modul { get; set; }
         public string GueltigAbSemester { get; set; }
         public enum Status { Entwurf, InPruefungKoordination, InPruefungGremium, Aenderungsbedarf, Freigegeben, Archiviert}
-        public List<string> Lernergebnisse { get; set; }
-        public List<string> Inhaltsgliederung { get; set; }
         public int WorkloadPraesenz { get; set; }
         public int WorkloadSelbststudium { get; set; }
         public int EctsPunkte { get; set; }
         public string Pruefungsform { get; set; }
         public List<string> Literatur { get; set; }
         public Benutzer Ersteller { get; set; }
-        public List<int> KommentarIDs { get; set; } = new List<int>();
+        [NotMapped]
+        public List<string> Lernergebnisse { get; set; }
+        [NotMapped]
+        public List<string> Inhaltsgliederung { get; set; }
+        public string LernergebnisseDb { get { return JsonConvert.SerializeObject(Lernergebnisse); } set { if (string.IsNullOrEmpty(value)) { Lernergebnisse = new List<string>(); } else { Lernergebnisse = JsonConvert.DeserializeObject<List<string>>(value); } } }
+        public string InhaltsgliederungDb { get { return JsonConvert.SerializeObject(Inhaltsgliederung); } set { if (string.IsNullOrEmpty(value)) { Inhaltsgliederung = new List<string>(); } else { Inhaltsgliederung = JsonConvert.DeserializeObject<List<string>>(value); } } }
+
+        public ModulVersion()
+        {
+            Lernergebnisse = new List<string>();
+            Inhaltsgliederung = new List<string>();
+        }
         public void setStatus(int versionID)
         {
             // Status der ModulVersion in DB updaten

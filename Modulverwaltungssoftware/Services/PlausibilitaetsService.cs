@@ -23,7 +23,7 @@ namespace Modulverwaltungssoftware
                 return "Der Workload liegt außerhalb des üblichen Bereichs. Bitte prüfen Sie, ob ein Eingabefehler vorliegt.";
             }
         }
-        public bool pruefeWorkloadStandardIntern(int stunden, int ects)
+        private bool pruefeWorkloadStandardIntern(int stunden, int ects)
         {
             if (stunden / ects < 28 || stunden / ects > 32)
             {

@@ -1,9 +1,11 @@
-﻿namespace Modulverwaltungssoftware
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Modulverwaltungssoftware
 {
     public class Rolle
     {
         public string RollenName { get; set; }
-        public enum RollenID
+        public enum RolleID
         {
             Gast = 0,
             Dozent = 1,
