@@ -9,6 +9,49 @@
       Title="EditingView">
 
     <Grid>
-        
+        <!-- UNTERER Bereich für Unterseiten bzw. "Views" -->
+        <Grid Grid.Row="1" Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="120"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="120"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Linker & Mittlerer Bereich: Suchleiste und Anzeige (über zwei Spalten) -->
+            <StackPanel Grid.Column="0" Grid.ColumnSpan="2" VerticalAlignment="Top" Margin="20,0,20,0">
+                <TextBox x:Name="SearchBox" Height="32" Margin="0,0,0,0" VerticalContentAlignment="Center" FontSize="14"/>
+                <ScrollViewer Height="400">
+                    <StackPanel x:Name="FormPanel" Margin="0,10,0,0">
+                        <!-- Feld 1 -->
+                        <StackPanel Margin="0,0,0,10">
+                            <TextBlock Text="Feld 1:" FontWeight="Bold"/>
+                            <TextBlock Text="Beschreibung zu Feld 1" FontStyle="Italic" FontSize="11"/>
+                            <TextBox Height="24"/>
+                        </StackPanel>
+                        <!-- Feld 2 -->
+                        <StackPanel Margin="0,0,0,10">
+                            <TextBlock Text="Feld 2:" FontWeight="Bold"/>
+                            <TextBlock Text="Beschreibung zu Feld 2" FontStyle="Italic" FontSize="11"/>
+                            <TextBox Height="24"/>
+                        </StackPanel>
+                        <!-- ... Wiederhole für alle 15 Felder ... -->
+                        <!-- Feld 15 -->
+                        <StackPanel Margin="0,0,0,10">
+                            <TextBlock Text="Feld 15:" FontWeight="Bold"/>
+                            <TextBlock Text="Beschreibung zu Feld 15" FontStyle="Italic" FontSize="11"/>
+                            <TextBox Height="24"/>
+                        </StackPanel>
+            </StackPanel>
+            </ScrollViewer>
+            </StackPanel>
+
+            <!-- Rechter Bereich: "Entwurf speichern" & "Verwerfen" Button -->
+            <StackPanel Grid.Column="2" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,10,15,0">
+                <Button Content="Entwurf speichern" Width="100" Height="35" Click="EntwurfSpeichern_Click"/>
+            </StackPanel>
+            <StackPanel Grid.Column="2" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,45,15,0">
+                <Button Content="Verwerfen" Width="100" Height="35" Click="EntwurfVerwerfen_Click"/>
+            </StackPanel>
+        </Grid>
     </Grid>
 </Page>

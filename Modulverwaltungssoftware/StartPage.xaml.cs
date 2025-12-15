@@ -24,5 +24,22 @@ namespace Modulverwaltungssoftware
         {
             InitializeComponent();
         }
+
+        private void NeuesModulButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Navigation zur EditingView-Seite
+            this.NavigationService?.Navigate(new EditingView());
+        }
+
+        private void OeffnenButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Logik für den "Neues Modul" Button hier einfügen
+            MessageBox.Show("Oeffnen Button wurde geklickt!");
+        }
+
+        private void SearchBox_GiveFeedback(object sender, GiveFeedbackEventArgs e)
+        {
+
+        }
     }
 }

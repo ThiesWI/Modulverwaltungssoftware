@@ -9,6 +9,74 @@
       Title="CommentView">
 
     <Grid>
-        
+        <!-- UNTERER Bereich für Unterseiten bzw. "Views" -->
+        <Grid Grid.Row="1" Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="120"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="120"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Linker & Mittlerer Bereich: Suchleiste und Anzeige (über zwei Spalten) -->
+            <StackPanel Grid.Column="0" Grid.ColumnSpan="2" VerticalAlignment="Top" Margin="20,0,20,0">
+                <TextBox x:Name="SearchBox" Height="32" Margin="0,0,0,0" VerticalContentAlignment="Center" FontSize="14"/>
+                <ScrollViewer Height="400">
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />    <!-- left: field values -->
+                            <ColumnDefinition Width="*" />    <!-- right: comment inputs -->
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Left column: dynamic field values -->
+                        <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                            <!-- Example for 3 fields; repeat for all fields or bind an ItemsControl -->
+                            <StackPanel Margin="0,0,0,10">
+                                <TextBlock Text="Feld 1:" FontWeight="Bold"/>
+                                <TextBlock Text="{Binding Feld1Beschreibung}" FontStyle="Italic" FontSize="11"/>
+                                <TextBlock Text="{Binding Feld1Wert}" />
+                            </StackPanel>
+
+                            <StackPanel Margin="0,0,0,10">
+                                <TextBlock Text="Feld 2:" FontWeight="Bold"/>
+                                <TextBlock Text="{Binding Feld2Beschreibung}" FontStyle="Italic" FontSize="11"/>
+                                <TextBlock Text="{Binding Feld2Wert}" />
+                            </StackPanel>
+
+                            <StackPanel Margin="0,0,0,10">
+                                <TextBlock Text="Feld 3:" FontWeight="Bold"/>
+                                <TextBlock Text="{Binding Feld3Beschreibung}" FontStyle="Italic" FontSize="11"/>
+                                <TextBlock Text="{Binding Feld3Wert}" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- Right column: comment boxes aligned by order -->
+                        <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                            <StackPanel Margin="0,0,0,10">
+                                <TextBlock Text="Kommentar zu Feld 1:" FontWeight="Bold"/>
+                                <TextBox Text="{Binding KommentarFeld1}" Height="24"/>
+                            </StackPanel>
+
+                            <StackPanel Margin="0,0,0,10">
+                                <TextBlock Text="Kommentar zu Feld 2:" FontWeight="Bold"/>
+                                <TextBox Text="{Binding KommentarFeld2}" Height="24"/>
+                            </StackPanel>
+
+                            <StackPanel Margin="0,0,0,10">
+                                <TextBlock Text="Kommentar zu Feld 3:" FontWeight="Bold"/>
+                                <TextBox Text="{Binding KommentarFeld3}" Height="24"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </StackPanel>
+
+            <!-- Rechter Bereich: "Abschicken" & "Verwerfen" Button -->
+            <StackPanel Grid.Column="2" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,10,15,0">
+                <Button Content="Abschicken" Width="100" Height="35" Click="KommentarAbschicken_Click"/>
+            </StackPanel>
+            <StackPanel Grid.Column="2" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,45,15,0">
+                <Button Content="Verwerfen" Width="100" Height="35" Click="KommentarVerwerfen_Click"/>
+            </StackPanel>
+        </Grid>
     </Grid>
 </Page>

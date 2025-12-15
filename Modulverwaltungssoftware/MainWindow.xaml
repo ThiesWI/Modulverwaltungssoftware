@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Modulverwaltungssoftware"
         mc:Ignorable="d"
+        ResizeMode="CanMinimize"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
         <Grid.RowDefinitions>
@@ -24,16 +25,14 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Logo links oben -->
-                <Button Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Top" 
-                Width="220" Height="70" Background="Transparent" BorderThickness="0"
-                Click="LogoButton_Click">
+                <Button Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Top" Width="220" Height="70" Background="Transparent" BorderThickness="0" Click="LogoButton_Click">
                     <StackPanel Orientation="Horizontal">
                         <Image Source="logo.png" Height="70" Width="70" Margin="0,0,8,0"/>
                         <TextBlock Text="Modulverwaltung" FontWeight="Bold" FontSize="16" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button>
-                
-                <!-- Logo links oben -->
+
+                <!-- Mittlere Fläche oben -->
 
                 <!-- Rechte Seite: Notifications, Userinfo, Meine Projekte -->
                 <StackPanel Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Top">
@@ -46,46 +45,43 @@
                         <TextBlock Text="User: P. Brandenburg &#x0A;Rolle: Modulersteller" 
                            VerticalAlignment="Center" FontWeight="SemiBold"/>
                     </StackPanel>
-                    <!-- Meine Projekte -->
-                    <Border Background="#E0E0E0" CornerRadius="5" Padding="5" Margin="0,8,0,0">
-                        <StackPanel>
-                            <TextBlock Text="Meine Projekte" FontWeight="Bold"/>
-                        </StackPanel>
+                    <!-- Meine Projekte als Dropdown-Menü (gesamte Fläche klickbar) -->
+                    <Border x:Name="ProjectsBorder" Background="#E0E0E0" CornerRadius="5" Margin="0,8,0,0">
+                        <Button x:Name="ProjectsButton" Click="ToggleProjectsPopup" Background="Transparent" BorderThickness="0" Padding="4">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Meine Projekte" FontWeight="Bold" VerticalAlignment="Center"/>
+                                <TextBlock Text=" ▾" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
                     </Border>
+                    <!-- Popup muss außerhalb des Border liegen, da Border nur ein Child zulässt -->
+                    <Popup x:Name="ProjectsPopup"
+                           PlacementTarget="{Binding ElementName=ProjectsButton}"
+                           Placement="Bottom"
+                           StaysOpen="False"
+                           AllowsTransparency="True">
+                      <Border Background="White" BorderBrush="#CCC" BorderThickness="1" CornerRadius="4" Padding="0" Width="{Binding ElementName=ProjectsBorder, Path=ActualWidth}">
+                        <ItemsControl ItemsSource="{Binding Projects}">
+                          <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                              <StackPanel />
+                            </ItemsPanelTemplate>
+                          </ItemsControl.ItemsPanel>
+                          <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                              <Border BorderBrush="#DDD" BorderThickness="0,0,0,1" Padding="8,6" Background="Transparent">
+                                <TextBlock Text="{Binding}" MouseLeftButtonUp="ProjectPopupItem_Click"/>
+                              </Border>
+                            </DataTemplate>
+                          </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                      </Border>
+                    </Popup>
                 </StackPanel>
             </Grid>
         </Border>
-
+        
         <!-- UNTERER Bereich für Unterseiten -->
-        <Grid Grid.Row="1" Margin="0,10,0,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="120"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="120"/>
-            </Grid.ColumnDefinitions>
-
-            <!-- Linker Bereich: "Neues Modul" Button -->
-            <StackPanel Grid.Column="0" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="10,0,0,0">
-                <Button Content="Neues Modul" Width="100" Height="35" Margin="0,0,0,10" Click="NeuesModulButton_Click"/>
-            </StackPanel>
-
-            <!-- Mittlerer Bereich: Suchleiste und Anzeige -->
-            <StackPanel Grid.Column="1" VerticalAlignment="Top" Margin="20,0,20,0">
-                <TextBox x:Name="SearchBox" Height="32" Margin="0,0,0,0" 
-                 VerticalContentAlignment="Center" FontSize="14"/>
-                <ScrollViewer Height="270">
-                    <StackPanel x:Name="SearchResultsPanel">
-                        <!-- Hier können dynamisch Suchergebnisse eingefügt werden -->
-                        <TextBlock Text="Suchergebnis 1" Margin="0,0,0,5"/>
-                        <TextBlock Text="Suchergebnis 2" Margin="0,0,0,5"/>
-                    </StackPanel>
-                </ScrollViewer>
-            </StackPanel>
-
-            <!-- Rechter Bereich: "Öffnen" Button unten -->
-            <StackPanel Grid.Column="2" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,20,10">
-                <Button Content="Öffnen" Width="100" Height="35" Click="OeffnenButton_Click"/>
-            </StackPanel>
-        </Grid>
+        <Frame Grid.Row="1" x:Name="MainFrame" Source="StartPage.xaml" NavigationUIVisibility="Hidden" Margin="0,10,0,0"/>
     </Grid>
 </Window>

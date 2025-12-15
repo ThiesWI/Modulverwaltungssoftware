@@ -24,5 +24,37 @@ namespace Modulverwaltungssoftware
         {
             InitializeComponent();
         }
+
+        private void KommentarAbschicken_Click(object sender, RoutedEventArgs e)
+        {
+            var result = MessageBox.Show(
+                "Soll der Kommentar wirklich final an den Modulersteller weitergereicht werden?",
+                "Bestätigung senden",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                MessageBox.Show("Der Kommentar wurde eingereicht.", "Bestätigung", MessageBoxButton.OK, MessageBoxImage.Information);
+                // TODO: Kommentarinhalt in Kombination mit der Version speichern
+            }
+            // Bei Nein passiert nichts
+        }
+
+        private void KommentarVerwerfen_Click(object sender, RoutedEventArgs e)
+        {
+            var result = MessageBox.Show(
+                "Möchten Sie den Kommentar wirklich verwerfen?",
+                "Warnung",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                // Zurück zur ModulView navigieren
+                this.NavigationService?.Navigate(new ModulView());
+            }
+            // Bei Nein passiert nichts
+        }
     }
 }

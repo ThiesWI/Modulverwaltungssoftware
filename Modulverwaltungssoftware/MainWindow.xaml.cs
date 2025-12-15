@@ -21,24 +21,106 @@ namespace Modulverwaltungssoftware
     /// </summary>
     public partial class MainWindow : Window
     {
+        // Observable collection that holds project names for the dropdown menu
+        public System.Collections.ObjectModel.ObservableCollection<string> Projects { get; } =
+            new System.Collections.ObjectModel.ObservableCollection<string>();
+
         public MainWindow()
         {
             InitializeComponent();
+            // Set DataContext so bindings in XAML can resolve to this window
+            this.DataContext = this;
+
+            // Beispielvariable: kann später durch reale Daten ersetzt werden
+            var projektListe = new[] { "Projekt A", "Projekt B", "Projekt C" };
+            UpdateProjects(projektListe);
+        }
+
+        // Aktualisiert die ObservableCollection mit den übergebenen Projektnamen
+        private void UpdateProjects(IEnumerable<string> projektListe)
+        {
+            Projects.Clear();
+            if (projektListe == null)
+                return;
+
+            foreach (var p in projektListe)
+            {
+                if (p != null)
+                    Projects.Add(p);
+            }
         }
 
         private void LogoButton_Click(object sender, RoutedEventArgs e)
         {
+            // Prüfen, ob aktuell eine bearbeitbare Ansicht geöffnet ist
+            var currentPage = MainFrame.Content as Page;
+            bool isEditingOrComment = currentPage is EditingView || currentPage is CommentView;
 
+            if (!isEditingOrComment)
+            {
+                MainFrame.Navigate(new StartPage());
+                return;
+            }
+
+            var result = MessageBox.Show(
+                "Der aktuelle Stand wurde noch nicht gespeichert. Soll dieser verworfen werden?",
+                "Warnung",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                MainFrame.Navigate(new StartPage());
+            }
+            // Bei Nein passiert nichts
         }
 
-        private void NeuesModulButton_Click(object sender, RoutedEventArgs e)
+        private void OpenProjectsMenu_Click(object sender, RoutedEventArgs e)
         {
-
+            if (sender is Button btn && btn.ContextMenu != null)
+            {
+                // Ensure ContextMenu has the correct placement target so binding to PlacementTarget.DataContext works
+                btn.ContextMenu.PlacementTarget = btn;
+                // Force placement directly below the button
+                btn.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+                btn.ContextMenu.HorizontalOffset = 0;
+                btn.ContextMenu.VerticalOffset = 0;
+                btn.ContextMenu.IsOpen = true;
+            }
         }
 
-        private void OeffnenButton_Click(object sender, RoutedEventArgs e)
+        private void ProjectMenuItem_Click(object sender, RoutedEventArgs e)
         {
+            // Optional: determine which project was clicked
+            string projectName = null;
+            if (sender is MenuItem mi && mi.DataContext is string s)
+                projectName = s;
 
+            // Navigate to ModulView (could pass projectName via constructor or set on the page)
+            MainFrame.Navigate(new ModulView());
         }
+
+        // Öffnet/Schließt das Projekte-Popup unter dem Button
+        private void ToggleProjectsPopup(object sender, RoutedEventArgs e)
+        {
+            // Find the popup by name in the visual tree
+            var popup = this.FindName("ProjectsPopup") as System.Windows.Controls.Primitives.Popup;
+            if (popup != null)
+            {
+                popup.IsOpen = !popup.IsOpen;
+            }
+        }
+
+        // Klick auf Popup-Item: zur ModulView navigieren
+        private void ProjectPopupItem_Click(object sender, MouseButtonEventArgs e)
+        {
+            MainFrame.Navigate(new ModulView());
+            var popup = this.FindName("ProjectsPopup") as System.Windows.Controls.Primitives.Popup;
+            if (popup != null)
+            {
+                popup.IsOpen = false;
+            }
+        }
+
     }
 }

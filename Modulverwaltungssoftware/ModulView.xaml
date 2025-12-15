@@ -9,6 +9,60 @@
       Title="ModulView">
 
     <Grid>
-        
+        <!-- UNTERER Bereich für Unterseiten -->
+        <Grid Grid.Row="1" Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="120"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="120"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Linker Bereich: "Version auswaehlen" Dropdown-Menü -->
+            <StackPanel Grid.Column="0" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="10,0,0,0">
+                <Menu VerticalAlignment="Top" HorizontalAlignment="Left" Margin="0,0,0,10">
+                    <!-- Dynamische Untereinträge über ItemsSource gebunden -->
+                    <MenuItem Header="Version auswählen" Width="110" ItemsSource="{Binding Versions}">
+                        <MenuItem.ItemContainerStyle>
+                            <Style TargetType="MenuItem">
+                                <!-- Header zeigt den Versionsnamen -->
+                                <Setter Property="Header" Value="{Binding}"/>
+                                <EventSetter Event="Click" Handler="VersionMenuItem_Click"/>
+                            </Style>
+                        </MenuItem.ItemContainerStyle>
+                    </MenuItem>
+                </Menu>
+            </StackPanel>
+
+            <!-- Mittlerer Bereich: Suchleiste und Anzeige -->
+            <StackPanel Grid.Column="1" VerticalAlignment="Top" Margin="20,0,20,0">
+                <TextBox x:Name="SearchBox" Height="32" Margin="0,0,0,0" VerticalContentAlignment="Center" FontSize="14"/>
+                <ScrollViewer Height="270">
+                    <StackPanel x:Name="SearchResultsPanel">
+                        <!-- Hier können dynamisch Suchergebnisse eingefügt werden -->
+                        <ListBox x:Name="SearchResultsList" Height="270" Margin="0,0,0,0">
+                            <ListBoxItem Content="Suchergebnis 1" />
+                            <ListBoxItem Content="Suchergebnis 2" />
+                        </ListBox>
+                    </StackPanel>
+                </ScrollViewer>
+            </StackPanel>
+
+            <!-- Rechter Bereich: "Exportieren", "Bearbeiten", "Löschen", "Kommentieren", "Einreichen" Button unten -->
+            <StackPanel Grid.Column="2" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,10,15,0">
+                <Button Content="Exportieren" Width="100" Height="35" Click="ModulversionExportieren_Click"/>
+            </StackPanel>
+            <StackPanel Grid.Column="2" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,45,15,0">
+                <Button Content="Bearbeiten" Width="100" Height="35" Click="ModulversionBearbeiten_Click"/>
+            </StackPanel>
+            <StackPanel Grid.Column="2" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,80,15,0">
+                <Button Content="Löschen" Width="100" Height="35" Click="ModulversionLöschen_Click"/>
+            </StackPanel>
+            <StackPanel Grid.Column="2" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,130,15,0">
+                <Button Content="Kommentieren" Width="100" Height="35" Click="ModulversionKommentieren_Click"/>
+            </StackPanel>
+            <StackPanel Grid.Column="2" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,165,15,0">
+                <Button Content="Einreichen" Width="100" Height="35" Click="ModulversionEinreichen_Click"/>
+            </StackPanel>
+        </Grid>
     </Grid>
 </Page>

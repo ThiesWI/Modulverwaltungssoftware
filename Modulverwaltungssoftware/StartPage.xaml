@@ -9,6 +9,37 @@
       Title="StartPage">
 
     <Grid>
-        
+        <!-- UNTERER Bereich für Unterseiten -->
+        <Grid Grid.Row="1" Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="120"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="120"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Linker Bereich: "Neues Modul" Button -->
+            <StackPanel Grid.Column="0" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="10,0,0,0">
+                <Button Content="Neues Modul" Width="100" Height="35" Margin="0,0,0,10" Click="NeuesModulButton_Click"/>
+            </StackPanel>
+
+            <!-- Mittlerer Bereich: Suchleiste und Anzeige -->
+            <StackPanel Grid.Column="1" VerticalAlignment="Top" Margin="20,0,20,0">
+                <TextBox x:Name="SearchBox" Height="32" Margin="0,0,0,0" VerticalContentAlignment="Center" FontSize="14" ToolTip="TEST" ContentElement.GiveFeedback="SearchBox_GiveFeedback"/>
+                <ScrollViewer Height="270">
+                    <StackPanel x:Name="SearchResultsPanel">
+                        <!-- Hier können dynamisch Suchergebnisse eingefügt werden -->
+                        <ListBox x:Name="SearchResultsList" Height="270" Margin="0,0,0,0">
+                            <ListBoxItem Content="Suchergebnis 1" />
+                            <ListBoxItem Content="Suchergebnis 2" />
+                        </ListBox>
+                    </StackPanel>
+                </ScrollViewer>
+            </StackPanel>
+
+            <!-- Rechter Bereich: "Öffnen" Button unten -->
+            <StackPanel Grid.Column="2" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,20,10">
+                <Button Content="Öffnen" Width="100" Height="35" Click="OeffnenButton_Click"/>
+            </StackPanel>
+        </Grid>
     </Grid>
 </Page>
