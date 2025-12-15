@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Entity.Infrastructure;
+using System.Data.Entity.Validation;
 using System.Linq;
 
 namespace Modulverwaltungssoftware
@@ -9,41 +11,88 @@ namespace Modulverwaltungssoftware
     {
         public static int create(int versionID, int modulID)
         {
-            var neueVersionID = versionID + 1;
-            using (var db = new Services.DatabaseContext())
+            try
             {
-                var alteVersion = db.ModulVersion
-                    .FirstOrDefault(v => v.ModulVersionID == versionID && v.ModulId == modulID);
-
-                if (alteVersion == null)
+                var neueVersionID = versionID + 1;
+                using (var db = new Services.DatabaseContext())
                 {
-                    throw new KeyNotFoundException($"ModulVersion mit ID {versionID} für Modul {modulID} nicht gefunden.");
+                    var alteVersion = db.ModulVersion
+                        .FirstOrDefault(v => v.ModulVersionID == versionID && v.ModulId == modulID);
+
+                    if (alteVersion == null)
+                    {
+                        throw new KeyNotFoundException($"ModulVersion mit ID {versionID} für Modul {modulID} nicht gefunden.");
+                    }
+
+                    var neueVersion = new ModulVersion
+                    {
+                        ModulId = alteVersion.ModulId,
+                        Versionsnummer = neueVersionID,
+                        GueltigAbSemester = alteVersion.GueltigAbSemester,
+                        Modul = alteVersion.Modul,
+                        ModulStatus = alteVersion.ModulStatus,
+                        LetzteAenderung = DateTime.Now,
+                        WorkloadPraesenz = alteVersion.WorkloadPraesenz,
+                        WorkloadSelbststudium = alteVersion.WorkloadSelbststudium,
+                        EctsPunkte = alteVersion.EctsPunkte,
+                        Pruefungsform = alteVersion.Pruefungsform,
+                        Literatur = new List<string>(alteVersion.Literatur),
+                        Ersteller = alteVersion.Ersteller,
+                        Lernergebnisse = new List<string>(alteVersion.Lernergebnisse),
+                        Inhaltsgliederung = new List<string>(alteVersion.Inhaltsgliederung),
+                        LernergebnisseDb = alteVersion.LernergebnisseDb,
+                        InhaltsgliederungDb = alteVersion.InhaltsgliederungDb
+                    };
+
+                    db.ModulVersion.Add(neueVersion);
+                    db.SaveChanges();
+
+                    return neueVersionID;
+                }
+            }
+            catch (DbEntityValidationException valEx)
+            {
+                var fehlermeldungen = new List<string>();
+
+                foreach (var validationErrors in valEx.EntityValidationErrors)
+                {
+                    foreach (var error in validationErrors.ValidationErrors)
+                    {
+                        string meldung = $"Feld '{error.PropertyName}': {error.ErrorMessage}";
+                        fehlermeldungen.Add(meldung);
+                        // Optional: Logging hier (Console.WriteLine(meldung));
+                    }
                 }
 
-                var neueVersion = new ModulVersion
+                // Wirf eine neue, saubere Exception mit allen Details, damit das Frontend sie anzeigen kann
+                throw new InvalidOperationException($"Validierung fehlgeschlagen: {string.Join(", ", fehlermeldungen)}", valEx);
+            }
+            // 2. Gleichzeitigkeitsfehler (Optimistic Concurrency)
+            // Tritt auf, wenn zwei User gleichzeitig speichern wollen.
+            catch (DbUpdateConcurrencyException conEx)
+            {
+                // Reload der Werte oder Fehlermeldung
+                throw new InvalidOperationException("Der Datensatz wurde zwischenzeitlich von einem anderen Benutzer geändert. Bitte laden Sie die Seite neu.", conEx);
+            }
+            // 3. Datenbank-Update-Fehler (z.B. Foreign Key Verletzung, Unique Constraint)
+            catch (DbUpdateException dbEx)
+            {
+                var innerMessage = dbEx.InnerException?.InnerException?.Message ?? dbEx.Message;
+
+                if (innerMessage.Contains("UNIQUE constraint failed"))
                 {
-                    ModulId = alteVersion.ModulId,
-                    Versionsnummer = neueVersionID,
-                    GueltigAbSemester = alteVersion.GueltigAbSemester,
-                    Modul = alteVersion.Modul,
-                    ModulStatus = alteVersion.ModulStatus,
-                    LetzteAenderung = DateTime.Now,
-                    WorkloadPraesenz = alteVersion.WorkloadPraesenz,
-                    WorkloadSelbststudium = alteVersion.WorkloadSelbststudium,
-                    EctsPunkte = alteVersion.EctsPunkte,
-                    Pruefungsform = alteVersion.Pruefungsform,
-                    Literatur = new List<string>(alteVersion.Literatur),
-                    Ersteller = alteVersion.Ersteller,
-                    Lernergebnisse = new List<string>(alteVersion.Lernergebnisse),
-                    Inhaltsgliederung = new List<string>(alteVersion.Inhaltsgliederung),
-                    LernergebnisseDb = alteVersion.LernergebnisseDb,
-                    InhaltsgliederungDb = alteVersion.InhaltsgliederungDb
-                };
+                    throw new InvalidOperationException("Dieser Eintrag existiert bereits (Duplikat).", dbEx);
+                }
 
-                db.ModulVersion.Add(neueVersion);
-                db.SaveChanges();
+                throw new Exception($"Datenbankfehler beim Speichern: {innerMessage}", dbEx);
+            }
+            // 4. Allgemeine Fehler (NullReference, Logikfehler etc.)
+            catch (Exception ex)
+            {
+                // Hier solltest du idealerweise Loggen (in eine Datei oder DB)
+                // Logger.LogError(ex);
 
-                return neueVersionID;
+                throw new Exception("Ein unerwarteter Fehler ist aufgetreten.", ex);
             }
         }
     }

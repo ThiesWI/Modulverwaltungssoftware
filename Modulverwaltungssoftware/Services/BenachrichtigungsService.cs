@@ -1,6 +1,9 @@
 ﻿
 using Modulverwaltungssoftware.Models;
+using System;
 using System.Collections.Generic;
+using System.Data.Entity.Infrastructure;
+using System.Data.Entity.Validation;
 using System.Linq;
 
 namespace Modulverwaltungssoftware
@@ -9,60 +12,118 @@ namespace Modulverwaltungssoftware
     {
         public static void SendeBenachrichtigung(string benutzer, string empfaenger, string nachricht, int betroffeneModulVersionID = 0)
         {
-            using (var db = new Services.DatabaseContext()) 
+            try
             {
-                if (betroffeneModulVersionID == 0)
+                using (var db = new Services.DatabaseContext())
                 {
-                    var benachrichtigung = new Benachrichtigung
+                    if (betroffeneModulVersionID == 0)
                     {
-                        Sender = benutzer,
-                        Empfaenger = empfaenger,
-                        Nachricht = nachricht,
-                        GesendetAm = System.DateTime.Now,
-                        Gelesen = false
-                    };
-                    db.Benachrichtigung.Add(benachrichtigung);
+                        var benachrichtigung = new Benachrichtigung
+                        {
+                            Sender = benutzer,
+                            Empfaenger = empfaenger,
+                            Nachricht = nachricht,
+                            GesendetAm = System.DateTime.Now,
+                            Gelesen = false
+                        };
+                        db.Benachrichtigung.Add(benachrichtigung);
+                    }
+                    else
+                    {
+                        var benachrichtigung = new Benachrichtigung
+                        {
+                            BetroffeneModulVersionID = betroffeneModulVersionID,
+                            Sender = benutzer,
+                            Empfaenger = empfaenger,
+                            Nachricht = nachricht,
+                            GesendetAm = System.DateTime.Now,
+                            Gelesen = false
+                        };
+                        db.Benachrichtigung.Add(benachrichtigung);
+                    }
+                    db.SaveChanges();
                 }
-                else
+            }
+            catch (DbEntityValidationException valEx)
+            {
+                var fehlermeldungen = new List<string>();
+
+                foreach (var validationErrors in valEx.EntityValidationErrors)
                 {
-                    var benachrichtigung = new Benachrichtigung
+                    foreach (var error in validationErrors.ValidationErrors)
                     {
-                        BetroffeneModulVersionID = betroffeneModulVersionID,
-                        Sender = benutzer,
-                        Empfaenger = empfaenger,
-                        Nachricht = nachricht,
-                        GesendetAm = System.DateTime.Now,
-                        Gelesen = false
-                    };
-                    db.Benachrichtigung.Add(benachrichtigung);
+                        string meldung = $"Feld '{error.PropertyName}': {error.ErrorMessage}";
+                        fehlermeldungen.Add(meldung);
+                        // Optional: Logging hier (Console.WriteLine(meldung));
+                    }
                 }
-                db.SaveChanges();
+
+                // Wirf eine neue, saubere Exception mit allen Details, damit das Frontend sie anzeigen kann
+                throw new InvalidOperationException($"Validierung fehlgeschlagen: {string.Join(", ", fehlermeldungen)}", valEx);
+            }
+            // 2. Gleichzeitigkeitsfehler (Optimistic Concurrency)
+            // Tritt auf, wenn zwei User gleichzeitig speichern wollen.
+            catch (DbUpdateConcurrencyException conEx)
+            {
+                // Reload der Werte oder Fehlermeldung
+                throw new InvalidOperationException("Der Datensatz wurde zwischenzeitlich von einem anderen Benutzer geändert. Bitte laden Sie die Seite neu.", conEx);
+            }
+            // 3. Datenbank-Update-Fehler (z.B. Foreign Key Verletzung, Unique Constraint)
+            catch (DbUpdateException dbEx)
+            {
+                var innerMessage = dbEx.InnerException?.InnerException?.Message ?? dbEx.Message;
+
+                if (innerMessage.Contains("UNIQUE constraint failed"))
+                {
+                    throw new InvalidOperationException("Dieser Eintrag existiert bereits (Duplikat).", dbEx);
+                }
+
+                throw new Exception($"Datenbankfehler beim Speichern: {innerMessage}", dbEx);
+            }
+            // 4. Allgemeine Fehler (NullReference, Logikfehler etc.)
+            catch (Exception ex)
+            {
+                // Hier solltest du idealerweise Loggen (in eine Datei oder DB)
+                // Logger.LogError(ex);
+
+                throw new Exception("Ein unerwarteter Fehler ist aufgetreten.", ex);
             }
         }
         public static List<Benachrichtigung> EmpfangeBenachrichtigung(string aktuellerBenutzer)
         {
-            using (var db = new Services.DatabaseContext())
+            try
             {
-                var benachrichtigungen = db.Benachrichtigung
-                    .Where(b => b.Empfaenger == aktuellerBenutzer && b.Gelesen == false)
-                    .OrderByDescending(b => b.GesendetAm);
-                return benachrichtigungen.ToList();
+                using (var db = new Services.DatabaseContext())
+                {
+                    var benachrichtigungen = db.Benachrichtigung
+                        .Where(b => b.Empfaenger == aktuellerBenutzer && b.Gelesen == false)
+                        .OrderByDescending(b => b.GesendetAm);
+                    return benachrichtigungen.ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw;
             }
         }
         public static void MarkiereAlsGelesen(string aktuellerBenutzer)
         {
-            using (var db = new Services.DatabaseContext())
+            try
             {
-                var ungelesene = db.Benachrichtigung
-                    .Where(b => b.Empfaenger == aktuellerBenutzer && b.Gelesen == false)
-                    .ToList();
-
-                foreach (var n in ungelesene)
+                using (var db = new Services.DatabaseContext())
                 {
-                    n.Gelesen = true;
+                    var ungelesene = db.Benachrichtigung
+                        .Where(b => b.Empfaenger == aktuellerBenutzer && b.Gelesen == false)
+                        .ToList();
+
+                    foreach (var n in ungelesene)
+                    {
+                        n.Gelesen = true;
+                    }
+                    db.SaveChanges();
                 }
-                db.SaveChanges();
             }
-        }
+            catch (Exception ex) { throw; }
+            }
     }
 }

@@ -1,7 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Security.Policy;
+using System.Data.Entity.Validation; // Für Validierungsfehler
+using System.Data.Entity.Infrastructure; // Für Concurrency (Gleichzeitigkeit)
+using System.Data.Entity.Core; // Für DB-Verbindungsfehler
 
 namespace Modulverwaltungssoftware
 {
@@ -17,18 +18,22 @@ namespace Modulverwaltungssoftware
         public int GehoertZuModulID { get; set; }
         public static void addKommentar(int modulID, int modulVersionID, string text)
         {
-            using (var db = new Services.DatabaseContext())
+            try
             {
-                Kommentar neuerKommentar = new Kommentar
+                using (var db = new Services.DatabaseContext())
                 {
-                    Text = text,
-                    ErstellungsDatum = DateTime.Now,
-                    GehoertZuModulID = modulID,
-                    GehoertZuModulVersionID = modulVersionID
-                };
-                db.Kommentar.Add(neuerKommentar);
-                db.SaveChanges();
+                    Kommentar neuerKommentar = new Kommentar
+                    {
+                        Text = text,
+                        ErstellungsDatum = DateTime.Now,
+                        GehoertZuModulID = modulID,
+                        GehoertZuModulVersionID = modulVersionID
+                    };
+                    db.Kommentar.Add(neuerKommentar);
+                    db.SaveChanges();
+                }
             }
+            catch (Exception ex) { throw; }
         }
     }
 }

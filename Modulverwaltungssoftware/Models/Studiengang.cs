@@ -34,20 +34,24 @@ namespace Modulverwaltungssoftware
         }
         public void addModul(Modul modul)
         {
-            using (var db = new Services.DatabaseContext())
+            try
             {
-                if (modul == null)
+                using (var db = new Services.DatabaseContext())
                 {
-                    throw new ArgumentNullException(nameof(modul));
+                    if (modul == null)
+                    {
+                        throw new ArgumentNullException(nameof(modul));
+                    }
+                    if (modul.GueltigAb == default)
+                    {
+                        modul.GueltigAb = DateTime.Now;
+                    }
+                    db.Modul.Add(modul);
+                    db.SaveChanges();
                 }
-                if (modul.GueltigAb == default)
-                {
-                    modul.GueltigAb = DateTime.Now;
-                }
-                db.Modul.Add(modul);
-                db.SaveChanges();
             }
-        }
+            catch (Exception ex) { throw; }
+            }
         public void removeModul(int modulID)
         {
             using (var db = new Services.DatabaseContext()) 

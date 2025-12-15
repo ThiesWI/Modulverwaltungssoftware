@@ -1,5 +1,8 @@
 ﻿using Modulverwaltungssoftware.Models;
+using System;
 using System.Data.Entity;
+using System.Data.Entity.Validation;
+using System.Linq;
 
 namespace Modulverwaltungssoftware.Services
 {

@@ -1,4 +1,5 @@
-﻿using System.Security.Authentication;
+﻿using System;
+using System.Security.Authentication;
 
 namespace Modulverwaltungssoftware.Services
 {
@@ -8,13 +9,17 @@ namespace Modulverwaltungssoftware.Services
         {
             using (var db = new DatabaseContext())
             {
-                var benutzer = db.Benutzer.Find(benutzername, passwort);
-                if (benutzer == null)
+                try
                 {
-                    throw new AuthenticationException("Anmeldung fehlgeschlagen. Überprüfen Sie ihre Eingaben.");
+                    var benutzer = db.Benutzer.Find(benutzername, passwort);
+                    if (benutzer == null)
+                    {
+                        throw new AuthenticationException("Anmeldung fehlgeschlagen. Überprüfen Sie ihre Eingaben.");
+                    }
+                    else return benutzer.RollenName;
                 }
-                else return benutzer.RollenName;
-            }
+                catch (Exception ex) { throw; }
+                }
         }
     }
 }
