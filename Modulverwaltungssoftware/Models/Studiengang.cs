@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Windows.Documents;
 
 namespace Modulverwaltungssoftware
 {
@@ -12,25 +15,64 @@ namespace Modulverwaltungssoftware
         [Required]
         [StringLength(200)]
         public string NameDE { get; set; }
+        [StringLength(200)]
         public string NameEN { get; set; }
         public int GesamtECTS { get; set; }
         public DateTime GueltigAb { get; set; }
         public string Verantwortlicher { get; set; }
-        public void getAktuelleModule() 
+        public List<Modul> getAktuelleModule()
         {
-            // Get alle Module mit dem Status "Freigegeben"
+            using (var db = new Services.DatabaseContext())
+            {
+                var query = db.Modul
+                    .Where(modul => modul.ModulVersionen.Any(modulVersion =>
+                        modulVersion.GueltigAbSemester != null &&
+                        modulVersion.ModulStatus == ModulVersion.Status.Freigegeben))
+                    .OrderBy(m => m.ModulnameDE);
+                return query.ToList();
+            }
         }
         public void addModul(Modul modul)
         {
-            // Instanz von Modul und ModulVersion in DB hinzufügen
+            using (var db = new Services.DatabaseContext())
+            {
+                if (modul == null)
+                {
+                    throw new ArgumentNullException(nameof(modul));
+                }
+                if (modul.GueltigAb == default)
+                {
+                    modul.GueltigAb = DateTime.Now;
+                }
+                db.Modul.Add(modul);
+                db.SaveChanges();
+            }
         }
-        public void removeModul(Modul modul)
+        public void removeModul(int modulID)
         {
-            // Modul und alle zugehörigen ModulVersionen aus DB entfernen -> Override für Löschen von Versionen erstellen
+            using (var db = new Services.DatabaseContext()) 
+            { 
+                var modul = db.Modul.Find(modulID);
+                if (modul == null) 
+                {
+                    throw new KeyNotFoundException($"Modul mit ID {nameof(modul)} nicht gefunden.");
+                }
+                db.Modul.Remove(modul);
+                db.SaveChanges();
+            }
         }
-        public bool istKomplett()
+        public void removeModulVersion(int modulID, int modulVersion) 
         {
-            throw new NotImplementedException(); // Redundant, PlausibilitätsService erledigt den Job bei der Eingabe im UI, DB so konfigurieren, dass relevante Daten nicht null sein dürfen!
+            using (var db = new Services.DatabaseContext())
+            {
+                var version = db.ModulVersion.Find(modulID, modulVersion);
+                if (version == null)
+                {
+                    throw new KeyNotFoundException($"ModulVersion mit ID {modulVersion} und/oder ModulID {modulID} nicht gefunden.");
+                }
+                db.ModulVersion.Remove(version);
+                db.SaveChanges();
+            }
         }
     }
 }

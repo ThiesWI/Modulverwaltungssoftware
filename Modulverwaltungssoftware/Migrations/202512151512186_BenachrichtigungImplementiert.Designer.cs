@@ -7,13 +7,13 @@ namespace Modulverwaltungssoftware.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.5.1")]
-    public sealed partial class InitialeErstellung : IMigrationMetadata
+    public sealed partial class BenachrichtigungImplementiert : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(InitialeErstellung));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(BenachrichtigungImplementiert));
         
         string IMigrationMetadata.Id
         {
-            get { return "202512150846493_InitialeErstellung"; }
+            get { return "202512151512186_BenachrichtigungImplementiert"; }
         }
         
         string IMigrationMetadata.Source

@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -15,6 +16,7 @@ namespace Modulverwaltungssoftware
         public string ModulnameEN { get; set; }
         public enum Modultyp { Wahlpflicht, Grundlagen}
         public int EmpfohlenesSemester { get; set; }
+        public DateTime GueltigAb { get; set; } = DateTime.Now;
         public enum Turnus { JedesSemester, NurWintersemester, NurSommersemester}
         public int DauerInSemestern { get; set; } = 1;
         public enum PruefungsForm { PL, SP, SL }

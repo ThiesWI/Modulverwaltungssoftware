@@ -1,30 +1,20 @@
-﻿namespace Modulverwaltungssoftware.Services
+﻿using System.Security.Authentication;
+
+namespace Modulverwaltungssoftware.Services
 {
     public class LoginService
     {
         public string Login(string benutzername, string passwort) // DB einbinden
         {
-            if (benutzername == "Admin" && passwort == "admin123")
+            using (var db = new DatabaseContext())
             {
-                return "99";
+                var benutzer = db.Benutzer.Find(benutzername, passwort);
+                if (benutzer == null)
+                {
+                    throw new AuthenticationException("Anmeldung fehlgeschlagen. Überprüfen Sie ihre Eingaben.");
+                }
+                else return benutzer.RollenName;
             }
-            if (benutzername == "Gast" && passwort == "gast123")
-            {
-                return "0";
-            }
-            if (benutzername == "Dozent" && passwort == "dozent123")
-            {
-                return "1";
-            }
-            if (benutzername == "Koordination" && passwort == "koordination123")
-            {
-                return "2";
-            }
-            if (benutzername == "Gremium" && passwort == "gremium123")
-            {
-                return "3";
-            }
-            else return "false";
         }
     }
 }

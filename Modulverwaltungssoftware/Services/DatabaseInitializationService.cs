@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Modulverwaltungssoftware.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -44,7 +45,6 @@ namespace Modulverwaltungssoftware.Services
                             Passwort = "koordination123",
                             RollenName = "Koordination",
                         };
-
                         var gremium = new Benutzer
                         {
                             Name = "Gremium",
@@ -101,6 +101,7 @@ namespace Modulverwaltungssoftware.Services
                             // --- MODUL: Software Engineering ---
                             new Modul
                             {
+                                GueltigAb = DateTime.Now,
                                 ModulnameDE = "Software Engineering I",
                                 ModulnameEN = "Software Engineering I",
                                 EmpfohlenesSemester = 3,
@@ -112,6 +113,8 @@ namespace Modulverwaltungssoftware.Services
                                     // Veraltete Version
                                     new ModulVersion
                                     {
+                                        Versionsnummer = 1,
+                                        ModulStatus = ModulVersion.Status.Freigegeben,
                                         GueltigAbSemester = "WiSe 2021",
                                         EctsPunkte = 5,
                                         WorkloadPraesenz = 60, WorkloadSelbststudium = 90,
@@ -122,9 +125,11 @@ namespace Modulverwaltungssoftware.Services
                                         // Hier deine Anforderung: Zuweisung über den Namen
                                         Ersteller = dozent.Name
                                     },
-                                    // Aktuelle Version
+                                    // Aktuelle Version (Entwurf)
                                     new ModulVersion
                                     {
+                                        Versionsnummer = 2,
+                                        ModulStatus = ModulVersion.Status.Aenderungsbedarf,
                                         GueltigAbSemester = "WiSe 2324",
                                         EctsPunkte = 5,
                                         WorkloadPraesenz = 45, WorkloadSelbststudium = 105,
@@ -138,16 +143,19 @@ namespace Modulverwaltungssoftware.Services
 
                             new Modul
                             {
+                                GueltigAb = DateTime.Now.AddYears(-2),
                                 ModulnameDE = "Mathematik I",
                                 ModulnameEN = "Mathematics I",
                                 EmpfohlenesSemester = 1,
                                 DauerInSemestern = 1,
                                 VoraussetzungenDb = null,
-        
+
                                 ModulVersionen = new List<ModulVersion>
                                 {
                                     new ModulVersion
                                     {
+                                        Versionsnummer = 1,
+                                        ModulStatus = ModulVersion.Status.Freigegeben,
                                         GueltigAbSemester = "WiSe 2223",
                                         EctsPunkte = 5,
                                         WorkloadPraesenz = 60, WorkloadSelbststudium = 90,
@@ -161,6 +169,7 @@ namespace Modulverwaltungssoftware.Services
 
                             new Modul
                             {
+                                GueltigAb = DateTime.Now.AddYears(-1),
                                 ModulnameDE = "Projektmanagement",
                                 ModulnameEN = "Project Management",
                                 EmpfohlenesSemester = 4,
@@ -171,6 +180,8 @@ namespace Modulverwaltungssoftware.Services
                                 {
                                     new ModulVersion
                                     {
+                                        Versionsnummer = 1,
+                                        ModulStatus = ModulVersion.Status.Freigegeben,
                                         GueltigAbSemester = "SoSe 24",
                                         EctsPunkte = 5,
                                         WorkloadPraesenz = 30, WorkloadSelbststudium = 120,
@@ -183,6 +194,7 @@ namespace Modulverwaltungssoftware.Services
                             },
                             new Modul
                             {
+                                GueltigAb = DateTime.Now.AddYears(-1),
                                 ModulnameDE = "Programming Basics",
                                 ModulnameEN = "Programming Basics",
                                 EmpfohlenesSemester = 1,
@@ -193,6 +205,8 @@ namespace Modulverwaltungssoftware.Services
                                 {
                                     new ModulVersion
                                     {
+                                        Versionsnummer = 1,
+                                        ModulStatus = ModulVersion.Status.Freigegeben,
                                         GueltigAbSemester = "WiSe 2425",
                                         EctsPunkte = 5,
                                         WorkloadPraesenz = 60, WorkloadSelbststudium = 90,
@@ -205,6 +219,7 @@ namespace Modulverwaltungssoftware.Services
                             },
                             new Modul
                             {
+                                GueltigAb = DateTime.Now.AddMonths(-6),
                                 ModulnameDE = "Rechnungswesen 2",
                                 EmpfohlenesSemester = 2,
                                 DauerInSemestern = 1,
@@ -214,6 +229,8 @@ namespace Modulverwaltungssoftware.Services
                                 {
                                     new ModulVersion
                                     {
+                                        Versionsnummer = 1,
+                                        ModulStatus = ModulVersion.Status.Freigegeben,
                                         GueltigAbSemester = "SoSe 21",
                                         EctsPunkte = 5,
                                         WorkloadPraesenz = 90, WorkloadSelbststudium = 60,
@@ -235,6 +252,8 @@ namespace Modulverwaltungssoftware.Services
                                 {
                                     new ModulVersion
                                     {
+                                        Versionsnummer = 1,
+                                        ModulStatus = ModulVersion.Status.Freigegeben,
                                         GueltigAbSemester = "SoSe 15",
                                         EctsPunkte = 10,
                                         WorkloadPraesenz = 200, WorkloadSelbststudium = 100,
@@ -245,7 +264,7 @@ namespace Modulverwaltungssoftware.Services
                                     }
                                 }
                             },
-                            new Modul // hier weitermachen
+                            new Modul
                             {
                                 ModulnameDE = "Einführung in die Pyrotechnik",
                                 ModulnameEN = "Pyrotechnics I",
@@ -257,6 +276,8 @@ namespace Modulverwaltungssoftware.Services
                                 {
                                     new ModulVersion
                                     {
+                                        Versionsnummer = 1,
+                                        ModulStatus = ModulVersion.Status.Aenderungsbedarf,
                                         GueltigAbSemester = "WiSe 2526",
                                         EctsPunkte = 5,
                                         WorkloadPraesenz = 60, WorkloadSelbststudium = 90,
@@ -278,6 +299,7 @@ namespace Modulverwaltungssoftware.Services
 
                             new Modul
                             {
+                                GueltigAb = DateTime.Now.AddMonths(-30),
                                 ModulnameDE = "Cooking Basics",
                                 ModulnameEN = "Cooking Basics",
                                 EmpfohlenesSemester = 1,
@@ -288,6 +310,8 @@ namespace Modulverwaltungssoftware.Services
                                 {
                                     new ModulVersion
                                     {
+                                        Versionsnummer = 1,
+                                        ModulStatus = ModulVersion.Status.Freigegeben,
                                         GueltigAbSemester = "SoSe 23",
                                         EctsPunkte = 5,
                                         WorkloadPraesenz = 30, WorkloadSelbststudium = 120,
@@ -300,6 +324,7 @@ namespace Modulverwaltungssoftware.Services
                             },
                             new Modul
                             {
+                                GueltigAb = DateTime.Now.AddYears(-1),
                                 ModulnameDE = "IT-Recht",
                                 ModulnameEN = "IT-Law",
                                 EmpfohlenesSemester = 4,
@@ -310,6 +335,8 @@ namespace Modulverwaltungssoftware.Services
                                 {
                                     new ModulVersion
                                     {
+                                        Versionsnummer = 1,
+                                        ModulStatus = ModulVersion.Status.Freigegeben,
                                         GueltigAbSemester = "WiSe 2425",
                                         EctsPunkte = 5,
                                         WorkloadPraesenz = 30, WorkloadSelbststudium = 120,
@@ -340,6 +367,8 @@ namespace Modulverwaltungssoftware.Services
                                 {
                                     new ModulVersion
                                     {
+                                        Versionsnummer = 1,
+                                        ModulStatus = ModulVersion.Status.Aenderungsbedarf,
                                         GueltigAbSemester = "SoSe 21",
                                         EctsPunkte = 5,
                                         WorkloadPraesenz = 30, WorkloadSelbststudium = 120,
@@ -370,6 +399,8 @@ namespace Modulverwaltungssoftware.Services
                                 {
                                     new ModulVersion
                                     {
+                                        Versionsnummer = 1,
+                                        ModulStatus = ModulVersion.Status.Freigegeben,
                                         GueltigAbSemester = "WiSe 1819",
                                         EctsPunkte = 5,
                                         WorkloadPraesenz = 60, WorkloadSelbststudium = 90,
@@ -409,7 +440,7 @@ namespace Modulverwaltungssoftware.Services
                         {
                             var kommentare = new List<Kommentar>
     {
-        // Kommentar 1: Zu Software Engineering (Aktuelle Version)
+        // Kommentar 1: Zu Software Engineering
         new Kommentar
         {
             Text = "Rückgabe zur Überarbeitung (Koordination): Die angegebene Literaturliste ist veraltet " +
@@ -422,7 +453,7 @@ namespace Modulverwaltungssoftware.Services
             GehoertZuModulVersionID = seModul.ModulVersionen.Last().ModulVersionID
         },
 
-        // Kommentar 2: Zu Thermodynamik (Warnung an andere Studenten)
+        // Kommentar 2: Zu Thermodynamik
         new Kommentar
         {
             Text = "Abgelehnt durch das Gremium: Die Prüfungsdichte im 2. Semester ist bereits sehr hoch. " +
@@ -435,7 +466,7 @@ namespace Modulverwaltungssoftware.Services
             GehoertZuModulVersionID = thermoModul.ModulVersionen.First().ModulVersionID
         },
 
-        // Kommentar 3: Zu Pyrotechnik (Begeisterung)
+        // Kommentar 3: Zu Pyrotechnik
         new Kommentar
         {
             Text = "Rückgabe (Koordination): Das Modul kann in dieser Form nicht angeboten werden. " +
@@ -457,6 +488,122 @@ namespace Modulverwaltungssoftware.Services
                         {
                             Console.WriteLine("WARNUNG: Konnte Module für Kommentare nicht finden (Namen prüfen!).");
                         }
+
+                        var seedBenachrichtigungen = new List<Benachrichtigung>
+{
+    // --- GAST (Allgemeine Infos) ---
+    new Benachrichtigung
+    {
+        Empfaenger = "Gast",
+        Sender = "System",
+        Nachricht = "Willkommen im Modul-Management-System. Sie haben Lesezugriff auf alle veröffentlichten Module.",
+        GesendetAm = DateTime.Now.AddDays(-5),
+        Gelesen = true, // Schon gelesen
+        BetroffeneModulVersionID = null
+    },
+    new Benachrichtigung
+    {
+        Empfaenger = "Gast",
+        Sender = "IT-Support",
+        Nachricht = "Wartungsarbeiten: Das System ist am Sonntag zwischen 02:00 und 04:00 Uhr nicht erreichbar.",
+        GesendetAm = DateTime.Now.AddHours(-2),
+        Gelesen = false,
+        BetroffeneModulVersionID = null
+    },
+
+    // --- DOZENT (Handlungsbedarf & Feedback) ---
+    new Benachrichtigung
+    {
+        Empfaenger = "Dozent",
+        Sender = "Koordination",
+        Nachricht = "Ihr Modul 'Mathe I' wurde zur Überarbeitung zurückgegeben. Bitte prüfen Sie die ECTS-Verteilung.",
+        GesendetAm = DateTime.Now.AddHours(-24),
+        Gelesen = false,
+        BetroffeneModulVersionID = 1 // Annahme: Es gibt eine Version 1
+    },
+    new Benachrichtigung
+    {
+        Empfaenger = "Dozent",
+        Sender = "System",
+        Nachricht = "Erinnerung: Die Einreichungsfrist für das kommende Semester endet in 3 Tagen.",
+        GesendetAm = DateTime.Now.AddHours(-1),
+        Gelesen = false,
+        BetroffeneModulVersionID = null
+    },
+    new Benachrichtigung
+    {
+        Empfaenger = "Dozent",
+        Sender = "Gremium",
+        Nachricht = "Glückwunsch! Ihr Modul 'Informatik Grundlagen' wurde ohne Änderungen genehmigt.",
+        GesendetAm = DateTime.Now.AddDays(-2),
+        Gelesen = true,
+        BetroffeneModulVersionID = 5 // Annahme: Version 5 existiert
+    },
+
+    // --- KOORDINATION (Prüfungsaufgaben) ---
+    new Benachrichtigung
+    {
+        Empfaenger = "Koordination",
+        Sender = "System",
+        Nachricht = "Neues Modul eingereicht: 'Fortgeschrittene Algorithmen' wartet auf formale Prüfung.",
+        GesendetAm = DateTime.Now.AddMinutes(-30),
+        Gelesen = false,
+        BetroffeneModulVersionID = 12
+    },
+    new Benachrichtigung
+    {
+        Empfaenger = "Koordination",
+        Sender = "Dozent",
+        Nachricht = "Ich habe die Änderungen an 'Physik II' vorgenommen. Können Sie kurz drüberschauen?",
+        GesendetAm = DateTime.Now.AddHours(-5),
+        Gelesen = false,
+        BetroffeneModulVersionID = 8
+    },
+
+    // --- GREMIUM (Entscheidungen) ---
+    new Benachrichtigung
+    {
+        Empfaenger = "Gremium",
+        Sender = "Koordination",
+        Nachricht = "Agenda für nächste Sitzung: 5 Module stehen zur finalen Genehmigung bereit.",
+        GesendetAm = DateTime.Now.AddDays(-1),
+        Gelesen = false,
+        BetroffeneModulVersionID = null
+    },
+    new Benachrichtigung
+    {
+        Empfaenger = "Gremium",
+        Sender = "Dekan",
+        Nachricht = "Bitte beachten Sie die neue Prüfungsordnung bei der Genehmigung von Master-Modulen.",
+        GesendetAm = DateTime.Now.AddDays(-7),
+        Gelesen = true, // Alte Info
+        BetroffeneModulVersionID = null
+    },
+
+    // --- ADMIN (Systemstatus) ---
+    new Benachrichtigung
+    {
+        Empfaenger = "Admin",
+        Sender = "System",
+        Nachricht = "Datenbank-Backup erfolgreich erstellt.",
+        GesendetAm = DateTime.Now.AddHours(-12),
+        Gelesen = false,
+        BetroffeneModulVersionID = null
+    },
+    new Benachrichtigung
+    {
+        Empfaenger = "Admin",
+        Sender = "System",
+        Nachricht = "Warnung: Hohe Serverlast festgestellt. Performance könnte beeinträchtigt sein.",
+        GesendetAm = DateTime.Now.AddMinutes(-10),
+        Gelesen = false,
+        BetroffeneModulVersionID = null
+    }
+};
+
+                        // Speichern in die DB
+                        db.Benachrichtigung.AddRange(seedBenachrichtigungen);
+                        db.SaveChanges();
 
                         transaction.Commit(); // Transaktion bestätigen
 

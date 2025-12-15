@@ -184,11 +184,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Migrations\202512150846493_InitialeErstellung.cs" />
-    <Compile Include="Migrations\202512150846493_InitialeErstellung.Designer.cs">
-      <DependentUpon>202512150846493_InitialeErstellung.cs</DependentUpon>
+    <Compile Include="Migrations\202512151512186_BenachrichtigungImplementiert.cs" />
+    <Compile Include="Migrations\202512151512186_BenachrichtigungImplementiert.Designer.cs">
+      <DependentUpon>202512151512186_BenachrichtigungImplementiert.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Models\Benachrichtigung.cs" />
     <Compile Include="Models\Benutzer.cs" />
     <Compile Include="Models\Kommentar.cs" />
     <Compile Include="Models\Modul.cs" />
@@ -232,8 +233,8 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <EmbeddedResource Include="Migrations\202512150846493_InitialeErstellung.resx">
-      <DependentUpon>202512150846493_InitialeErstellung.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\202512151512186_BenachrichtigungImplementiert.resx">
+      <DependentUpon>202512151512186_BenachrichtigungImplementiert.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

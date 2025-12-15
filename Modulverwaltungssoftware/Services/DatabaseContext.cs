@@ -1,7 +1,5 @@
-﻿using System.Data.Entity;
-using System.Data.Entity.Core.Common;
-using System.Data.SQLite;
-using System.Data.SQLite.EF6;
+﻿using Modulverwaltungssoftware.Models;
+using System.Data.Entity;
 
 namespace Modulverwaltungssoftware.Services
 {
@@ -15,5 +13,6 @@ namespace Modulverwaltungssoftware.Services
         public DbSet<Modul> Modul { get; set; }
         public DbSet<ModulVersion> ModulVersion { get; set; }
         public DbSet<Studiengang> Studiengang { get; set; }
+        public DbSet<Benachrichtigung> Benachrichtigung { get; set; }
     }
 }

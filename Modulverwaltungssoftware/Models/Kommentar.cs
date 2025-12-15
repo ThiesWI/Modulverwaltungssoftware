@@ -15,5 +15,20 @@ namespace Modulverwaltungssoftware
         public int GehoertZuModulVersionID { get; set; }
         [Required]
         public int GehoertZuModulID { get; set; }
+        public static void addKommentar(int modulID, int modulVersionID, string text)
+        {
+            using (var db = new Services.DatabaseContext())
+            {
+                Kommentar neuerKommentar = new Kommentar
+                {
+                    Text = text,
+                    ErstellungsDatum = DateTime.Now,
+                    GehoertZuModulID = modulID,
+                    GehoertZuModulVersionID = modulVersionID
+                };
+                db.Kommentar.Add(neuerKommentar);
+                db.SaveChanges();
+            }
+        }
     }
 }

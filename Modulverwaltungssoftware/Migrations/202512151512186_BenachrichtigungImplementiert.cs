@@ -3,10 +3,24 @@
     using System;
     using System.Data.Entity.Migrations;
     
-    public partial class InitialeErstellung : DbMigration
+    public partial class BenachrichtigungImplementiert : DbMigration
     {
         public override void Up()
         {
+            CreateTable(
+                "dbo.Benachrichtigungs",
+                c => new
+                    {
+                        BenachrichtigungsID = c.Int(nullable: false, identity: true),
+                        Empfaenger = c.String(nullable: false, maxLength: 2147483647),
+                        Sender = c.String(nullable: false, maxLength: 2147483647),
+                        Nachricht = c.String(nullable: false, maxLength: 2147483647),
+                        GesendetAm = c.DateTime(nullable: false),
+                        Gelesen = c.Boolean(nullable: false),
+                        BetroffeneModulVersionID = c.Int(),
+                    })
+                .PrimaryKey(t => t.BenachrichtigungsID);
+            
             CreateTable(
                 "dbo.Benutzers",
                 c => new
@@ -39,6 +53,7 @@
                         ModulnameDE = c.String(nullable: false, maxLength: 200),
                         ModulnameEN = c.String(maxLength: 200),
                         EmpfohlenesSemester = c.Int(nullable: false),
+                        GueltigAb = c.DateTime(nullable: false),
                         DauerInSemestern = c.Int(nullable: false),
                         VoraussetzungenDb = c.String(maxLength: 4000),
                     })
@@ -50,20 +65,21 @@
                     {
                         ModulVersionID = c.Int(nullable: false, identity: true),
                         ModulId = c.Int(nullable: false),
+                        Versionsnummer = c.Int(nullable: false),
                         GueltigAbSemester = c.String(nullable: false, maxLength: 25),
+                        ModulStatus = c.Int(nullable: false),
+                        LetzteAenderung = c.DateTime(nullable: false),
                         WorkloadPraesenz = c.Int(nullable: false),
                         WorkloadSelbststudium = c.Int(nullable: false),
                         EctsPunkte = c.Int(nullable: false),
                         Pruefungsform = c.String(nullable: false, maxLength: 100),
+                        Ersteller = c.String(maxLength: 2147483647),
                         LernergebnisseDb = c.String(nullable: false, maxLength: 4000),
                         InhaltsgliederungDb = c.String(nullable: false, maxLength: 4000),
-                        Ersteller_BenutzerID = c.Int(),
                     })
                 .PrimaryKey(t => t.ModulVersionID)
-                .ForeignKey("dbo.Benutzers", t => t.Ersteller_BenutzerID)
                 .ForeignKey("dbo.Moduls", t => t.ModulId, cascadeDelete: true)
-                .Index(t => t.ModulId)
-                .Index(t => t.Ersteller_BenutzerID);
+                .Index(t => t.ModulId);
             
             CreateTable(
                 "dbo.Studiengangs",
@@ -72,30 +88,25 @@
                         StudiengangID = c.Int(nullable: false, identity: true),
                         Kuerzel = c.String(nullable: false, maxLength: 20),
                         NameDE = c.String(nullable: false, maxLength: 200),
-                        NameEN = c.String(maxLength: 2147483647),
+                        NameEN = c.String(maxLength: 200),
                         GesamtECTS = c.Int(nullable: false),
                         GueltigAb = c.DateTime(nullable: false),
-                        Verantwortlicher_BenutzerID = c.Int(),
+                        Verantwortlicher = c.String(maxLength: 2147483647),
                     })
-                .PrimaryKey(t => t.StudiengangID)
-                .ForeignKey("dbo.Benutzers", t => t.Verantwortlicher_BenutzerID)
-                .Index(t => t.Verantwortlicher_BenutzerID);
+                .PrimaryKey(t => t.StudiengangID);
             
         }
         
         public override void Down()
         {
-            DropForeignKey("dbo.Studiengangs", "Verantwortlicher_BenutzerID", "dbo.Benutzers");
             DropForeignKey("dbo.ModulVersions", "ModulId", "dbo.Moduls");
-            DropForeignKey("dbo.ModulVersions", "Ersteller_BenutzerID", "dbo.Benutzers");
-            DropIndex("dbo.Studiengangs", new[] { "Verantwortlicher_BenutzerID" });
-            DropIndex("dbo.ModulVersions", new[] { "Ersteller_BenutzerID" });
             DropIndex("dbo.ModulVersions", new[] { "ModulId" });
             DropTable("dbo.Studiengangs");
             DropTable("dbo.ModulVersions");
             DropTable("dbo.Moduls");
             DropTable("dbo.Kommentars");
             DropTable("dbo.Benutzers");
+            DropTable("dbo.Benachrichtigungs");
         }
     }
 }
