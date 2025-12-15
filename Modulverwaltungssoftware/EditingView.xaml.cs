@@ -20,11 +20,13 @@ namespace Modulverwaltungssoftware
     /// </summary>
     public partial class EditingView : Page
     {
+        private ScrollViewer _contentScrollViewer;
         public string SelectedVersion { get; }
 
         public EditingView()
         {
             InitializeComponent();
+            _contentScrollViewer = FindName("ContentScrollViewer") as ScrollViewer;
         }
 
         public EditingView(string selectedVersion) : this()
@@ -56,7 +58,15 @@ namespace Modulverwaltungssoftware
             // Bei Nein passiert nichts, der Entwurf bleibt bestehen
         }
 
-        
-    
+        protected override void OnPreviewMouseWheel(MouseWheelEventArgs e)
+        {
+            base.OnPreviewMouseWheel(e);
+            // Ensure scroll always works regardless of mouse focus
+            if (_contentScrollViewer != null)
+            {
+                _contentScrollViewer.ScrollToVerticalOffset(_contentScrollViewer.VerticalOffset - e.Delta);
+                e.Handled = true;
+            }
+        }
     }
 }

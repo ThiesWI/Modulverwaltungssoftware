@@ -15,9 +15,6 @@ using System.Windows.Shapes;
 
 namespace Modulverwaltungssoftware
 {
-    /// <summary>
-    /// Interaktionslogik für ModulView.xaml
-    /// </summary>
     public partial class ModulView : Page
     {
         public System.Collections.ObjectModel.ObservableCollection<string> Versions { get; } =
@@ -97,7 +94,20 @@ namespace Modulverwaltungssoftware
 
         private void ModulversionEinreichen_Click(object sender, RoutedEventArgs e)
         {
-            // Bestätigungsmeldung zur Einreichung
+            // Bestätigung vor dem Einreichen
+            var result = MessageBox.Show(
+                "Soll die aktuelle Modulversion wirklich zur Koordination eingereicht werden?",
+                "Einreichung bestätigen",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result != MessageBoxResult.Yes)
+            {
+                // Bei Nein: nichts tun
+                return;
+            }
+
+            // Einreichung durchführen
             string version = "ausgewählte Version"; // Optional: mit tatsächlicher Auswahl ersetzen
             MessageBox.Show($"Die {version} wurde erfolgreich eingereicht.",
                 "Einreichung", MessageBoxButton.OK, MessageBoxImage.Information);
