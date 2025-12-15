@@ -12,11 +12,10 @@
                 c => new
                     {
                         BenutzerID = c.Int(nullable: false, identity: true),
-                        Name = c.String(maxLength: 2147483647),
-                        Email = c.String(maxLength: 2147483647),
-                        Passwort = c.String(maxLength: 2147483647),
-                        RollenName = c.String(maxLength: 2147483647),
-                        AktuellerBenutzer = c.Int(nullable: false),
+                        Name = c.String(nullable: false, maxLength: 100),
+                        Email = c.String(nullable: false, maxLength: 255),
+                        Passwort = c.String(nullable: false, maxLength: 55),
+                        RollenName = c.String(nullable: false, maxLength: 50),
                     })
                 .PrimaryKey(t => t.BenutzerID);
             
@@ -25,8 +24,8 @@
                 c => new
                     {
                         KommentarID = c.Int(nullable: false, identity: true),
-                        Text = c.String(maxLength: 2147483647),
-                        ErstellungsDatum = c.DateTime(nullable: false),
+                        Text = c.String(nullable: false, maxLength: 2147483647),
+                        ErstellungsDatum = c.DateTime(),
                         GehoertZuModulVersionID = c.Int(nullable: false),
                         GehoertZuModulID = c.Int(nullable: false),
                     })
@@ -37,11 +36,11 @@
                 c => new
                     {
                         ModulID = c.Int(nullable: false, identity: true),
-                        ModulnameDE = c.String(maxLength: 2147483647),
-                        ModulnameEN = c.String(maxLength: 2147483647),
+                        ModulnameDE = c.String(nullable: false, maxLength: 200),
+                        ModulnameEN = c.String(maxLength: 200),
                         EmpfohlenesSemester = c.Int(nullable: false),
                         DauerInSemestern = c.Int(nullable: false),
-                        VoraussetzungenDb = c.String(maxLength: 2147483647),
+                        VoraussetzungenDb = c.String(maxLength: 4000),
                     })
                 .PrimaryKey(t => t.ModulID);
             
@@ -51,13 +50,13 @@
                     {
                         ModulVersionID = c.Int(nullable: false, identity: true),
                         ModulId = c.Int(nullable: false),
-                        GueltigAbSemester = c.String(maxLength: 2147483647),
+                        GueltigAbSemester = c.String(nullable: false, maxLength: 25),
                         WorkloadPraesenz = c.Int(nullable: false),
                         WorkloadSelbststudium = c.Int(nullable: false),
                         EctsPunkte = c.Int(nullable: false),
-                        Pruefungsform = c.String(maxLength: 2147483647),
-                        LernergebnisseDb = c.String(maxLength: 2147483647),
-                        InhaltsgliederungDb = c.String(maxLength: 2147483647),
+                        Pruefungsform = c.String(nullable: false, maxLength: 100),
+                        LernergebnisseDb = c.String(nullable: false, maxLength: 4000),
+                        InhaltsgliederungDb = c.String(nullable: false, maxLength: 4000),
                         Ersteller_BenutzerID = c.Int(),
                     })
                 .PrimaryKey(t => t.ModulVersionID)
@@ -71,8 +70,8 @@
                 c => new
                     {
                         StudiengangID = c.Int(nullable: false, identity: true),
-                        Kuerzel = c.String(maxLength: 2147483647),
-                        NameDE = c.String(maxLength: 2147483647),
+                        Kuerzel = c.String(nullable: false, maxLength: 20),
+                        NameDE = c.String(nullable: false, maxLength: 200),
                         NameEN = c.String(maxLength: 2147483647),
                         GesamtECTS = c.Int(nullable: false),
                         GueltigAb = c.DateTime(nullable: false),

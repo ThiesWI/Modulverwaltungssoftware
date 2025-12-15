@@ -4,11 +4,11 @@
     {
         public string Login(string benutzername, string passwort) // DB einbinden
         {
-            if (benutzername == "admin" && passwort == "admin123")
+            if (benutzername == "Admin" && passwort == "admin123")
             {
                 return "99";
             }
-            if (benutzername == "Gast" && passwort == "")
+            if (benutzername == "Gast" && passwort == "gast123")
             {
                 return "0";
             }

@@ -13,7 +13,7 @@ namespace Modulverwaltungssoftware.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "202512142240500_InitialeErstellung"; }
+            get { return "202512150846493_InitialeErstellung"; }
         }
         
         string IMigrationMetadata.Source
