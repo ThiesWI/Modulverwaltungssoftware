@@ -18,7 +18,7 @@
                 <TextBlock Text="Passwort" Margin="0,0,0,5"/>
                 <PasswordBox x:Name="PasswordBox" Height="28" Margin="0,0,0,25" VerticalContentAlignment="Center"/>
 
-                <Button x:Name="LoginButton" Content="Login" Height="32" Width="100" HorizontalAlignment="Center" Click="LoginButton_Click"/>
+                <Button x:Name="LoginButton" Content="Login" Height="32" Width="100" HorizontalAlignment="Center" Click="LoginButton_Click" Cursor="Hand"/>
             </StackPanel>
         </Border>
     </Grid>

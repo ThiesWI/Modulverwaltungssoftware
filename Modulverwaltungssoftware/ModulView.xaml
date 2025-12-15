@@ -21,7 +21,7 @@
             <StackPanel Grid.Column="0" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="10,0,0,0">
                 <Menu VerticalAlignment="Top" HorizontalAlignment="Left" Margin="0,0,0,10">
                     <!-- Dynamische Untereinträge über ItemsSource gebunden -->
-                    <MenuItem Header="Version auswählen" Width="110" ItemsSource="{Binding Versions}">
+                    <MenuItem Header="Version auswählen" Width="110" ItemsSource="{Binding Versions}" FontWeight="SemiBold" Cursor="Hand">
                         <MenuItem.ItemContainerStyle>
                             <Style TargetType="MenuItem">
                                 <!-- Header zeigt den Versionsnamen -->

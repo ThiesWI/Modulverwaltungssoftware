@@ -24,15 +24,42 @@
 
             <!-- Mittlerer Bereich: Suchleiste und Anzeige -->
             <StackPanel Grid.Column="1" VerticalAlignment="Top" Margin="20,0,20,0">
-                <TextBox x:Name="SearchBox" Height="32" Margin="0,0,0,0" VerticalContentAlignment="Center" FontSize="14" ToolTip="TEST" ContentElement.GiveFeedback="SearchBox_GiveFeedback"/>
-                <ScrollViewer Height="270">
-                    <StackPanel x:Name="SearchResultsPanel">
-                        <!-- Hier können dynamisch Suchergebnisse eingefügt werden -->
-                        <ListBox x:Name="SearchResultsList" Height="270" Margin="0,0,0,0">
-                            <ListBoxItem Content="Suchergebnis 1" />
-                            <ListBoxItem Content="Suchergebnis 2" />
-                        </ListBox>
-                    </StackPanel>
+                <TextBox x:Name="SearchBox" Height="32" Margin="0,0,0,0" VerticalContentAlignment="Center" FontSize="14" ToolTip="Suche" ContentElement.GiveFeedback="SearchBox_GiveFeedback"/>
+                <ScrollViewer Height="270" VerticalScrollBarVisibility="Visible">
+                    <ItemsControl x:Name="ModulePreviewList" ItemsSource="{Binding ModulePreviews}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Click="ModulePreview_Click" Padding="8" Margin="0,6,0,0" Background="Transparent" BorderThickness="1" BorderBrush="#DDD" HorizontalContentAlignment="Left">
+                                    <StackPanel>
+                                        <Grid Margin="0,0,0,4">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <!-- Block 1: Titel -->
+                                            <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left">
+                                                <TextBlock Text="Titel: " FontWeight="Bold"/>
+                                                <TextBlock Text="{Binding Title}" Margin="6,0,0,0" TextTrimming="CharacterEllipsis"/>
+                                            </StackPanel>
+                                            <!-- Block 2: Studiengang -->
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left">
+                                                <TextBlock Text="Studiengang: " FontWeight="Bold"/>
+                                                <TextBlock Text="{Binding Studiengang}" Margin="6,0,0,0" TextTrimming="CharacterEllipsis"/>
+                                            </StackPanel>
+                                            <!-- Block 3: Version -->
+                                            <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Left">
+                                                <TextBlock Text="Version: " FontWeight="Bold"/>
+                                                <TextBlock Text="{Binding Version}" Margin="6,0,0,0" TextTrimming="CharacterEllipsis"/>
+                                            </StackPanel>
+                                        </Grid>
+                                        <!-- Platz für Inhaltsvorschau (variabel einfügbar) -->
+                                        <TextBlock Text="{Binding ContentPreview}" TextWrapping="Wrap" FontSize="12"/>
+                                    </StackPanel>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </ScrollViewer>
             </StackPanel>
 
