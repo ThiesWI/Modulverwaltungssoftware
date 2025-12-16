@@ -36,9 +36,24 @@ namespace Modulverwaltungssoftware
 
         private void EntwurfSpeichern_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Entwurf wurde gespeichert (Button gedrückt).", "Bestätigung", MessageBoxButton.OK, MessageBoxImage.Information);
+            // Validierung vor dem Speichern
+            if (string.IsNullOrWhiteSpace(TitelTextBox.Text))
+            {
+                MessageBox.Show("Bitte Titel eingeben.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            if (string.IsNullOrWhiteSpace(EctsTextBox.Text) || !int.TryParse(EctsTextBox.Text, out _))
+            {
+                MessageBox.Show("Bitte gültige ECTS-Punktzahl eingeben.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            // TODO: Weitere Validierungen (z.B. Workload, Verantwortlicher)
+
+            // TODO: Speicherlogik implementieren (Datenbank, Repository)
+            MessageBox.Show("Entwurf wurde gespeichert.", "Bestätigung", MessageBoxButton.OK, MessageBoxImage.Information);
 
             // Nach dem Speichern zur ModulView wechseln
+            // TODO: ModuleID übergeben, sobald ModulView einen Konstruktor dafür hat
             this.NavigationService?.Navigate(new ModulView());
         }
 

@@ -26,7 +26,7 @@
                 <RowDefinition Height="*"/>
               </Grid.RowDefinitions>
 
-              <TextBox x:Name="SearchBox" Grid.Row="0" Height="32" Width="500" VerticalContentAlignment="Center" FontSize="14"/>
+              <TextBox x:Name="SearchBox" Grid.Row="0" Height="32" Width="500" VerticalContentAlignment="Center" FontSize="14" ToolTip="Suchfunktion (noch nicht implementiert)"/>
 
               <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" HorizontalAlignment="Center"
                       Margin="0,0,0,15" Width="{Binding ElementName=SearchBox, Path=ActualWidth}">
@@ -42,7 +42,17 @@
                       <TextBox x:Name="TitelTextBox" Height="24"
                                TextWrapping="NoWrap"
                                HorizontalScrollBarVisibility="Disabled"
-                               MaxLength="100"/>
+                               MaxLength="100">
+                          <TextBox.Style>
+                              <Style TargetType="TextBox">
+                                  <Style.Triggers>
+                                      <Trigger Property="Validation.HasError" Value="True">
+                                          <Setter Property="BorderBrush" Value="Red"/>
+                                      </Trigger>
+                                  </Style.Triggers>
+                              </Style>
+                          </TextBox.Style>
+                      </TextBox>
                   </StackPanel>
                   <!-- modultyp -->
                   <StackPanel Margin="0,0,0,10">
@@ -129,7 +139,17 @@
                       <TextBox x:Name="VerantwortlicherTextBox" Height="24"
                                TextWrapping="NoWrap"
                                HorizontalScrollBarVisibility="Disabled"
-                               MaxLength="100"/>
+                               MaxLength="100">
+                          <TextBox.Style>
+                              <Style TargetType="TextBox">
+                                  <Style.Triggers>
+                                      <Trigger Property="Validation.HasError" Value="True">
+                                          <Setter Property="BorderBrush" Value="Red"/>
+                                      </Trigger>
+                                  </Style.Triggers>
+                              </Style>
+                          </TextBox.Style>
+                      </TextBox>
                   </StackPanel>
                   <!-- voraussetzungen -->
                   <StackPanel Margin="0,0,0,10">
@@ -140,7 +160,17 @@
                                TextWrapping="Wrap"
                                MinLines="4"
                                VerticalScrollBarVisibility="Auto"
-                               HorizontalScrollBarVisibility="Disabled"/>
+                               HorizontalScrollBarVisibility="Disabled">
+                          <TextBox.Style>
+                              <Style TargetType="TextBox">
+                                  <Style.Triggers>
+                                      <Trigger Property="Validation.HasError" Value="True">
+                                          <Setter Property="BorderBrush" Value="Red"/>
+                                      </Trigger>
+                                  </Style.Triggers>
+                              </Style>
+                          </TextBox.Style>
+                      </TextBox>
                   </StackPanel>
                   <!-- lernziele -->
                   <StackPanel Margin="0,0,0,10">
@@ -151,7 +181,17 @@
                                TextWrapping="Wrap"
                                MinLines="4"
                                VerticalScrollBarVisibility="Auto"
-                               HorizontalScrollBarVisibility="Disabled"/>
+                               HorizontalScrollBarVisibility="Disabled">
+                          <TextBox.Style>
+                              <Style TargetType="TextBox">
+                                  <Style.Triggers>
+                                      <Trigger Property="Validation.HasError" Value="True">
+                                          <Setter Property="BorderBrush" Value="Red"/>
+                                      </Trigger>
+                                  </Style.Triggers>
+                              </Style>
+                          </TextBox.Style>
+                      </TextBox>
                   </StackPanel>
                   <!-- lehrinhalte -->
                   <StackPanel Margin="0,0,0,10">
@@ -162,7 +202,17 @@
                                TextWrapping="Wrap"
                                MinLines="4"
                                VerticalScrollBarVisibility="Auto"
-                               HorizontalScrollBarVisibility="Disabled"/>
+                               HorizontalScrollBarVisibility="Disabled">
+                          <TextBox.Style>
+                              <Style TargetType="TextBox">
+                                  <Style.Triggers>
+                                      <Trigger Property="Validation.HasError" Value="True">
+                                          <Setter Property="BorderBrush" Value="Red"/>
+                                      </Trigger>
+                                  </Style.Triggers>
+                              </Style>
+                          </TextBox.Style>
+                      </TextBox>
                   </StackPanel>
                   <!-- literatur -->
                   <StackPanel Margin="0,0,0,10">
@@ -173,7 +223,17 @@
                                TextWrapping="Wrap"
                                MinLines="4"
                                VerticalScrollBarVisibility="Auto"
-                               HorizontalScrollBarVisibility="Disabled"/>
+                               HorizontalScrollBarVisibility="Disabled">
+                          <TextBox.Style>
+                              <Style TargetType="TextBox">
+                                  <Style.Triggers>
+                                      <Trigger Property="Validation.HasError" Value="True">
+                                          <Setter Property="BorderBrush" Value="Red"/>
+                                      </Trigger>
+                                  </Style.Triggers>
+                              </Style>
+                          </TextBox.Style>
+                      </TextBox>
                   </StackPanel>
                   </StackPanel>
                 </ScrollViewer>

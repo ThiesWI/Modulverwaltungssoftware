@@ -26,21 +26,54 @@ namespace Modulverwaltungssoftware
 
         private void LoginButton_Click(object sender, RoutedEventArgs e)
         {
-            string email = EmailTextBox.Text.Trim();
-            string password = PasswordBox.Password;
-
-            if (!string.IsNullOrEmpty(email) && !string.IsNullOrEmpty(password))
+            // Validierung
+            if (string.IsNullOrWhiteSpace(EmailTextBox.Text))
             {
-                // Login erfolgreich: LoginWindow schließen und MainWindow öffnen
-                MainWindow mainWindow = new MainWindow();
+                ShowError("Bitte E-Mail eingeben.");
+                return;
+            }
+            if (string.IsNullOrWhiteSpace(PasswordBox.Password))
+            {
+                ShowError("Bitte Passwort eingeben.");
+                return;
+            }
+
+            // Einfache E-Mail-Formatprüfung
+            if (!EmailTextBox.Text.Contains("@"))
+            {
+                ShowError("Ungültige E-Mail-Adresse.");
+                return;
+            }
+
+            // Fehler zurücksetzen
+            ErrorMessage.Visibility = Visibility.Collapsed;
+
+            // TODO: Authentifizierung (z.B. gegen DB oder Service)
+            // Beispiel (hart codiert):
+            if (EmailTextBox.Text == "test@test.de" && PasswordBox.Password == "1234")
+            {
+                var mainWindow = new MainWindow();
                 mainWindow.Show();
                 this.Close();
             }
             else
             {
-                // Fehlermeldung anzeigen
-                MessageBox.Show("Falsche Logindaten. Bitte überprüfen Sie Ihre Eingaben.", "Login fehlgeschlagen", MessageBoxButton.OK, MessageBoxImage.Error);
+                ShowError("Ungültige Anmeldedaten.");
             }
+        }
+
+        private void ShowError(string message)
+        {
+            ErrorMessage.Text = message;
+            ErrorMessage.Foreground = new SolidColorBrush(Colors.Red);
+            ErrorMessage.Visibility = Visibility.Visible;
+        }
+
+        private void ForgotPassword_Click(object sender, RoutedEventArgs e)
+        {
+            ErrorMessage.Text = "Bitte kontaktieren Sie die IT-Abteilung der Hochschule, um Ihr Passwort zurückzusetzen.";
+            ErrorMessage.Foreground = new SolidColorBrush(Colors.Blue);
+            ErrorMessage.Visibility = Visibility.Visible;
         }
     }
 }

@@ -25,15 +25,40 @@ namespace Modulverwaltungssoftware
         public System.Collections.ObjectModel.ObservableCollection<string> Projects { get; } =
             new System.Collections.ObjectModel.ObservableCollection<string>();
 
+        // Property für User-Info Anzeige (Platzhalter, später dynamisch)
+        public string UserInfo => "User: P. Brandenburg\nRolle: Modulersteller";
+
         public MainWindow()
         {
             InitializeComponent();
             // Set DataContext so bindings in XAML can resolve to this window
             this.DataContext = this;
 
+            // Popup beim Fenster-Deaktivieren schließen
+            this.Deactivated += (s, e) =>
+            {
+                if (ProjectsPopup != null) ProjectsPopup.IsOpen = false;
+            };
+
             // Beispielvariable: kann später durch reale Daten ersetzt werden
             var projektListe = new[] { "Projekt A", "Projekt B", "Projekt C" };
             UpdateProjects(projektListe);
+
+            // Initial navigation
+            MainFrame.Navigate(new StartPage());
+
+            // Dynamischer Titel & Navigation History löschen
+            MainFrame.Navigated += (s, e) =>
+            {
+                if (e.Content is Page page && !string.IsNullOrEmpty(page.Title))
+                    this.Title = $"Modulverwaltung – {page.Title}";
+                else
+                    this.Title = "Modulverwaltung";
+
+                // Navigation History löschen
+                while (MainFrame.CanGoBack)
+                    MainFrame.RemoveBackEntry();
+            };
         }
 
         // Aktualisiert die ObservableCollection mit den übergebenen Projektnamen
@@ -112,13 +137,28 @@ namespace Modulverwaltungssoftware
         }
 
         // Klick auf Popup-Item: zur ModulView navigieren
-        private void ProjectPopupItem_Click(object sender, MouseButtonEventArgs e)
+        private void ProjectPopupItem_Click(object sender, RoutedEventArgs e)
         {
             MainFrame.Navigate(new ModulView());
             var popup = this.FindName("ProjectsPopup") as System.Windows.Controls.Primitives.Popup;
             if (popup != null)
             {
                 popup.IsOpen = false;
+            }
+        }
+
+        private void NotificationButton_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Keine neuen Benachrichtigungen.", "Benachrichtigungen", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        // Tastatur-Unterstützung für Projekte-Dropdown (Enter/Space)
+        private void ProjectsButton_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter || e.Key == Key.Space)
+            {
+                ToggleProjectsPopup(sender, new RoutedEventArgs());
+                e.Handled = true;
             }
         }
 

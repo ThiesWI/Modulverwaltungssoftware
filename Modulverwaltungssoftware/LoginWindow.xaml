@@ -16,9 +16,19 @@
                 <TextBox x:Name="EmailTextBox" Height="28" Margin="0,0,0,15" VerticalContentAlignment="Center"/>
 
                 <TextBlock Text="Passwort" Margin="0,0,0,5"/>
-                <PasswordBox x:Name="PasswordBox" Height="28" Margin="0,0,0,25" VerticalContentAlignment="Center"/>
+                <PasswordBox x:Name="PasswordBox" Height="28" Margin="0,0,0,10" VerticalContentAlignment="Center"/>
 
-                <Button x:Name="LoginButton" Content="Login" Height="32" Width="100" HorizontalAlignment="Center" Click="LoginButton_Click" Cursor="Hand"/>
+                <!-- Fehlermeldung Platzhalter -->
+                <TextBlock x:Name="ErrorMessage" Foreground="Red" FontSize="12" Margin="0,0,0,15" TextWrapping="Wrap" HorizontalAlignment="Center" Visibility="Collapsed"/>
+
+                <Button x:Name="LoginButton" Content="Login" Height="32" Width="100" HorizontalAlignment="Center" Click="LoginButton_Click" IsDefault="True"/>
+                
+                <!-- Passwort vergessen Link -->
+                <TextBlock Margin="0,10,0,0" HorizontalAlignment="Center">
+                    <Hyperlink Click="ForgotPassword_Click" TextDecorations="None">
+                        <Run Text="Passwort vergessen?" FontSize="11" Foreground="#0066CC"/>
+                    </Hyperlink>
+                </TextBlock>
             </StackPanel>
         </Border>
     </Grid>

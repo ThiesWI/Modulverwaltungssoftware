@@ -17,20 +17,38 @@
                 <ColumnDefinition Width="120"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Linker Bereich: "Version auswaehlen" Dropdown-Menü -->
+            <!-- Linker Bereich: "Version auswählen" Dropdown-Menü -->
             <StackPanel Grid.Column="0" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="10,0,0,0">
-                <Menu VerticalAlignment="Top" HorizontalAlignment="Left" Margin="0,0,0,10">
-                    <!-- Dynamische Untereinträge über ItemsSource gebunden -->
-                    <MenuItem Header="Version auswählen" Width="110" ItemsSource="{Binding Versions}" FontWeight="SemiBold" Cursor="Hand">
-                        <MenuItem.ItemContainerStyle>
-                            <Style TargetType="MenuItem">
-                                <!-- Header zeigt den Versionsnamen -->
-                                <Setter Property="Header" Value="{Binding}"/>
-                                <EventSetter Event="Click" Handler="VersionMenuItem_Click"/>
-                            </Style>
-                        </MenuItem.ItemContainerStyle>
-                    </MenuItem>
-                </Menu>
+                <!-- Version auswählen als Dropdown mit Popup (gesamte Fläche klickbar) -->
+                <Border x:Name="VersionsBorder" Background="#E0E0E0" CornerRadius="5">
+                    <Button x:Name="VersionsButton" Click="ToggleVersionsPopup" Background="Transparent" BorderThickness="0" Padding="4" Width="113">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Version auswählen" FontWeight="Bold" VerticalAlignment="Center"/>
+                            <TextBlock Text=" ▾" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </Border>
+                <!-- Popup muss außerhalb des Border liegen, da Border nur ein Child zulässt -->
+                <Popup x:Name="VersionsPopup"
+                       PlacementTarget="{Binding ElementName=VersionsButton}"
+                       Placement="Bottom"
+                       StaysOpen="False"
+                       AllowsTransparency="True">
+                    <Border Background="White" BorderBrush="#CCC" BorderThickness="1" CornerRadius="4" Padding="0" Width="{Binding ElementName=VersionsBorder, Path=ActualWidth}">
+                        <ItemsControl ItemsSource="{Binding Versions}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Content="{Binding}" Click="VersionPopupItem_Click" Background="Transparent" BorderThickness="0" Padding="8,6" HorizontalContentAlignment="Left"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Border>
+                </Popup>
             </StackPanel>
 
             <!-- Mittlerer Bereich: Suchleiste und Anzeige -->
@@ -53,16 +71,19 @@
                             <StackPanel Margin="0,10,0,10">
                                 <TextBlock Text="Titel:" FontWeight="Bold"/>
                                 <TextBlock Text="Titel des Moduls" FontStyle="Italic" FontSize="11"/>
-                                <TextBox x:Name="TitelTextBox" Height="24"
-                   TextWrapping="NoWrap"
+                                <TextBox x:Name="TitelTextBox" Height="24" Width="440"
+                   TextWrapping="Wrap"
                    HorizontalScrollBarVisibility="Disabled"
-                   MaxLength="100"/>
+                   MaxLength="100"
+                   IsReadOnly="True" Background="#F5F5F5"
+                   HorizontalAlignment="Stretch"/>
                             </StackPanel>
                             <!-- modultyp -->
                             <StackPanel Margin="0,0,0,10">
                                 <TextBlock Text="Modultyp:" FontWeight="Bold"/>
                                 <TextBlock Text="Typ des Moduls" FontStyle="Italic" FontSize="11"/>
-                                <ListBox x:Name="ModultypListBox" SelectionMode="Multiple">
+                                <ListBox x:Name="ModultypListBox" SelectionMode="Multiple" IsEnabled="False" Background="#F5F5F5"
+                                         HorizontalAlignment="Stretch">
                                     <ListBoxItem Content="Pflichtmodul"/>
                                     <ListBoxItem Content="Wahlpflichtmodul"/>
                                     <ListBoxItem Content="Wahlmodul (Freies Wahlfach)"/>
@@ -74,13 +95,15 @@
                             <StackPanel Margin="0,0,0,10">
                                 <TextBlock Text="Studiengang:" FontWeight="Bold"/>
                                 <TextBlock Text="Empfohlener Studiengang" FontStyle="Italic" FontSize="11"/>
-                                <TextBox x:Name="StudiengangTextBox" Height="24"/>
+                                <TextBox x:Name="StudiengangTextBox" Height="24" Width="440" IsReadOnly="True" Background="#F5F5F5"
+                                         TextWrapping="Wrap" HorizontalAlignment="Stretch"/>
                             </StackPanel>
                             <!-- semester -->
                             <StackPanel Margin="0,0,0,10">
                                 <TextBlock Text="Semester:" FontWeight="Bold"/>
                                 <TextBlock Text="Empfohlenes Semester" FontStyle="Italic" FontSize="11"/>
-                                <ListBox x:Name="SemesterListBox" SelectionMode="Multiple">
+                                <ListBox x:Name="SemesterListBox" SelectionMode="Multiple" IsEnabled="False" Background="#F5F5F5"
+                                         HorizontalAlignment="Stretch">
                                     <ListBoxItem Content="1"/>
                                     <ListBoxItem Content="2"/>
                                     <ListBoxItem Content="3"/>
@@ -95,7 +118,8 @@
                             <StackPanel Margin="0,0,0,10">
                                 <TextBlock Text="Prüfungsform:" FontWeight="Bold"/>
                                 <TextBlock Text="Art der Prüfung" FontStyle="Italic" FontSize="11"/>
-                                <ListBox x:Name="PruefungsformListBox" SelectionMode="Multiple">
+                                <ListBox x:Name="PruefungsformListBox" SelectionMode="Multiple" IsEnabled="False" Background="#F5F5F5"
+                                         HorizontalAlignment="Stretch">
                                     <ListBoxItem Content="Klausur"/>
                                     <ListBoxItem Content="Mündliche Prüfung"/>
                                     <ListBoxItem Content="Hausarbeit (Seminararbeit)"/>
@@ -110,7 +134,8 @@
                             <StackPanel Margin="0,0,0,10">
                                 <TextBlock Text="Turnus:" FontWeight="Bold"/>
                                 <TextBlock Text="Angebotsrhythmus" FontStyle="Italic" FontSize="11"/>
-                                <ListBox x:Name="TurnusListBox" SelectionMode="Multiple">
+                                <ListBox x:Name="TurnusListBox" SelectionMode="Multiple" IsEnabled="False" Background="#F5F5F5"
+                                         HorizontalAlignment="Stretch">
                                     <ListBoxItem Content="Jährlich (WiSe)"/>
                                     <ListBoxItem Content="Jährlich (SoSe)"/>
                                     <ListBoxItem Content="Halbjährlich (Jedes Semester)"/>
@@ -122,72 +147,85 @@
                             <StackPanel Margin="0,0,0,10">
                                 <TextBlock Text="ECTS:" FontWeight="Bold"/>
                                 <TextBlock Text="Leistungspunkte" FontStyle="Italic" FontSize="11"/>
-                                <TextBox x:Name="EctsTextBox" Height="24"/>
+                                <TextBox x:Name="EctsTextBox" Height="24" Width="440" IsReadOnly="True" Background="#F5F5F5"
+                                         TextWrapping="Wrap" HorizontalAlignment="Stretch"/>
                             </StackPanel>
                             <!-- workloadPraesenz -->
                             <StackPanel Margin="0,0,0,10">
                                 <TextBlock Text="Workload Präsenz:" FontWeight="Bold"/>
                                 <TextBlock Text="Zeitaufwand in Präsenz (Stunden)" FontStyle="Italic" FontSize="11"/>
-                                <TextBox x:Name="WorkloadPraesenzTextBox" Height="24"/>
+                                <TextBox x:Name="WorkloadPraesenzTextBox" Height="24" Width="440" IsReadOnly="True" Background="#F5F5F5"
+                                         TextWrapping="Wrap" HorizontalAlignment="Stretch"/>
                             </StackPanel>
                             <!-- workloadSelbststudium -->
                             <StackPanel Margin="0,0,0,10">
                                 <TextBlock Text="Workload Selbststudium:" FontWeight="Bold"/>
                                 <TextBlock Text="Zeitaufwand im Selbststudium (Stunden)" FontStyle="Italic" FontSize="11"/>
-                                <TextBox x:Name="WorkloadSelbststudiumTextBox" Height="24"/>
+                                <TextBox x:Name="WorkloadSelbststudiumTextBox" Height="24" Width="440" IsReadOnly="True" Background="#F5F5F5"
+                                         TextWrapping="Wrap" HorizontalAlignment="Stretch"/>
                             </StackPanel>
                             <!-- verantwortlicher -->
                             <StackPanel Margin="0,0,0,10">
                                 <TextBlock Text="Verantwortlicher:" FontWeight="Bold"/>
                                 <TextBlock Text="Modulverantwortliche Person" FontStyle="Italic" FontSize="11"/>
-                                <TextBox x:Name="VerantwortlicherTextBox" Height="24"
-                   TextWrapping="NoWrap"
+                                <TextBox x:Name="VerantwortlicherTextBox" Height="24" Width="440"
+                   TextWrapping="Wrap"
                    HorizontalScrollBarVisibility="Disabled"
-                   MaxLength="100"/>
+                   MaxLength="100"
+                   IsReadOnly="True" Background="#F5F5F5"
+                   HorizontalAlignment="Stretch"/>
                             </StackPanel>
                             <!-- voraussetzungen -->
                             <StackPanel Margin="0,0,0,10">
                                 <TextBlock Text="Voraussetzungen:" FontWeight="Bold"/>
                                 <TextBlock Text="Erforderliche Vorkenntnisse oder Module" FontStyle="Italic" FontSize="11"/>
-                                <TextBox x:Name="VoraussetzungenTextBox"
+                                <TextBox x:Name="VoraussetzungenTextBox" Width="440"
                    AcceptsReturn="True"
                    TextWrapping="Wrap"
                    MinLines="4"
                    VerticalScrollBarVisibility="Auto"
-                   HorizontalScrollBarVisibility="Disabled"/>
+                   HorizontalScrollBarVisibility="Disabled"
+                   IsReadOnly="True" Background="#F5F5F5"
+                   HorizontalAlignment="Stretch"/>
                             </StackPanel>
                             <!-- lernziele -->
                             <StackPanel Margin="0,0,0,10">
                                 <TextBlock Text="Lernziele:" FontWeight="Bold"/>
                                 <TextBlock Text="Ziele, die Studierende erreichen sollen" FontStyle="Italic" FontSize="11"/>
-                                <TextBox x:Name="LernzieleTextBox"
+                                <TextBox x:Name="LernzieleTextBox" Width="440"
                    AcceptsReturn="True"
                    TextWrapping="Wrap"
                    MinLines="4"
                    VerticalScrollBarVisibility="Auto"
-                   HorizontalScrollBarVisibility="Disabled"/>
+                   HorizontalScrollBarVisibility="Disabled"
+                   IsReadOnly="True" Background="#F5F5F5"
+                   HorizontalAlignment="Stretch"/>
                             </StackPanel>
                             <!-- lehrinhalte -->
                             <StackPanel Margin="0,0,0,10">
                                 <TextBlock Text="Lehrinhalte:" FontWeight="Bold"/>
                                 <TextBlock Text="Inhalte des Moduls" FontStyle="Italic" FontSize="11"/>
-                                <TextBox x:Name="LehrinhalteTextBox"
+                                <TextBox x:Name="LehrinhalteTextBox" Width="440"
                    AcceptsReturn="True"
                    TextWrapping="Wrap"
                    MinLines="4"
                    VerticalScrollBarVisibility="Auto"
-                   HorizontalScrollBarVisibility="Disabled"/>
+                   HorizontalScrollBarVisibility="Disabled"
+                   IsReadOnly="True" Background="#F5F5F5"
+                   HorizontalAlignment="Stretch"/>
                             </StackPanel>
                             <!-- literatur -->
                             <StackPanel Margin="0,0,0,10">
                                 <TextBlock Text="Literatur:" FontWeight="Bold"/>
                                 <TextBlock Text="Empfohlene oder verpflichtende Literatur" FontStyle="Italic" FontSize="11"/>
-                                <TextBox x:Name="LiteraturTextBox"
+                                <TextBox x:Name="LiteraturTextBox" Width="440"
                    AcceptsReturn="True"
                    TextWrapping="Wrap"
                    MinLines="4"
                    VerticalScrollBarVisibility="Auto"
-                   HorizontalScrollBarVisibility="Disabled"/>
+                   HorizontalScrollBarVisibility="Disabled"
+                   IsReadOnly="True" Background="#F5F5F5"
+                   HorizontalAlignment="Stretch"/>
                             </StackPanel>
                         </StackPanel>
                     </ScrollViewer>
