@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,19 +20,15 @@ namespace Modulverwaltungssoftware
         public System.Collections.ObjectModel.ObservableCollection<string> Versions { get; } =
             new System.Collections.ObjectModel.ObservableCollection<string>();
 
-        // Platzhalter-Daten für Modulversionen
-        private Dictionary<string, ModuleData> _moduleVersions = new Dictionary<string, ModuleData>();
+        private string _currentVersion = null; // Aktuell geladene Version
 
         public ModulView()
         {
             InitializeComponent();
             this.DataContext = this;
 
-            // Platzhalter-Versionen erstellen
-            InitializePlaceholderData();
-
-            // Beispielhafte Initialisierung, später durch echte Daten ersetzen
-            var versions = new[] { "v1.0", "v1.1", "v2.0" };
+            // Versionen aus Repository laden
+            var versions = ModuleDataRepository.GetAllVersions();
             UpdateVersions(versions);
 
             // Initial erste Version laden
@@ -40,72 +36,27 @@ namespace Modulverwaltungssoftware
                 LoadModuleVersion(Versions[0]);
         }
 
-        private void InitializePlaceholderData()
+        // Konstruktor mit Versionsvorgabe (f�r Navigation aus EditingView)
+        public ModulView(string versionToLoad) : this()
         {
-            _moduleVersions["v1.0"] = new ModuleData
+            if (!string.IsNullOrEmpty(versionToLoad) && Versions.Contains(versionToLoad))
             {
-                Titel = "Softwareentwicklung Grundlagen",
-                Modultypen = new List<string> { "Pflichtmodul", "Grundlagenmodul" },
-                Studiengang = "Wirtschaftsinformatik",
-                Semester = new List<string> { "1", "2" },
-                Pruefungsformen = new List<string> { "Klausur", "Projektarbeit (Belegarbeit)" },
-                Turnus = new List<string> { "Halbjährlich (Jedes Semester)" },
-                Ects = 6,
-                WorkloadPraesenz = 60,
-                WorkloadSelbststudium = 120,
-                Verantwortlicher = "Prof. Dr. Müller",
-                Voraussetzungen = "Keine formalen Voraussetzungen, Grundkenntnisse in Programmierung von Vorteil.",
-                Lernziele = "Die Studierenden können objektorientierte Programmierkonzepte anwenden und eigenständig kleine Softwareprojekte umsetzen.",
-                Lehrinhalte = "Einführung in OOP, UML-Diagramme, Design Patterns, Versionskontrolle mit Git, Agile Methoden.",
-                Literatur = "Gamma et al.: Design Patterns (1994), Martin: Clean Code (2008)"
-            };
-
-            _moduleVersions["v1.1"] = new ModuleData
-            {
-                Titel = "Softwareentwicklung Grundlagen (überarbeitet)",
-                Modultypen = new List<string> { "Pflichtmodul" },
-                Studiengang = "Wirtschaftsinformatik, Angewandte Informatik",
-                Semester = new List<string> { "1" },
-                Pruefungsformen = new List<string> { "Klausur" },
-                Turnus = new List<string> { "Jährlich (WiSe)" },
-                Ects = 5,
-                WorkloadPraesenz = 45,
-                WorkloadSelbststudium = 105,
-                Verantwortlicher = "Prof. Dr. Müller, Dr. Schmidt",
-                Voraussetzungen = "Keine",
-                Lernziele = "Erweiterte OOP-Kenntnisse, TDD-Ansätze verstehen.",
-                Lehrinhalte = "OOP-Vertiefung, Test-Driven Development, Refactoring.",
-                Literatur = "Fowler: Refactoring (2018), Beck: TDD by Example (2002)"
-            };
-
-            _moduleVersions["v2.0"] = new ModuleData
-            {
-                Titel = "Advanced Software Engineering",
-                Modultypen = new List<string> { "Spezialisierungsmodul", "Wahlmodul (Freies Wahlfach)" },
-                Studiengang = "Master Wirtschaftsinformatik",
-                Semester = new List<string> { "3", "4" },
-                Pruefungsformen = new List<string> { "Hausarbeit (Seminararbeit)", "Präsentation" },
-                Turnus = new List<string> { "Jährlich (SoSe)" },
-                Ects = 8,
-                WorkloadPraesenz = 48,
-                WorkloadSelbststudium = 192,
-                Verantwortlicher = "Prof. Dr. Lange",
-                Voraussetzungen = "Abgeschlossenes Modul Softwareentwicklung Grundlagen, Kenntnisse in Java/C#.",
-                Lernziele = "Architekturen großer Systeme entwerfen, Microservices entwickeln, CI/CD implementieren.",
-                Lehrinhalte = "Architekturmuster, Microservices, Docker/Kubernetes, CI/CD-Pipelines, Cloud-Deployment.",
-                Literatur = "Newman: Building Microservices (2021), Fowler: Patterns of Enterprise Application Architecture (2002)"
-            };
+                LoadModuleVersion(versionToLoad);
+            }
         }
 
         private void LoadModuleVersion(string version)
         {
-            if (!_moduleVersions.ContainsKey(version))
+            // Daten aus Repository holen
+            var data = ModuleDataRepository.GetVersion(version);
+            if (data == null)
                 return;
 
-            var data = _moduleVersions[version];
+            _currentVersion = version; // Aktuell geladene Version merken
 
-            // Textfelder befüllen
+            // Textfelder bef�llen
             TitelTextBox.Text = data.Titel;
+            VersionTextBox.Text = version; // Version anzeigen
             StudiengangTextBox.Text = data.Studiengang;
             EctsTextBox.Text = data.Ects.ToString();
             WorkloadPraesenzTextBox.Text = data.WorkloadPraesenz.ToString();
@@ -116,7 +67,7 @@ namespace Modulverwaltungssoftware
             LehrinhalteTextBox.Text = data.Lehrinhalte;
             LiteraturTextBox.Text = data.Literatur;
 
-            // ListBoxen befüllen (vorhandene Items auswählen)
+            // ListBoxen bef�llen (vorhandene Items ausw�hlen)
             SelectListBoxItems(ModultypListBox, data.Modultypen);
             SelectListBoxItems(SemesterListBox, data.Semester);
             SelectListBoxItems(PruefungsformListBox, data.Pruefungsformen);
@@ -135,25 +86,6 @@ namespace Modulverwaltungssoftware
             }
         }
 
-        // Datenklasse für Modulversion
-        private class ModuleData
-        {
-            public string Titel { get; set; }
-            public List<string> Modultypen { get; set; }
-            public string Studiengang { get; set; }
-            public List<string> Semester { get; set; }
-            public List<string> Pruefungsformen { get; set; }
-            public List<string> Turnus { get; set; }
-            public int Ects { get; set; }
-            public int WorkloadPraesenz { get; set; }
-            public int WorkloadSelbststudium { get; set; }
-            public string Verantwortlicher { get; set; }
-            public string Voraussetzungen { get; set; }
-            public string Lernziele { get; set; }
-            public string Lehrinhalte { get; set; }
-            public string Literatur { get; set; }
-        }
-
         private void UpdateVersions(System.Collections.Generic.IEnumerable<string> versions)
         {
             Versions.Clear();
@@ -166,11 +98,7 @@ namespace Modulverwaltungssoftware
 
         private void ModulversionExportieren_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Ersetze "X" durch die tatsächliche Modulversionsbezeichnung,
-            // z.B. aus dem DataContext oder einer im UI ausgewählten Item-Property.
-            string version = "X";
-
-            // Pfad zum Downloads-Ordner (häufig Benutzerprofil\Downloads)
+            string version = _currentVersion ?? "unbekannt";
             string downloadsPath = System.IO.Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
 
@@ -180,76 +108,111 @@ namespace Modulverwaltungssoftware
 
         private void ModulversionBearbeiten_Click(object sender, RoutedEventArgs e)
         {
-            // Ersetze diese Platzhalter-Logik mit der tatsächlichen ausgewählten Version
-            string selectedVersion = Versions.FirstOrDefault();
-            if (string.IsNullOrEmpty(selectedVersion))
+            if (string.IsNullOrEmpty(_currentVersion))
             {
-                MessageBox.Show("Keine Version ausgewählt.", "Bearbeiten", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Bitte w�hlen Sie zuerst eine Version aus.", "Keine Version", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-            // Zur EditingView navigieren und Version übergeben
-            this.NavigationService?.Navigate(new EditingView(selectedVersion));
+
+            var sourceData = ModuleDataRepository.GetVersion(_currentVersion);
+            if (sourceData == null)
+            {
+                MessageBox.Show("Fehler beim Laden der Version.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            this.NavigationService?.Navigate(new EditingView(sourceData, _currentVersion));
         }
 
-        private void ModulversionLöschen_Click(object sender, RoutedEventArgs e)
+        private void ModulversionL�schen_Click(object sender, RoutedEventArgs e)
         {
-            // Ersetze "XY" durch die tatsächlich ausgewählte Version
-            string version = "XY";
+            if (string.IsNullOrEmpty(_currentVersion))
+            {
+                MessageBox.Show("Bitte w�hlen Sie zuerst eine Version aus.", "Keine Version", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             var result = MessageBox.Show(
-                $"Soll die aktuelle Version {version} wirklich gelöscht werden?",
-                "Löschen bestätigen",
+                $"Soll die Version {_currentVersion} wirklich gel�scht werden?",
+                "L�schen best�tigen",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question);
 
             if (result == MessageBoxResult.Yes)
             {
-                MessageBox.Show($"Version {version} wurde gelöscht.",
-                    "Gelöscht", MessageBoxButton.OK, MessageBoxImage.Information);
-                // TODO: Löschlogik hier ausführen
+                MessageBox.Show($"Version {_currentVersion} wurde gel�scht.",
+                    "Gel�scht", MessageBoxButton.OK, MessageBoxImage.Information);
+                // TODO: L�schlogik hier ausf�hren
             }
-            // Bei Nein passiert nichts
         }
 
         private void ModulversionKommentieren_Click(object sender, RoutedEventArgs e)
         {
-            // Zur CommentView navigieren
-            this.NavigationService?.Navigate(new CommentView());
+            if (string.IsNullOrEmpty(_currentVersion))
+            {
+                MessageBox.Show("Bitte w�hlen Sie zuerst eine Version aus.", "Keine Version", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var sourceData = ModuleDataRepository.GetVersion(_currentVersion);
+            if (sourceData == null)
+            {
+                MessageBox.Show("Fehler beim Laden der Version.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            var commentData = new CommentView.ModuleData
+            {
+                Titel = sourceData.Titel,
+                Modultypen = sourceData.Modultypen,
+                Studiengang = sourceData.Studiengang,
+                Semester = sourceData.Semester,
+                Pruefungsformen = sourceData.Pruefungsformen,
+                Turnus = sourceData.Turnus,
+                Ects = sourceData.Ects,
+                WorkloadPraesenz = sourceData.WorkloadPraesenz,
+                WorkloadSelbststudium = sourceData.WorkloadSelbststudium,
+                Verantwortlicher = sourceData.Verantwortlicher,
+                Voraussetzungen = sourceData.Voraussetzungen,
+                Lernziele = sourceData.Lernziele,
+                Lehrinhalte = sourceData.Lehrinhalte,
+                Literatur = sourceData.Literatur
+            };
+
+            this.NavigationService?.Navigate(new CommentView(commentData, _currentVersion));
         }
 
         private void ModulversionEinreichen_Click(object sender, RoutedEventArgs e)
         {
-            // Bestätigung vor dem Einreichen
+            if (string.IsNullOrEmpty(_currentVersion))
+            {
+                MessageBox.Show("Bitte w�hlen Sie zuerst eine Version aus.", "Keine Version", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             var result = MessageBox.Show(
-                "Soll die aktuelle Modulversion wirklich zur Koordination eingereicht werden?",
-                "Einreichung bestätigen",
+                $"Soll die Version {_currentVersion} wirklich zur Koordination eingereicht werden?",
+                "Einreichung best�tigen",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question);
 
             if (result != MessageBoxResult.Yes)
-            {
-                // Bei Nein: nichts tun
                 return;
-            }
 
-            // Einreichung durchführen
-            string version = "ausgewählte Version"; // Optional: mit tatsächlicher Auswahl ersetzen
-            MessageBox.Show($"Die {version} wurde erfolgreich eingereicht.",
+            MessageBox.Show($"Die Version {_currentVersion} wurde erfolgreich eingereicht.",
                 "Einreichung", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void VersionMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            // Optional: Ausgewählte Version auswerten
             string selectedVersion = null;
             if (sender is MenuItem mi && mi.DataContext is string s)
             {
                 selectedVersion = s;
             }
-            // Hier könnte die View entsprechend der Version aktualisiert werden
-            MessageBox.Show(selectedVersion != null ? $"Version {selectedVersion} gewählt" : "Version gewählt", "Version", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(selectedVersion != null ? $"Version {selectedVersion} gew�hlt" : "Version gew�hlt", "Version", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        // Öffnet/Schließt das Versionen-Popup unter dem Button
         private void ToggleVersionsPopup(object sender, RoutedEventArgs e)
         {
             var popup = this.FindName("VersionsPopup") as System.Windows.Controls.Primitives.Popup;
@@ -259,7 +222,6 @@ namespace Modulverwaltungssoftware
             }
         }
 
-        // Klick auf Popup-Item: Version auswählen
         private void VersionPopupItem_Click(object sender, RoutedEventArgs e)
         {
             string selectedVersion = null;
@@ -276,7 +238,6 @@ namespace Modulverwaltungssoftware
 
             if (!string.IsNullOrEmpty(selectedVersion))
             {
-                // Version laden
                 LoadModuleVersion(selectedVersion);
                 MessageBox.Show($"Version {selectedVersion} geladen", "Version", MessageBoxButton.OK, MessageBoxImage.Information);
             }

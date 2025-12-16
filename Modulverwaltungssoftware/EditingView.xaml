@@ -54,6 +54,15 @@
                           </TextBox.Style>
                       </TextBox>
                   </StackPanel>
+                  <!-- version -->
+                  <StackPanel Margin="0,0,0,10">
+                      <TextBlock Text="Version:" FontWeight="Bold"/>
+                      <TextBlock Text="Versionsnummer des Moduls" FontStyle="Italic" FontSize="11"/>
+                      <TextBox x:Name="VersionTextBox" Height="24"
+                               TextWrapping="NoWrap"
+                               HorizontalScrollBarVisibility="Disabled"
+                               IsReadOnly="True" Background="#F5F5F5"/>
+                  </StackPanel>
                   <!-- modultyp -->
                   <StackPanel Margin="0,0,0,10">
                       <TextBlock Text="Modultyp:" FontWeight="Bold"/>

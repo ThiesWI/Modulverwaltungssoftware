@@ -31,28 +31,16 @@
                             <DataTemplate>
                                 <Button Click="ModulePreview_Click" Padding="8" Margin="0,6,0,0" Background="Transparent" BorderThickness="1" BorderBrush="#DDD" HorizontalContentAlignment="Left">
                                     <StackPanel>
-                                        <Grid Margin="0,0,0,4">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
-                                            <!-- Block 1: Titel -->
-                                            <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left">
-                                                <TextBlock Text="Titel: " FontWeight="Bold"/>
-                                                <TextBlock Text="{Binding Title}" Margin="6,0,0,0" TextTrimming="CharacterEllipsis"/>
-                                            </StackPanel>
-                                            <!-- Block 2: Studiengang -->
-                                            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left">
-                                                <TextBlock Text="Studiengang: " FontWeight="Bold"/>
-                                                <TextBlock Text="{Binding Studiengang}" Margin="6,0,0,0" TextTrimming="CharacterEllipsis"/>
-                                            </StackPanel>
-                                            <!-- Block 3: Version -->
-                                            <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Left">
-                                                <TextBlock Text="Version: " FontWeight="Bold"/>
-                                                <TextBlock Text="{Binding Version}" Margin="6,0,0,0" TextTrimming="CharacterEllipsis"/>
-                                            </StackPanel>
-                                        </Grid>
+                                        <!-- Block 1: Titel -->
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,4">
+                                            <TextBlock Text="Titel: " FontWeight="Bold"/>
+                                            <TextBlock Text="{Binding Title}" Margin="6,0,0,0" TextTrimming="CharacterEllipsis"/>
+                                        </StackPanel>
+                                        <!-- Block 2: Studiengang -->
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,4">
+                                            <TextBlock Text="Studiengang: " FontWeight="Bold"/>
+                                            <TextBlock Text="{Binding Studiengang}" Margin="6,0,0,0" TextTrimming="CharacterEllipsis"/>
+                                        </StackPanel>
                                         <!-- Platz für Inhaltsvorschau (variabel einfügbar) -->
                                         <TextBlock Text="{Binding ContentPreview}" TextWrapping="Wrap" FontSize="12"/>
                                     </StackPanel>

@@ -78,6 +78,16 @@
                    IsReadOnly="True" Background="#F5F5F5"
                    HorizontalAlignment="Stretch"/>
                             </StackPanel>
+                            <!-- version -->
+                            <StackPanel Margin="0,0,0,10">
+                                <TextBlock Text="Version:" FontWeight="Bold"/>
+                                <TextBlock Text="Versionsnummer des Moduls" FontStyle="Italic" FontSize="11"/>
+                                <TextBox x:Name="VersionTextBox" Height="24" Width="440"
+                   TextWrapping="Wrap"
+                   HorizontalScrollBarVisibility="Disabled"
+                   IsReadOnly="True" Background="#F5F5F5"
+                   HorizontalAlignment="Stretch"/>
+                            </StackPanel>
                             <!-- modultyp -->
                             <StackPanel Margin="0,0,0,10">
                                 <TextBlock Text="Modultyp:" FontWeight="Bold"/>

@@ -36,17 +36,59 @@ namespace Modulverwaltungssoftware
             InitializeComponent();
             this.DataContext = this;
 
-            // Demo-Daten: 10 leere Masken (später durch echte Daten aus lokaler DB ersetzen)
-            for (int i = 1; i <= 10; i++)
+            // Echte Daten aus Repository laden
+            LoadModulePreviews();
+        }
+
+        private void LoadModulePreviews()
+        {
+            // Alle Versionen aus Repository holen
+            var versions = ModuleDataRepository.GetAllVersions();
+
+            foreach (var version in versions)
+            {
+                var data = ModuleDataRepository.GetVersion(version);
+                if (data != null)
+                {
+                    ModulePreviews.Add(new ModulePreview
+                    {
+                        Title = data.Titel,
+                        Studiengang = data.Studiengang,
+                        Version = version,
+                        ContentPreview = GenerateContentPreview(data)
+                    });
+                }
+            }
+
+            // Falls weniger als 10 Module vorhanden sind, leere Platzhalter hinzufügen
+            while (ModulePreviews.Count < 10)
             {
                 ModulePreviews.Add(new ModulePreview
                 {
-                    Title = $"Modul {i}",
+                    Title = $"Modul {ModulePreviews.Count + 1}",
                     Studiengang = string.Empty,
                     Version = string.Empty,
                     ContentPreview = string.Empty
                 });
             }
+        }
+
+        private string GenerateContentPreview(ModuleDataRepository.ModuleData data)
+        {
+            // Kurze Vorschau aus Lernzielen oder Lehrinhalten generieren
+            if (!string.IsNullOrWhiteSpace(data.Lernziele))
+            {
+                return data.Lernziele.Length > 100 
+                    ? data.Lernziele.Substring(0, 100) + "..." 
+                    : data.Lernziele;
+            }
+            if (!string.IsNullOrWhiteSpace(data.Lehrinhalte))
+            {
+                return data.Lehrinhalte.Length > 100 
+                    ? data.Lehrinhalte.Substring(0, 100) + "..." 
+                    : data.Lehrinhalte;
+            }
+            return "Keine Vorschau verfügbar";
         }
 
         private void NeuesModulButton_Click(object sender, RoutedEventArgs e)
@@ -71,8 +113,16 @@ namespace Modulverwaltungssoftware
             var preview = (sender as Button)?.DataContext as ModulePreview;
             if (preview != null)
             {
-                // Navigation zur ModulView oder Detailansicht
-                this.NavigationService?.Navigate(new ModulView());
+                // Wenn Version vorhanden, diese in ModulView laden
+                if (!string.IsNullOrEmpty(preview.Version))
+                {
+                    this.NavigationService?.Navigate(new ModulView(preview.Version));
+                }
+                else
+                {
+                    // Leeres Modul → zur EditingView für neues Modul
+                    this.NavigationService?.Navigate(new EditingView());
+                }
             }
         }
     }

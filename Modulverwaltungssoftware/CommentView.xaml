@@ -51,13 +51,15 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
                             <!-- Row 0: Titel -->
                             <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,10,0,10">
                                 <TextBlock Text="Titel:" FontWeight="Bold"/>
                                 <TextBlock Text="Titel des Moduls" FontStyle="Italic" FontSize="11"/>
-                                <TextBox x:Name="TitelTextBox" Height="24" TextWrapping="NoWrap" HorizontalScrollBarVisibility="Disabled" MaxLength="100"/>
+                                <TextBox x:Name="TitelTextBox" Height="24" TextWrapping="Wrap" HorizontalScrollBarVisibility="Disabled" MaxLength="100"
+                                         IsReadOnly="True" Background="#F5F5F5"/>
                             </StackPanel>
                             <StackPanel Grid.Row="0" Grid.Column="1" Margin="10,10,0,10" VerticalAlignment="Top">
                                 <TextBlock Text="Kommentar zu Titel:" FontWeight="Bold"/>
@@ -66,11 +68,19 @@
                                          Height="{Binding ElementName=TitelTextBox, Path=ActualHeight}"/>
                             </StackPanel>
 
-                            <!-- Row 1: Modultyp -->
-                            <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,10">
+                            <!-- Row 1: Version (nur linke Spalte, kein Kommentarfeld) -->
+                            <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,0,10">
+                                <TextBlock Text="Version:" FontWeight="Bold"/>
+                                <TextBlock Text="Versionsnummer des Moduls" FontStyle="Italic" FontSize="11"/>
+                                <TextBox x:Name="VersionTextBox" Height="24" TextWrapping="Wrap" HorizontalScrollBarVisibility="Disabled"
+                                         IsReadOnly="True" Background="#F5F5F5"/>
+                            </StackPanel>
+
+                            <!-- Row 2: Modultyp -->
+                            <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,0,10">
                                 <TextBlock Text="Modultyp:" FontWeight="Bold"/>
                                 <TextBlock Text="Typ des Moduls" FontStyle="Italic" FontSize="11"/>
-                                <ListBox x:Name="ModultypListBox" SelectionMode="Multiple">
+                                <ListBox x:Name="ModultypListBox" SelectionMode="Multiple" IsEnabled="False" Background="#F5F5F5">
                                     <ListBoxItem Content="Pflichtmodul"/>
                                     <ListBoxItem Content="Wahlpflichtmodul"/>
                                     <ListBoxItem Content="Wahlmodul (Freies Wahlfach)"/>
@@ -78,31 +88,31 @@
                                     <ListBoxItem Content="Grundlagenmodul"/>
                                 </ListBox>
                             </StackPanel>
-                            <StackPanel Grid.Row="1" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
+                            <StackPanel Grid.Row="2" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
                                 <TextBlock Text="Kommentar zu Modultyp:" FontWeight="Bold"/>
                                 <TextBlock FontSize="11" Text=""/>
                                 <TextBox TextWrapping="Wrap" AcceptsReturn="True" MinLines="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
                                          Height="{Binding ElementName=ModultypListBox, Path=ActualHeight}"/>
                             </StackPanel>
 
-                            <!-- Row 2: Studiengang -->
-                            <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,0,10">
+                            <!-- Row 3: Studiengang -->
+                            <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,0,10">
                                 <TextBlock Text="Studiengang:" FontWeight="Bold"/>
                                 <TextBlock Text="Empfohlener Studiengang" FontStyle="Italic" FontSize="11"/>
-                                <TextBox x:Name="StudiengangTextBox" Height="24"/>
+                                <TextBox x:Name="StudiengangTextBox" Height="24" IsReadOnly="True" Background="#F5F5F5"/>
                             </StackPanel>
-                            <StackPanel Grid.Row="2" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
+                            <StackPanel Grid.Row="3" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
                                 <TextBlock Text="Kommentar zu Studiengang:" FontWeight="Bold"/>
                                 <TextBlock FontSize="11" Text=""/>
                                 <TextBox TextWrapping="Wrap" AcceptsReturn="True" MinLines="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
                                          Height="{Binding ElementName=StudiengangTextBox, Path=ActualHeight}"/>
                             </StackPanel>
 
-                            <!-- Row 3: Semester -->
-                            <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,0,10">
+                            <!-- Row 4: Semester -->
+                            <StackPanel Grid.Row="4" Grid.Column="0" Margin="0,0,0,10">
                                 <TextBlock Text="Semester:" FontWeight="Bold"/>
                                 <TextBlock Text="Empfohlenes Semester" FontStyle="Italic" FontSize="11"/>
-                                <ListBox x:Name="SemesterListBox" SelectionMode="Multiple">
+                                <ListBox x:Name="SemesterListBox" SelectionMode="Multiple" IsEnabled="False" Background="#F5F5F5">
                                     <ListBoxItem Content="1"/>
                                     <ListBoxItem Content="2"/>
                                     <ListBoxItem Content="3"/>
@@ -113,18 +123,18 @@
                                     <ListBoxItem Content="8"/>
                                 </ListBox>
                             </StackPanel>
-                            <StackPanel Grid.Row="3" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
+                            <StackPanel Grid.Row="4" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
                                 <TextBlock Text="Kommentar zu Semester:" FontWeight="Bold"/>
                                 <TextBlock FontSize="11" Text=""/>
                                 <TextBox TextWrapping="Wrap" AcceptsReturn="True" MinLines="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
                                          Height="{Binding ElementName=SemesterListBox, Path=ActualHeight}"/>
                             </StackPanel>
 
-                            <!-- Row 4: Prüfungsform -->
-                            <StackPanel Grid.Row="4" Grid.Column="0" Margin="0,0,0,10">
+                            <!-- Row 5: Prüfungsform -->
+                            <StackPanel Grid.Row="5" Grid.Column="0" Margin="0,0,0,10">
                                 <TextBlock Text="Prüfungsform:" FontWeight="Bold"/>
                                 <TextBlock Text="Art der Prüfung" FontStyle="Italic" FontSize="11"/>
-                                <ListBox x:Name="PruefungsformListBox" SelectionMode="Multiple">
+                                <ListBox x:Name="PruefungsformListBox" SelectionMode="Multiple" IsEnabled="False" Background="#F5F5F5">
                                     <ListBoxItem Content="Klausur"/>
                                     <ListBoxItem Content="Mündliche Prüfung"/>
                                     <ListBoxItem Content="Hausarbeit (Seminararbeit)"/>
@@ -135,18 +145,18 @@
                                     <ListBoxItem Content="Referat"/>
                                 </ListBox>
                             </StackPanel>
-                            <StackPanel Grid.Row="4" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
+                            <StackPanel Grid.Row="5" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
                                 <TextBlock Text="Kommentar zu Prüfungsform:" FontWeight="Bold"/>
                                 <TextBlock FontSize="11" Text=""/>
                                 <TextBox TextWrapping="Wrap" AcceptsReturn="True" MinLines="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
                                          Height="{Binding ElementName=PruefungsformListBox, Path=ActualHeight}"/>
                             </StackPanel>
 
-                            <!-- Row 5: Turnus -->
-                            <StackPanel Grid.Row="5" Grid.Column="0" Margin="0,0,0,10">
+                            <!-- Row 6: Turnus -->
+                            <StackPanel Grid.Row="6" Grid.Column="0" Margin="0,0,0,10">
                                 <TextBlock Text="Turnus:" FontWeight="Bold"/>
                                 <TextBlock Text="Angebotsrhythmus" FontStyle="Italic" FontSize="11"/>
-                                <ListBox x:Name="TurnusListBox" SelectionMode="Multiple">
+                                <ListBox x:Name="TurnusListBox" SelectionMode="Multiple" IsEnabled="False" Background="#F5F5F5">
                                     <ListBoxItem Content="Jährlich (WiSe)"/>
                                     <ListBoxItem Content="Jährlich (SoSe)"/>
                                     <ListBoxItem Content="Halbjährlich (Jedes Semester)"/>
@@ -154,111 +164,116 @@
                                     <ListBoxItem Content="Blockveranstaltung"/>
                                 </ListBox>
                             </StackPanel>
-                            <StackPanel Grid.Row="5" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
+                            <StackPanel Grid.Row="6" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
                                 <TextBlock Text="Kommentar zu Turnus:" FontWeight="Bold"/>
                                 <TextBlock FontSize="11" Text=""/>
                                 <TextBox TextWrapping="Wrap" AcceptsReturn="True" MinLines="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
                                          Height="{Binding ElementName=TurnusListBox, Path=ActualHeight}"/>
                             </StackPanel>
 
-                            <!-- Row 6: ECTS -->
-                            <StackPanel Grid.Row="6" Grid.Column="0" Margin="0,0,0,10">
+                            <!-- Row 7: ECTS -->
+                            <StackPanel Grid.Row="7" Grid.Column="0" Margin="0,0,0,10">
                                 <TextBlock Text="ECTS:" FontWeight="Bold"/>
                                 <TextBlock Text="Leistungspunkte" FontStyle="Italic" FontSize="11"/>
-                                <TextBox x:Name="EctsTextBox" Height="24"/>
+                                <TextBox x:Name="EctsTextBox" Height="24" IsReadOnly="True" Background="#F5F5F5"/>
                             </StackPanel>
-                            <StackPanel Grid.Row="6" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
+                            <StackPanel Grid.Row="7" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
                                 <TextBlock Text="Kommentar zu ECTS:" FontWeight="Bold"/>
                                 <TextBlock FontSize="11" Text=""/>
                                 <TextBox TextWrapping="Wrap" AcceptsReturn="True" MinLines="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
                                          Height="{Binding ElementName=EctsTextBox, Path=ActualHeight}"/>
                             </StackPanel>
 
-                            <!-- Row 7: Workload Präsenz -->
-                            <StackPanel Grid.Row="7" Grid.Column="0" Margin="0,0,0,10">
+                            <!-- Row 8: Workload Präsenz -->
+                            <StackPanel Grid.Row="8" Grid.Column="0" Margin="0,0,0,10">
                                 <TextBlock Text="Workload Präsenz:" FontWeight="Bold"/>
                                 <TextBlock Text="Zeitaufwand in Präsenz (Stunden)" FontStyle="Italic" FontSize="11"/>
-                                <TextBox x:Name="WorkloadPraesenzTextBox" Height="24"/>
+                                <TextBox x:Name="WorkloadPraesenzTextBox" Height="24" IsReadOnly="True" Background="#F5F5F5"/>
                             </StackPanel>
-                            <StackPanel Grid.Row="7" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
+                            <StackPanel Grid.Row="8" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
                                 <TextBlock Text="Kommentar zu Workload Präsenz:" FontWeight="Bold"/>
                                 <TextBlock FontSize="11" Text=""/>
                                 <TextBox TextWrapping="Wrap" AcceptsReturn="True" MinLines="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
                                          Height="{Binding ElementName=WorkloadPraesenzTextBox, Path=ActualHeight}"/>
                             </StackPanel>
 
-                            <!-- Row 8: Workload Selbststudium -->
-                            <StackPanel Grid.Row="8" Grid.Column="0" Margin="0,0,0,10">
+                            <!-- Row 9: Workload Selbststudium -->
+                            <StackPanel Grid.Row="9" Grid.Column="0" Margin="0,0,0,10">
                                 <TextBlock Text="Workload Selbststudium:" FontWeight="Bold"/>
                                 <TextBlock Text="Zeitaufwand im Selbststudium (Stunden)" FontStyle="Italic" FontSize="11"/>
-                                <TextBox x:Name="WorkloadSelbststudiumTextBox" Height="24"/>
+                                <TextBox x:Name="WorkloadSelbststudiumTextBox" Height="24" IsReadOnly="True" Background="#F5F5F5"/>
                             </StackPanel>
-                            <StackPanel Grid.Row="8" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
+                            <StackPanel Grid.Row="9" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
                                 <TextBlock Text="Kommentar zu Workload Selbststudium:" FontWeight="Bold"/>
                                 <TextBlock FontSize="11" Text=""/>
                                 <TextBox TextWrapping="Wrap" AcceptsReturn="True" MinLines="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
                                          Height="{Binding ElementName=WorkloadSelbststudiumTextBox, Path=ActualHeight}"/>
                             </StackPanel>
 
-                            <!-- Row 9: Verantwortlicher -->
-                            <StackPanel Grid.Row="9" Grid.Column="0" Margin="0,0,0,10">
+                            <!-- Row 10: Verantwortlicher -->
+                            <StackPanel Grid.Row="10" Grid.Column="0" Margin="0,0,0,10">
                                 <TextBlock Text="Verantwortlicher:" FontWeight="Bold"/>
                                 <TextBlock Text="Modulverantwortliche Person" FontStyle="Italic" FontSize="11"/>
-                                <TextBox x:Name="VerantwortlicherTextBox" Height="24" TextWrapping="NoWrap" HorizontalScrollBarVisibility="Disabled" MaxLength="100"/>
+                                <TextBox x:Name="VerantwortlicherTextBox" Height="24" TextWrapping="Wrap" HorizontalScrollBarVisibility="Disabled" MaxLength="100"
+                                         IsReadOnly="True" Background="#F5F5F5"/>
                             </StackPanel>
-                            <StackPanel Grid.Row="9" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
+                            <StackPanel Grid.Row="10" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
                                 <TextBlock Text="Kommentar zu Verantwortlicher:" FontWeight="Bold"/>
                                 <TextBlock FontSize="11" Text=""/>
                                 <TextBox TextWrapping="Wrap" AcceptsReturn="True" MinLines="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
                                          Height="{Binding ElementName=VerantwortlicherTextBox, Path=ActualHeight}"/>
                             </StackPanel>
 
-                            <!-- Row 10: Voraussetzungen -->
-                            <StackPanel Grid.Row="10" Grid.Column="0" Margin="0,0,0,10">
+                            <!-- Row 11: Voraussetzungen -->
+                            <StackPanel Grid.Row="11" Grid.Column="0" Margin="0,0,0,10">
                                 <TextBlock Text="Voraussetzungen:" FontWeight="Bold"/>
                                 <TextBlock Text="Erforderliche Vorkenntnisse oder Module" FontStyle="Italic" FontSize="11"/>
-                                <TextBox x:Name="VoraussetzungenTextBox" AcceptsReturn="True" TextWrapping="Wrap" MinLines="4" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"/>
+                                <TextBox x:Name="VoraussetzungenTextBox" AcceptsReturn="True" TextWrapping="Wrap" MinLines="4" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                                         IsReadOnly="True" Background="#F5F5F5"/>
                             </StackPanel>
-                            <StackPanel Grid.Row="10" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
+                            <StackPanel Grid.Row="11" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
                                 <TextBlock Text="Kommentar zu Voraussetzungen:" FontWeight="Bold"/>
                                 <TextBlock FontSize="11" Text=""/>
                                 <TextBox TextWrapping="Wrap" AcceptsReturn="True" MinLines="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
                                          Height="{Binding ElementName=VoraussetzungenTextBox, Path=ActualHeight}"/>
                             </StackPanel>
 
-                            <!-- Row 11: Lernziele -->
-                            <StackPanel Grid.Row="11" Grid.Column="0" Margin="0,0,0,10">
+                            <!-- Row 12: Lernziele -->
+                            <StackPanel Grid.Row="12" Grid.Column="0" Margin="0,0,0,10">
                                 <TextBlock Text="Lernziele:" FontWeight="Bold"/>
                                 <TextBlock Text="Ziele, die Studierende erreichen sollen" FontStyle="Italic" FontSize="11"/>
-                                <TextBox x:Name="LernzieleTextBox" AcceptsReturn="True" TextWrapping="Wrap" MinLines="4" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"/>
+                                <TextBox x:Name="LernzieleTextBox" AcceptsReturn="True" TextWrapping="Wrap" MinLines="4" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                                         IsReadOnly="True" Background="#F5F5F5"/>
                             </StackPanel>
-                            <StackPanel Grid.Row="11" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
+                            <StackPanel Grid.Row="12" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
                                 <TextBlock Text="Kommentar zu Lernziele:" FontWeight="Bold"/>
                                 <TextBlock FontSize="11" Text=""/>
                                 <TextBox TextWrapping="Wrap" AcceptsReturn="True" MinLines="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
                                          Height="{Binding ElementName=LernzieleTextBox, Path=ActualHeight}"/>
                             </StackPanel>
 
-                            <!-- Row 12: Lehrinhalte -->
-                            <StackPanel Grid.Row="12" Grid.Column="0" Margin="0,0,0,10">
+                            <!-- Row 13: Lehrinhalte -->
+                            <StackPanel Grid.Row="13" Grid.Column="0" Margin="0,0,0,10">
                                 <TextBlock Text="Lehrinhalte:" FontWeight="Bold"/>
                                 <TextBlock Text="Inhalte des Moduls" FontStyle="Italic" FontSize="11"/>
-                                <TextBox x:Name="LehrinhalteTextBox" AcceptsReturn="True" TextWrapping="Wrap" MinLines="4" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"/>
+                                <TextBox x:Name="LehrinhalteTextBox" AcceptsReturn="True" TextWrapping="Wrap" MinLines="4" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                                         IsReadOnly="True" Background="#F5F5F5"/>
                             </StackPanel>
-                            <StackPanel Grid.Row="12" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
+                            <StackPanel Grid.Row="13" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
                                 <TextBlock Text="Kommentar zu Lehrinhalte:" FontWeight="Bold"/>
                                 <TextBlock FontSize="11" Text=""/>
                                 <TextBox TextWrapping="Wrap" AcceptsReturn="True" MinLines="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
                                          Height="{Binding ElementName=LehrinhalteTextBox, Path=ActualHeight}"/>
                             </StackPanel>
 
-                            <!-- Row 13: Literatur -->
-                            <StackPanel Grid.Row="13" Grid.Column="0" Margin="0,0,0,10">
+                            <!-- Row 14: Literatur -->
+                            <StackPanel Grid.Row="14" Grid.Column="0" Margin="0,0,0,10">
                                 <TextBlock Text="Literatur:" FontWeight="Bold"/>
                                 <TextBlock Text="Empfohlene oder verpflichtende Literatur" FontStyle="Italic" FontSize="11"/>
-                                <TextBox x:Name="LiteraturTextBox" AcceptsReturn="True" TextWrapping="Wrap" MinLines="4" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"/>
+                                <TextBox x:Name="LiteraturTextBox" AcceptsReturn="True" TextWrapping="Wrap" MinLines="4" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                                         IsReadOnly="True" Background="#F5F5F5"/>
                             </StackPanel>
-                            <StackPanel Grid.Row="13" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
+                            <StackPanel Grid.Row="14" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
                                 <TextBlock Text="Kommentar zu Literatur:" FontWeight="Bold"/>
                                 <TextBlock FontSize="11" Text=""/>
                                 <TextBox TextWrapping="Wrap" AcceptsReturn="True" MinLines="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
