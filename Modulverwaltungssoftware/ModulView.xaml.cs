@@ -20,43 +20,47 @@ namespace Modulverwaltungssoftware
         public System.Collections.ObjectModel.ObservableCollection<string> Versions { get; } =
             new System.Collections.ObjectModel.ObservableCollection<string>();
 
-        private string _currentVersion = null; // Aktuell geladene Version
+        private string _currentModulId;  // Aktuelles Modul
+        private string _currentVersion;  // Aktuelle Version
 
         public ModulView()
         {
             InitializeComponent();
             this.DataContext = this;
-
-            // Versionen aus Repository laden
-            var versions = ModuleDataRepository.GetAllVersions();
-            UpdateVersions(versions);
-
-            // Initial erste Version laden
-            if (Versions.Count > 0)
-                LoadModuleVersion(Versions[0]);
         }
 
-        // Konstruktor mit Versionsvorgabe (für Navigation aus EditingView)
-        public ModulView(string versionToLoad) : this()
+        // Konstruktor mit ModulID (von StartPage/MainWindow)
+        public ModulView(string modulId) : this()
         {
-            if (!string.IsNullOrEmpty(versionToLoad) && Versions.Contains(versionToLoad))
-            {
-                LoadModuleVersion(versionToLoad);
-            }
+            _currentModulId = modulId;
+
+            var modul = ModuleDataRepository.GetModule(modulId);
+            if (modul == null) return;
+
+            // Versionen-Dropdown füllen
+            UpdateVersions(modul.Versionen.Select(v => v.VersionsNummer));
+
+            // Neueste Version laden
+            var neuesteVersion = modul.Versionen
+                .OrderByDescending(v => v.ErstellDatum)
+                .FirstOrDefault();
+
+            if (neuesteVersion != null)
+                LoadModuleVersion(neuesteVersion.VersionsNummer);
         }
 
-        private void LoadModuleVersion(string version)
+        private void LoadModuleVersion(string versionNummer)
         {
             // Daten aus Repository holen
-            var data = ModuleDataRepository.GetVersion(version);
+            var data = ModuleDataRepository.GetModuleVersion(_currentModulId, versionNummer);
             if (data == null)
                 return;
 
-            _currentVersion = version; // Aktuell geladene Version merken
+            _currentVersion = versionNummer; // Aktuell geladene Version merken
 
             // Textfelder befüllen
             TitelTextBox.Text = data.Titel;
-            VersionTextBox.Text = version; // Version anzeigen
+            VersionTextBox.Text = versionNummer; // Version anzeigen
             StudiengangTextBox.Text = data.Studiengang;
             EctsTextBox.Text = data.Ects.ToString();
             WorkloadPraesenzTextBox.Text = data.WorkloadPraesenz.ToString();
@@ -108,20 +112,20 @@ namespace Modulverwaltungssoftware
 
         private void ModulversionBearbeiten_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrEmpty(_currentVersion))
+            if (string.IsNullOrEmpty(_currentVersion) || string.IsNullOrEmpty(_currentModulId))
             {
                 MessageBox.Show("Bitte wählen Sie zuerst eine Version aus.", "Keine Version", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            var sourceData = ModuleDataRepository.GetVersion(_currentVersion);
+            var sourceData = ModuleDataRepository.GetModuleVersion(_currentModulId, _currentVersion);
             if (sourceData == null)
             {
                 MessageBox.Show("Fehler beim Laden der Version.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
-            this.NavigationService?.Navigate(new EditingView(sourceData, _currentVersion));
+            this.NavigationService?.Navigate(new EditingView(_currentModulId, _currentVersion, sourceData));
         }
 
         private void ModulversionLöschen_Click(object sender, RoutedEventArgs e)
@@ -148,13 +152,13 @@ namespace Modulverwaltungssoftware
 
         private void ModulversionKommentieren_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrEmpty(_currentVersion))
+            if (string.IsNullOrEmpty(_currentVersion) || string.IsNullOrEmpty(_currentModulId))
             {
                 MessageBox.Show("Bitte wählen Sie zuerst eine Version aus.", "Keine Version", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            var sourceData = ModuleDataRepository.GetVersion(_currentVersion);
+            var sourceData = ModuleDataRepository.GetModuleVersion(_currentModulId, _currentVersion);
             if (sourceData == null)
             {
                 MessageBox.Show("Fehler beim Laden der Version.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);

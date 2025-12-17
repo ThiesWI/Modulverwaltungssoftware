@@ -40,9 +40,11 @@ namespace Modulverwaltungssoftware
                 if (ProjectsPopup != null) ProjectsPopup.IsOpen = false;
             };
 
-            // Beispielvariable: kann später durch reale Daten ersetzt werden
-            var projektListe = new[] { "Projekt A", "Projekt B", "Projekt C" };
-            UpdateProjects(projektListe);
+            // MEINE PROJEKTE laden (nur Module des Users)
+            string currentUser = "P. Brandenburg"; // Später aus Login-System
+            var meineModule = ModuleDataRepository.GetModulesByUser(currentUser);
+            var modulNamen = meineModule.Select(m => m.ModulName).ToList();
+            UpdateProjects(modulNamen);
 
             // Initial navigation
             MainFrame.Navigate(new StartPage());
@@ -139,7 +141,17 @@ namespace Modulverwaltungssoftware
         // Klick auf Popup-Item: zur ModulView navigieren
         private void ProjectPopupItem_Click(object sender, RoutedEventArgs e)
         {
-            MainFrame.Navigate(new ModulView());
+            string modulName = (sender as Button)?.Content?.ToString();
+
+            // ModulId anhand Modulname finden
+            var modul = ModuleDataRepository.GetAllModules()
+                .FirstOrDefault(m => m.ModulName == modulName);
+
+            if (modul != null)
+            {
+                MainFrame.Navigate(new ModulView(modul.ModulId));
+            }
+
             var popup = this.FindName("ProjectsPopup") as System.Windows.Controls.Primitives.Popup;
             if (popup != null)
             {

@@ -21,7 +21,9 @@ namespace Modulverwaltungssoftware
     public partial class EditingView : Page
     {
         private ScrollViewer _contentScrollViewer;
-        public string SelectedVersion { get; }
+        private string _modulId;           // Aktuelles Modul (null bei neuem)
+        private string _versionNummer;     // Aktuelle Version
+        private bool _isEditMode;          // true = Bearbeiten, false = Neues Modul
 
         // Datenklasse für Modulversion (identisch mit ModulView.ModuleData)
         public class ModuleData
@@ -46,17 +48,24 @@ namespace Modulverwaltungssoftware
         {
             InitializeComponent();
             _contentScrollViewer = FindName("ContentScrollViewer") as ScrollViewer;
+            _isEditMode = false; // Standard: Neues Modul
         }
 
-        public EditingView(string selectedVersion) : this()
+        // Konstruktor für NEUES Modul (aus StartPage)
+        public EditingView(bool createNew) : this()
         {
-            SelectedVersion = selectedVersion;
+            _isEditMode = false;
+            _modulId = null;
+            _versionNummer = "1.0";
+            VersionTextBox.Text = "1.0 (Entwurf)";
         }
 
-        // Neuer Konstruktor: Daten direkt laden + Version merken
-        public EditingView(ModuleDataRepository.ModuleData moduleData, string version) : this()
+        // Konstruktor für BEARBEITEN (aus ModulView)
+        public EditingView(string modulId, string versionNummer, ModuleDataRepository.ModuleData moduleData) : this()
         {
-            SelectedVersion = version;
+            _isEditMode = true;
+            _modulId = modulId;
+            _versionNummer = versionNummer;
             LoadModuleData(moduleData);
         }
 
@@ -66,7 +75,7 @@ namespace Modulverwaltungssoftware
 
             // Textfelder befüllen
             TitelTextBox.Text = data.Titel;
-            VersionTextBox.Text = SelectedVersion; // Version anzeigen (read-only)
+            VersionTextBox.Text = $"{_versionNummer} (Entwurf)"; // Version anzeigen (read-only)
             StudiengangTextBox.Text = data.Studiengang;
             EctsTextBox.Text = data.Ects.ToString();
             WorkloadPraesenzTextBox.Text = data.WorkloadPraesenz.ToString();
@@ -122,7 +131,7 @@ namespace Modulverwaltungssoftware
             }
 
             // Daten aus UI auslesen
-            var updatedData = new ModuleDataRepository.ModuleData
+            var moduleData = new ModuleDataRepository.ModuleData
             {
                 Titel = TitelTextBox.Text,
                 Modultypen = GetSelectedListBoxItems(ModultypListBox),
@@ -140,18 +149,31 @@ namespace Modulverwaltungssoftware
                 Literatur = LiteraturTextBox.Text
             };
 
-            // Daten unter derselben Version speichern
-            if (!string.IsNullOrEmpty(SelectedVersion))
+            if (_isEditMode)
             {
-                ModuleDataRepository.SaveVersion(SelectedVersion, updatedData);
-                MessageBox.Show($"Änderungen wurden unter Version {SelectedVersion} gespeichert.", "Bestätigung", MessageBoxButton.OK, MessageBoxImage.Information);
+                // BEARBEITUNGSMODUS: Daten unter bestehender Version aktualisieren
+                ModuleDataRepository.UpdateModuleVersion(_modulId, _versionNummer, moduleData);
+                MessageBox.Show($"Änderungen wurden unter Version {_versionNummer} gespeichert.", 
+                    "Gespeichert", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                // Nach dem Speichern zur ModulView wechseln und diese Version anzeigen
-                this.NavigationService?.Navigate(new ModulView(SelectedVersion));
+                // Zurück zur ModulView mit diesem Modul
+                this.NavigationService?.Navigate(new ModulView(_modulId));
             }
             else
             {
-                MessageBox.Show("Fehler: Keine Version vorhanden.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                // NEUES MODUL: Modul mit Version 1.0 erstellen
+                string currentUser = "P. Brandenburg"; // Später aus Login-System
+                string neueModulId = ModuleDataRepository.CreateModule(
+                    TitelTextBox.Text,  // Modulname = Titel
+                    currentUser,
+                    moduleData
+                );
+
+                MessageBox.Show($"Neues Modul '{TitelTextBox.Text}' wurde erstellt.", 
+                    "Gespeichert", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                // Zurück zur StartPage
+                this.NavigationService?.Navigate(new StartPage());
             }
         }
 

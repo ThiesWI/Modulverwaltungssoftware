@@ -26,6 +26,7 @@ namespace Modulverwaltungssoftware
             public string Studiengang { get; set; }
             public string Version { get; set; }
             public string ContentPreview { get; set; }
+            public string ModulId { get; set; }  // NEUE Property für Navigation
         }
 
         public System.Collections.ObjectModel.ObservableCollection<ModulePreview> ModulePreviews { get; } =
@@ -42,22 +43,37 @@ namespace Modulverwaltungssoftware
 
         private void LoadModulePreviews()
         {
-            // Alle Versionen aus Repository holen
-            var versions = ModuleDataRepository.GetAllVersions();
+            // Alle Module abrufen (nicht Versionen!)
+            var alleModule = ModuleDataRepository.GetAllModules();
 
-            foreach (var version in versions)
+            // Temporäre Liste für Sortierung
+            var tempList = new List<ModulePreview>();
+
+            foreach (var modul in alleModule)
             {
-                var data = ModuleDataRepository.GetVersion(version);
-                if (data != null)
+                // Neueste Version des Moduls holen
+                var neuesteVersion = modul.Versionen.OrderByDescending(v => v.ErstellDatum).FirstOrDefault();
+
+                if (neuesteVersion != null)
                 {
-                    ModulePreviews.Add(new ModulePreview
+                    tempList.Add(new ModulePreview
                     {
-                        Title = data.Titel,
-                        Studiengang = data.Studiengang,
-                        Version = version,
-                        ContentPreview = GenerateContentPreview(data)
+                        Title = modul.ModulName,  // MODULNAME
+                        Studiengang = neuesteVersion.Daten.Studiengang,
+                        Version = $"{neuesteVersion.VersionsNummer} ({neuesteVersion.Status})",
+                        ContentPreview = GenerateContentPreview(neuesteVersion.Daten),
+                        ModulId = modul.ModulId
                     });
                 }
+            }
+
+            // Alphabetisch nach Titel sortieren
+            var sortedModules = tempList.OrderBy(m => m.Title).ToList();
+
+            // Sortierte Module zur ObservableCollection hinzufügen
+            foreach (var module in sortedModules)
+            {
+                ModulePreviews.Add(module);
             }
 
             // Falls weniger als 10 Module vorhanden sind, leere Platzhalter hinzufügen
@@ -68,7 +84,8 @@ namespace Modulverwaltungssoftware
                     Title = $"Modul {ModulePreviews.Count + 1}",
                     Studiengang = string.Empty,
                     Version = string.Empty,
-                    ContentPreview = string.Empty
+                    ContentPreview = string.Empty,
+                    ModulId = string.Empty
                 });
             }
         }
@@ -93,8 +110,8 @@ namespace Modulverwaltungssoftware
 
         private void NeuesModulButton_Click(object sender, RoutedEventArgs e)
         {
-            // Navigation zur EditingView-Seite
-            this.NavigationService?.Navigate(new EditingView());
+            // Navigation zur EditingView im "Neues Modul"-Modus
+            this.NavigationService?.Navigate(new EditingView(createNew: true));
         }
 
         private void OeffnenButton_Click(object sender, RoutedEventArgs e)
@@ -113,15 +130,15 @@ namespace Modulverwaltungssoftware
             var preview = (sender as Button)?.DataContext as ModulePreview;
             if (preview != null)
             {
-                // Wenn Version vorhanden, diese in ModulView laden
-                if (!string.IsNullOrEmpty(preview.Version))
+                // Wenn ModulId vorhanden, zur ModulView navigieren
+                if (!string.IsNullOrEmpty(preview.ModulId))
                 {
-                    this.NavigationService?.Navigate(new ModulView(preview.Version));
+                    this.NavigationService?.Navigate(new ModulView(preview.ModulId));
                 }
                 else
                 {
                     // Leeres Modul → zur EditingView für neues Modul
-                    this.NavigationService?.Navigate(new EditingView());
+                    this.NavigationService?.Navigate(new EditingView(createNew: true));
                 }
             }
         }
