@@ -9,7 +9,7 @@
       Title="CommentView">
 
     <Grid>
-        <!-- UNTERER Bereich für Unterseiten bzw. "Views" -->
+        <!-- Hauptlayout: 3 Spalten (Leer | Inhalt mit Kommentarfeldern | Buttons) -->
         <Grid Grid.Row="1" Margin="0,10,0,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="120"/>
@@ -18,20 +18,20 @@
             </Grid.ColumnDefinitions>
 
             <!-- Linker & Mittlerer Bereich: Suchleiste und Anzeige (über zwei Spalten, angepasstes Layout) -->
-            <Grid Grid.Column="0" Grid.ColumnSpan="2" VerticalAlignment="Stretch" Margin="20,0,20,0">
+            <Grid Grid.Column="0" Grid.ColumnSpan="2" VerticalAlignment="Stretch" Margin="10,0,10,0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <TextBox x:Name="SearchBox" Grid.Row="0" Height="32" Width="600" VerticalContentAlignment="Center" FontSize="14"/>
+                <TextBox x:Name="SearchBox" Grid.Row="0" Height="32" Width="640" VerticalContentAlignment="Center" FontSize="14"/>
 
                 <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" HorizontalAlignment="Center"
                         Margin="0,0,0,15" Width="{Binding ElementName=SearchBox, Path=ActualWidth}">
                     <ScrollViewer x:Name="ContentScrollViewer"
                                   VerticalScrollBarVisibility="Visible"
                                   HorizontalScrollBarVisibility="Disabled">
-                        <Grid Margin="20,0,20,0">
+                        <Grid Margin="10,0,10,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="*" />
@@ -56,30 +56,34 @@
 
                             <!-- Row 0: Titel -->
                             <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,10,0,10">
-                                <TextBlock Text="Titel:" FontWeight="Bold"/>
-                                <TextBlock Text="Titel des Moduls" FontStyle="Italic" FontSize="11"/>
-                                <TextBox x:Name="TitelTextBox" Height="24" TextWrapping="Wrap" HorizontalScrollBarVisibility="Disabled" MaxLength="100"
-                                         IsReadOnly="True" Background="#F5F5F5"/>
+                                <TextBlock Text="Titel:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                                <TextBlock Text="Titel des Moduls" Style="{StaticResource CommentFieldDescriptionStyle}"/>
+                                <TextBox x:Name="TitelTextBox" 
+                                         AutomationProperties.Name="Titel des Moduls"
+                                         AutomationProperties.HelpText="Read-only Feld"
+                                         Height="24" TextWrapping="Wrap" HorizontalScrollBarVisibility="Disabled" MaxLength="100"
+                                         Style="{StaticResource ReadOnlyFieldStyle}"/>
                             </StackPanel>
-                            <StackPanel Grid.Row="0" Grid.Column="1" Margin="10,10,0,10" VerticalAlignment="Top">
-                                <TextBlock Text="Kommentar zu Titel:" FontWeight="Bold"/>
-                                <TextBlock FontSize="11" Text=""/>
-                                <TextBox TextWrapping="Wrap" AcceptsReturn="True" MinLines="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
-                                         Height="{Binding ElementName=TitelTextBox, Path=ActualHeight}"/>
+                            <StackPanel Grid.Row="0" Grid.Column="1" Margin="5,10,0,10" VerticalAlignment="Top">
+                                <TextBlock Text="Kommentar zu Titel:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                                <TextBlock Text="" Style="{StaticResource CommentFieldDescriptionStyle}"/>
+                                <TextBox x:Name="TitelKommentarTextBox" TextWrapping="Wrap" AcceptsReturn="True" MinLines="3" MaxHeight="200"
+                                         MinHeight="{Binding ElementName=TitelTextBox, Path=ActualHeight}"
+                                         VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"/>
                             </StackPanel>
 
                             <!-- Row 1: Version (nur linke Spalte, kein Kommentarfeld) -->
                             <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,0,10">
-                                <TextBlock Text="Version:" FontWeight="Bold"/>
-                                <TextBlock Text="Versionsnummer des Moduls" FontStyle="Italic" FontSize="11"/>
+                                <TextBlock Text="Version:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                                <TextBlock Text="Versionsnummer des Moduls" Style="{StaticResource CommentFieldDescriptionStyle}"/>
                                 <TextBox x:Name="VersionTextBox" Height="24" TextWrapping="Wrap" HorizontalScrollBarVisibility="Disabled"
-                                         IsReadOnly="True" Background="#F5F5F5"/>
+                                         Style="{StaticResource ReadOnlyFieldStyle}"/>
                             </StackPanel>
 
                             <!-- Row 2: Modultyp -->
                             <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,0,10">
-                                <TextBlock Text="Modultyp:" FontWeight="Bold"/>
-                                <TextBlock Text="Typ des Moduls" FontStyle="Italic" FontSize="11"/>
+                                <TextBlock Text="Modultyp:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                                <TextBlock Text="Typ des Moduls" Style="{StaticResource CommentFieldDescriptionStyle}"/>
                                 <ListBox x:Name="ModultypListBox" SelectionMode="Multiple" IsEnabled="False" Background="#F5F5F5">
                                     <ListBoxItem Content="Pflichtmodul"/>
                                     <ListBoxItem Content="Wahlpflichtmodul"/>
@@ -88,30 +92,32 @@
                                     <ListBoxItem Content="Grundlagenmodul"/>
                                 </ListBox>
                             </StackPanel>
-                            <StackPanel Grid.Row="2" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
-                                <TextBlock Text="Kommentar zu Modultyp:" FontWeight="Bold"/>
-                                <TextBlock FontSize="11" Text=""/>
-                                <TextBox TextWrapping="Wrap" AcceptsReturn="True" MinLines="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
-                                         Height="{Binding ElementName=ModultypListBox, Path=ActualHeight}"/>
+                            <StackPanel Grid.Row="2" Grid.Column="1" Margin="5,0,0,10" VerticalAlignment="Top">
+                                <TextBlock Text="Kommentar zu Modultyp:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                                <TextBlock Text="" Style="{StaticResource CommentFieldDescriptionStyle}"/>
+                                <TextBox x:Name="ModultypKommentarTextBox" TextWrapping="Wrap" AcceptsReturn="True" MinLines="3" MaxHeight="200"
+                                         MinHeight="{Binding ElementName=ModultypListBox, Path=ActualHeight}"
+                                         VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"/>
                             </StackPanel>
 
                             <!-- Row 3: Studiengang -->
                             <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,0,10">
-                                <TextBlock Text="Studiengang:" FontWeight="Bold"/>
-                                <TextBlock Text="Empfohlener Studiengang" FontStyle="Italic" FontSize="11"/>
-                                <TextBox x:Name="StudiengangTextBox" Height="24" IsReadOnly="True" Background="#F5F5F5"/>
+                                <TextBlock Text="Studiengang:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                                <TextBlock Text="Empfohlener Studiengang" Style="{StaticResource CommentFieldDescriptionStyle}"/>
+                                <TextBox x:Name="StudiengangTextBox" Height="24" Style="{StaticResource ReadOnlyFieldStyle}"/>
                             </StackPanel>
-                            <StackPanel Grid.Row="3" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
-                                <TextBlock Text="Kommentar zu Studiengang:" FontWeight="Bold"/>
-                                <TextBlock FontSize="11" Text=""/>
-                                <TextBox TextWrapping="Wrap" AcceptsReturn="True" MinLines="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
-                                         Height="{Binding ElementName=StudiengangTextBox, Path=ActualHeight}"/>
+                            <StackPanel Grid.Row="3" Grid.Column="1" Margin="5,0,0,10" VerticalAlignment="Top">
+                                <TextBlock Text="Kommentar zu Studiengang:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                                <TextBlock Text="" Style="{StaticResource CommentFieldDescriptionStyle}"/>
+                                <TextBox x:Name="StudiengangKommentarTextBox" TextWrapping="Wrap" AcceptsReturn="True" MinLines="3" MaxHeight="200"
+                                         MinHeight="{Binding ElementName=StudiengangTextBox, Path=ActualHeight}"
+                                         VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"/>
                             </StackPanel>
 
                             <!-- Row 4: Semester -->
                             <StackPanel Grid.Row="4" Grid.Column="0" Margin="0,0,0,10">
-                                <TextBlock Text="Semester:" FontWeight="Bold"/>
-                                <TextBlock Text="Empfohlenes Semester" FontStyle="Italic" FontSize="11"/>
+                                <TextBlock Text="Semester:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                                <TextBlock Text="Empfohlenes Semester" Style="{StaticResource CommentFieldDescriptionStyle}"/>
                                 <ListBox x:Name="SemesterListBox" SelectionMode="Multiple" IsEnabled="False" Background="#F5F5F5">
                                     <ListBoxItem Content="1"/>
                                     <ListBoxItem Content="2"/>
@@ -123,17 +129,18 @@
                                     <ListBoxItem Content="8"/>
                                 </ListBox>
                             </StackPanel>
-                            <StackPanel Grid.Row="4" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
-                                <TextBlock Text="Kommentar zu Semester:" FontWeight="Bold"/>
-                                <TextBlock FontSize="11" Text=""/>
-                                <TextBox TextWrapping="Wrap" AcceptsReturn="True" MinLines="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
-                                         Height="{Binding ElementName=SemesterListBox, Path=ActualHeight}"/>
+                            <StackPanel Grid.Row="4" Grid.Column="1" Margin="5,0,0,10" VerticalAlignment="Top">
+                                <TextBlock Text="Kommentar zu Semester:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                                <TextBlock Text="" Style="{StaticResource CommentFieldDescriptionStyle}"/>
+                                <TextBox x:Name="SemesterKommentarTextBox" TextWrapping="Wrap" AcceptsReturn="True" MinLines="3" MaxHeight="200"
+                                         MinHeight="{Binding ElementName=SemesterListBox, Path=ActualHeight}"
+                                         VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"/>
                             </StackPanel>
 
                             <!-- Row 5: Prüfungsform -->
                             <StackPanel Grid.Row="5" Grid.Column="0" Margin="0,0,0,10">
-                                <TextBlock Text="Prüfungsform:" FontWeight="Bold"/>
-                                <TextBlock Text="Art der Prüfung" FontStyle="Italic" FontSize="11"/>
+                                <TextBlock Text="Prüfungsform:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                                <TextBlock Text="Art der Prüfung" Style="{StaticResource CommentFieldDescriptionStyle}"/>
                                 <ListBox x:Name="PruefungsformListBox" SelectionMode="Multiple" IsEnabled="False" Background="#F5F5F5">
                                     <ListBoxItem Content="Klausur"/>
                                     <ListBoxItem Content="Mündliche Prüfung"/>
@@ -145,17 +152,18 @@
                                     <ListBoxItem Content="Referat"/>
                                 </ListBox>
                             </StackPanel>
-                            <StackPanel Grid.Row="5" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
-                                <TextBlock Text="Kommentar zu Prüfungsform:" FontWeight="Bold"/>
-                                <TextBlock FontSize="11" Text=""/>
-                                <TextBox TextWrapping="Wrap" AcceptsReturn="True" MinLines="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
-                                         Height="{Binding ElementName=PruefungsformListBox, Path=ActualHeight}"/>
+                            <StackPanel Grid.Row="5" Grid.Column="1" Margin="5,0,0,10" VerticalAlignment="Top">
+                                <TextBlock Text="Kommentar zu Prüfungsform:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                                <TextBlock Text="" Style="{StaticResource CommentFieldDescriptionStyle}"/>
+                                <TextBox x:Name="PruefungsformKommentarTextBox" TextWrapping="Wrap" AcceptsReturn="True" MinLines="3" MaxHeight="200"
+                                         MinHeight="{Binding ElementName=PruefungsformListBox, Path=ActualHeight}"
+                                         VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"/>
                             </StackPanel>
 
                             <!-- Row 6: Turnus -->
                             <StackPanel Grid.Row="6" Grid.Column="0" Margin="0,0,0,10">
-                                <TextBlock Text="Turnus:" FontWeight="Bold"/>
-                                <TextBlock Text="Angebotsrhythmus" FontStyle="Italic" FontSize="11"/>
+                                <TextBlock Text="Turnus:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                                <TextBlock Text="Angebotsrhythmus" Style="{StaticResource CommentFieldDescriptionStyle}"/>
                                 <ListBox x:Name="TurnusListBox" SelectionMode="Multiple" IsEnabled="False" Background="#F5F5F5">
                                     <ListBoxItem Content="Jährlich (WiSe)"/>
                                     <ListBoxItem Content="Jährlich (SoSe)"/>
@@ -164,120 +172,129 @@
                                     <ListBoxItem Content="Blockveranstaltung"/>
                                 </ListBox>
                             </StackPanel>
-                            <StackPanel Grid.Row="6" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
-                                <TextBlock Text="Kommentar zu Turnus:" FontWeight="Bold"/>
-                                <TextBlock FontSize="11" Text=""/>
-                                <TextBox TextWrapping="Wrap" AcceptsReturn="True" MinLines="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
-                                         Height="{Binding ElementName=TurnusListBox, Path=ActualHeight}"/>
+                            <StackPanel Grid.Row="6" Grid.Column="1" Margin="5,0,0,10" VerticalAlignment="Top">
+                                <TextBlock Text="Kommentar zu Turnus:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                                <TextBlock Text="" Style="{StaticResource CommentFieldDescriptionStyle}"/>
+                                <TextBox x:Name="TurnusKommentarTextBox" TextWrapping="Wrap" AcceptsReturn="True" MinLines="3" MaxHeight="200"
+                                         MinHeight="{Binding ElementName=TurnusListBox, Path=ActualHeight}"
+                                         VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"/>
                             </StackPanel>
 
                             <!-- Row 7: ECTS -->
                             <StackPanel Grid.Row="7" Grid.Column="0" Margin="0,0,0,10">
-                                <TextBlock Text="ECTS:" FontWeight="Bold"/>
-                                <TextBlock Text="Leistungspunkte" FontStyle="Italic" FontSize="11"/>
-                                <TextBox x:Name="EctsTextBox" Height="24" IsReadOnly="True" Background="#F5F5F5"/>
+                                <TextBlock Text="ECTS:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                                <TextBlock Text="Leistungspunkte" Style="{StaticResource CommentFieldDescriptionStyle}"/>
+                                <TextBox x:Name="EctsTextBox" Height="24" Style="{StaticResource ReadOnlyFieldStyle}"/>
                             </StackPanel>
-                            <StackPanel Grid.Row="7" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
-                                <TextBlock Text="Kommentar zu ECTS:" FontWeight="Bold"/>
-                                <TextBlock FontSize="11" Text=""/>
-                                <TextBox TextWrapping="Wrap" AcceptsReturn="True" MinLines="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
-                                         Height="{Binding ElementName=EctsTextBox, Path=ActualHeight}"/>
+                            <StackPanel Grid.Row="7" Grid.Column="1" Margin="5,0,0,10" VerticalAlignment="Top">
+                                <TextBlock Text="Kommentar zu ECTS:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                                <TextBlock Text="" Style="{StaticResource CommentFieldDescriptionStyle}"/>
+                                <TextBox x:Name="EctsKommentarTextBox" TextWrapping="Wrap" AcceptsReturn="True" MinLines="3" MaxHeight="200"
+                                         MinHeight="{Binding ElementName=EctsTextBox, Path=ActualHeight}"
+                                         VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"/>
                             </StackPanel>
 
                             <!-- Row 8: Workload Präsenz -->
                             <StackPanel Grid.Row="8" Grid.Column="0" Margin="0,0,0,10">
-                                <TextBlock Text="Workload Präsenz:" FontWeight="Bold"/>
-                                <TextBlock Text="Zeitaufwand in Präsenz (Stunden)" FontStyle="Italic" FontSize="11"/>
-                                <TextBox x:Name="WorkloadPraesenzTextBox" Height="24" IsReadOnly="True" Background="#F5F5F5"/>
+                                <TextBlock Text="Workload Präsenz:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                                <TextBlock Text="Zeitaufwand in Präsenz (Stunden)" Style="{StaticResource CommentFieldDescriptionStyle}"/>
+                                <TextBox x:Name="WorkloadPraesenzTextBox" Height="24" Style="{StaticResource ReadOnlyFieldStyle}"/>
                             </StackPanel>
-                            <StackPanel Grid.Row="8" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
-                                <TextBlock Text="Kommentar zu Workload Präsenz:" FontWeight="Bold"/>
-                                <TextBlock FontSize="11" Text=""/>
-                                <TextBox TextWrapping="Wrap" AcceptsReturn="True" MinLines="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
-                                         Height="{Binding ElementName=WorkloadPraesenzTextBox, Path=ActualHeight}"/>
+                            <StackPanel Grid.Row="8" Grid.Column="1" Margin="5,0,0,10" VerticalAlignment="Top">
+                                <TextBlock Text="Kommentar zu Workload Präsenz:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                                <TextBlock Text="" Style="{StaticResource CommentFieldDescriptionStyle}"/>
+                                <TextBox x:Name="WorkloadPraesenzKommentarTextBox" TextWrapping="Wrap" AcceptsReturn="True" MinLines="3" MaxHeight="200"
+                                         MinHeight="{Binding ElementName=WorkloadPraesenzTextBox, Path=ActualHeight}"
+                                         VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"/>
                             </StackPanel>
 
                             <!-- Row 9: Workload Selbststudium -->
                             <StackPanel Grid.Row="9" Grid.Column="0" Margin="0,0,0,10">
-                                <TextBlock Text="Workload Selbststudium:" FontWeight="Bold"/>
-                                <TextBlock Text="Zeitaufwand im Selbststudium (Stunden)" FontStyle="Italic" FontSize="11"/>
-                                <TextBox x:Name="WorkloadSelbststudiumTextBox" Height="24" IsReadOnly="True" Background="#F5F5F5"/>
+                                <TextBlock Text="Workload Selbststudium:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                                <TextBlock Text="Zeitaufwand im Selbststudium (Stunden)" Style="{StaticResource CommentFieldDescriptionStyle}"/>
+                                <TextBox x:Name="WorkloadSelbststudiumTextBox" Height="24" Style="{StaticResource ReadOnlyFieldStyle}"/>
                             </StackPanel>
-                            <StackPanel Grid.Row="9" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
-                                <TextBlock Text="Kommentar zu Workload Selbststudium:" FontWeight="Bold"/>
-                                <TextBlock FontSize="11" Text=""/>
-                                <TextBox TextWrapping="Wrap" AcceptsReturn="True" MinLines="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
-                                         Height="{Binding ElementName=WorkloadSelbststudiumTextBox, Path=ActualHeight}"/>
+                            <StackPanel Grid.Row="9" Grid.Column="1" Margin="5,0,0,10" VerticalAlignment="Top">
+                                <TextBlock Text="Kommentar zu Workload Selbststudium:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                                <TextBlock Text="" Style="{StaticResource CommentFieldDescriptionStyle}"/>
+                                <TextBox x:Name="WorkloadSelbststudiumKommentarTextBox" TextWrapping="Wrap" AcceptsReturn="True" MinLines="3" MaxHeight="200"
+                                         MinHeight="{Binding ElementName=WorkloadSelbststudiumTextBox, Path=ActualHeight}"
+                                         VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"/>
                             </StackPanel>
 
                             <!-- Row 10: Verantwortlicher -->
                             <StackPanel Grid.Row="10" Grid.Column="0" Margin="0,0,0,10">
-                                <TextBlock Text="Verantwortlicher:" FontWeight="Bold"/>
-                                <TextBlock Text="Modulverantwortliche Person" FontStyle="Italic" FontSize="11"/>
+                                <TextBlock Text="Verantwortlicher:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                                <TextBlock Text="Modulverantwortliche Person" Style="{StaticResource CommentFieldDescriptionStyle}"/>
                                 <TextBox x:Name="VerantwortlicherTextBox" Height="24" TextWrapping="Wrap" HorizontalScrollBarVisibility="Disabled" MaxLength="100"
-                                         IsReadOnly="True" Background="#F5F5F5"/>
+                                         Style="{StaticResource ReadOnlyFieldStyle}"/>
                             </StackPanel>
-                            <StackPanel Grid.Row="10" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
-                                <TextBlock Text="Kommentar zu Verantwortlicher:" FontWeight="Bold"/>
-                                <TextBlock FontSize="11" Text=""/>
-                                <TextBox TextWrapping="Wrap" AcceptsReturn="True" MinLines="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
-                                         Height="{Binding ElementName=VerantwortlicherTextBox, Path=ActualHeight}"/>
+                            <StackPanel Grid.Row="10" Grid.Column="1" Margin="5,0,0,10" VerticalAlignment="Top">
+                                <TextBlock Text="Kommentar zu Verantwortlicher:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                                <TextBlock Text="" Style="{StaticResource CommentFieldDescriptionStyle}"/>
+                                <TextBox x:Name="VerantwortlicherKommentarTextBox" TextWrapping="Wrap" AcceptsReturn="True" MinLines="3" MaxHeight="200"
+                                         MinHeight="{Binding ElementName=VerantwortlicherTextBox, Path=ActualHeight}"
+                                         VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"/>
                             </StackPanel>
 
                             <!-- Row 11: Voraussetzungen -->
                             <StackPanel Grid.Row="11" Grid.Column="0" Margin="0,0,0,10">
-                                <TextBlock Text="Voraussetzungen:" FontWeight="Bold"/>
-                                <TextBlock Text="Erforderliche Vorkenntnisse oder Module" FontStyle="Italic" FontSize="11"/>
+                                <TextBlock Text="Voraussetzungen:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                                <TextBlock Text="Erforderliche Vorkenntnisse oder Module" Style="{StaticResource CommentFieldDescriptionStyle}"/>
                                 <TextBox x:Name="VoraussetzungenTextBox" AcceptsReturn="True" TextWrapping="Wrap" MinLines="4" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
-                                         IsReadOnly="True" Background="#F5F5F5"/>
+                                         Style="{StaticResource ReadOnlyFieldStyle}"/>
                             </StackPanel>
-                            <StackPanel Grid.Row="11" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
-                                <TextBlock Text="Kommentar zu Voraussetzungen:" FontWeight="Bold"/>
-                                <TextBlock FontSize="11" Text=""/>
-                                <TextBox TextWrapping="Wrap" AcceptsReturn="True" MinLines="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
-                                         Height="{Binding ElementName=VoraussetzungenTextBox, Path=ActualHeight}"/>
+                            <StackPanel Grid.Row="11" Grid.Column="1" Margin="5,0,0,10" VerticalAlignment="Top">
+                                <TextBlock Text="Kommentar zu Voraussetzungen:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                                <TextBlock Text="" Style="{StaticResource CommentFieldDescriptionStyle}"/>
+                                <TextBox x:Name="VoraussetzungenKommentarTextBox" TextWrapping="Wrap" AcceptsReturn="True" MinLines="3" MaxHeight="200"
+                                         MinHeight="{Binding ElementName=VoraussetzungenTextBox, Path=ActualHeight}"
+                                         VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"/>
                             </StackPanel>
 
                             <!-- Row 12: Lernziele -->
                             <StackPanel Grid.Row="12" Grid.Column="0" Margin="0,0,0,10">
-                                <TextBlock Text="Lernziele:" FontWeight="Bold"/>
-                                <TextBlock Text="Ziele, die Studierende erreichen sollen" FontStyle="Italic" FontSize="11"/>
+                                <TextBlock Text="Lernziele:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                                <TextBlock Text="Ziele, die Studierende erreichen sollen" Style="{StaticResource CommentFieldDescriptionStyle}"/>
                                 <TextBox x:Name="LernzieleTextBox" AcceptsReturn="True" TextWrapping="Wrap" MinLines="4" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
-                                         IsReadOnly="True" Background="#F5F5F5"/>
+                                         Style="{StaticResource ReadOnlyFieldStyle}"/>
                             </StackPanel>
-                            <StackPanel Grid.Row="12" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
-                                <TextBlock Text="Kommentar zu Lernziele:" FontWeight="Bold"/>
-                                <TextBlock FontSize="11" Text=""/>
-                                <TextBox TextWrapping="Wrap" AcceptsReturn="True" MinLines="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
-                                         Height="{Binding ElementName=LernzieleTextBox, Path=ActualHeight}"/>
+                            <StackPanel Grid.Row="12" Grid.Column="1" Margin="5,0,0,10" VerticalAlignment="Top">
+                                <TextBlock Text="Kommentar zu Lernziele:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                                <TextBlock Text="" Style="{StaticResource CommentFieldDescriptionStyle}"/>
+                                <TextBox x:Name="LernzieleKommentarTextBox" TextWrapping="Wrap" AcceptsReturn="True" MinLines="3" MaxHeight="200"
+                                         MinHeight="{Binding ElementName=LernzieleTextBox, Path=ActualHeight}"
+                                         VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"/>
                             </StackPanel>
 
                             <!-- Row 13: Lehrinhalte -->
                             <StackPanel Grid.Row="13" Grid.Column="0" Margin="0,0,0,10">
-                                <TextBlock Text="Lehrinhalte:" FontWeight="Bold"/>
-                                <TextBlock Text="Inhalte des Moduls" FontStyle="Italic" FontSize="11"/>
+                                <TextBlock Text="Lehrinhalte:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                                <TextBlock Text="Inhalte des Moduls" Style="{StaticResource CommentFieldDescriptionStyle}"/>
                                 <TextBox x:Name="LehrinhalteTextBox" AcceptsReturn="True" TextWrapping="Wrap" MinLines="4" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
-                                         IsReadOnly="True" Background="#F5F5F5"/>
+                                         Style="{StaticResource ReadOnlyFieldStyle}"/>
                             </StackPanel>
-                            <StackPanel Grid.Row="13" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
-                                <TextBlock Text="Kommentar zu Lehrinhalte:" FontWeight="Bold"/>
-                                <TextBlock FontSize="11" Text=""/>
-                                <TextBox TextWrapping="Wrap" AcceptsReturn="True" MinLines="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
-                                         Height="{Binding ElementName=LehrinhalteTextBox, Path=ActualHeight}"/>
+                            <StackPanel Grid.Row="13" Grid.Column="1" Margin="5,0,0,10" VerticalAlignment="Top">
+                                <TextBlock Text="Kommentar zu Lehrinhalte:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                                <TextBlock Text="" Style="{StaticResource CommentFieldDescriptionStyle}"/>
+                                <TextBox x:Name="LehrinhalteKommentarTextBox" TextWrapping="Wrap" AcceptsReturn="True" MinLines="3" MaxHeight="200"
+                                         MinHeight="{Binding ElementName=LehrinhalteTextBox, Path=ActualHeight}"
+                                         VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"/>
                             </StackPanel>
 
                             <!-- Row 14: Literatur -->
                             <StackPanel Grid.Row="14" Grid.Column="0" Margin="0,0,0,10">
-                                <TextBlock Text="Literatur:" FontWeight="Bold"/>
-                                <TextBlock Text="Empfohlene oder verpflichtende Literatur" FontStyle="Italic" FontSize="11"/>
+                                <TextBlock Text="Literatur:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                                <TextBlock Text="Empfohlene oder verpflichtende Literatur" Style="{StaticResource CommentFieldDescriptionStyle}"/>
                                 <TextBox x:Name="LiteraturTextBox" AcceptsReturn="True" TextWrapping="Wrap" MinLines="4" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
-                                         IsReadOnly="True" Background="#F5F5F5"/>
+                                         Style="{StaticResource ReadOnlyFieldStyle}"/>
                             </StackPanel>
-                            <StackPanel Grid.Row="14" Grid.Column="1" Margin="10,0,0,10" VerticalAlignment="Top">
-                                <TextBlock Text="Kommentar zu Literatur:" FontWeight="Bold"/>
-                                <TextBlock FontSize="11" Text=""/>
-                                <TextBox TextWrapping="Wrap" AcceptsReturn="True" MinLines="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
-                                         Height="{Binding ElementName=LiteraturTextBox, Path=ActualHeight}"/>
+                            <StackPanel Grid.Row="14" Grid.Column="1" Margin="5,0,0,10" VerticalAlignment="Top">
+                                <TextBlock Text="Kommentar zu Literatur:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                                <TextBlock Text="" Style="{StaticResource CommentFieldDescriptionStyle}"/>
+                                <TextBox x:Name="LiteraturKommentarTextBox" TextWrapping="Wrap" AcceptsReturn="True" MinLines="3" MaxHeight="200"
+                                         MinHeight="{Binding ElementName=LiteraturTextBox, Path=ActualHeight}"
+                                         VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"/>
                             </StackPanel>
                         </Grid>
                     </ScrollViewer>

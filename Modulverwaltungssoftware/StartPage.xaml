@@ -9,7 +9,7 @@
       Title="StartPage">
 
     <Grid>
-        <!-- UNTERER Bereich für Unterseiten -->
+        <!-- Hauptlayout: 3 Spalten (Button | Modulliste | Button) -->
         <Grid Grid.Row="1" Margin="0,10,0,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="120"/>
@@ -33,12 +33,12 @@
                                     <StackPanel>
                                         <!-- Block 1: Titel -->
                                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,4">
-                                            <TextBlock Text="Titel: " FontWeight="Bold"/>
+                                            <TextBlock Text="Titel: " Style="{StaticResource CommentFieldLabelStyle}"/>
                                             <TextBlock Text="{Binding Title}" Margin="6,0,0,0" TextTrimming="CharacterEllipsis"/>
                                         </StackPanel>
                                         <!-- Block 2: Studiengang -->
                                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,4">
-                                            <TextBlock Text="Studiengang: " FontWeight="Bold"/>
+                                            <TextBlock Text="Studiengang: " Style="{StaticResource CommentFieldLabelStyle}"/>
                                             <TextBlock Text="{Binding Studiengang}" Margin="6,0,0,0" TextTrimming="CharacterEllipsis"/>
                                         </StackPanel>
                                         <!-- Platz für Inhaltsvorschau (variabel einfügbar) -->

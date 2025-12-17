@@ -194,5 +194,22 @@ namespace Modulverwaltungssoftware
                 e.Handled = true;
             }
         }
+
+        // Validierung: Nur Zahlen in numerischen Feldern erlauben
+        private void NumericTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            // Nur Ziffern erlauben
+            e.Handled = !IsTextNumeric(e.Text);
+        }
+
+        private bool IsTextNumeric(string text)
+        {
+            foreach (char c in text)
+            {
+                if (!char.IsDigit(c))
+                    return false;
+            }
+            return true;
+        }
     }
 }

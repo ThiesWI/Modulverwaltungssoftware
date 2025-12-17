@@ -9,7 +9,7 @@
       Title="EditingView">
 
     <Grid>
-        <!-- UNTERER Bereich für Unterseiten bzw. "Views" -->
+        <!-- Hauptlayout: 3 Spalten (Leer | Formularfelder | Buttons) -->
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="120"/>
@@ -37,12 +37,12 @@
                               HorizontalAlignment="Stretch">
                   <!-- titel -->
                   <StackPanel Margin="0,10,0,10">
-                      <TextBlock Text="Titel:" FontWeight="Bold"/>
-                      <TextBlock Text="Titel des Moduls" FontStyle="Italic" FontSize="11"/>
-                      <TextBox x:Name="TitelTextBox" Height="24"
+                      <TextBlock Text="Titel:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                      <TextBlock Text="Titel des Moduls" Style="{StaticResource CommentFieldDescriptionStyle}"/>
+                      <TextBox x:Name="TitelTextBox" Height="24" Width="440"
                                TextWrapping="NoWrap"
                                HorizontalScrollBarVisibility="Disabled"
-                               MaxLength="100">
+                               MaxLength="50">
                           <TextBox.Style>
                               <Style TargetType="TextBox">
                                   <Style.Triggers>
@@ -56,18 +56,18 @@
                   </StackPanel>
                   <!-- version -->
                   <StackPanel Margin="0,0,0,10">
-                      <TextBlock Text="Version:" FontWeight="Bold"/>
-                      <TextBlock Text="Versionsnummer des Moduls" FontStyle="Italic" FontSize="11"/>
-                      <TextBox x:Name="VersionTextBox" Height="24"
+                      <TextBlock Text="Version:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                      <TextBlock Text="Versionsnummer des Moduls" Style="{StaticResource CommentFieldDescriptionStyle}"/>
+                      <TextBox x:Name="VersionTextBox" Height="24" Width="440"
                                TextWrapping="NoWrap"
                                HorizontalScrollBarVisibility="Disabled"
-                               IsReadOnly="True" Background="#F5F5F5"/>
+                               Style="{StaticResource ReadOnlyFieldStyle}"/>
                   </StackPanel>
                   <!-- modultyp -->
                   <StackPanel Margin="0,0,0,10">
-                      <TextBlock Text="Modultyp:" FontWeight="Bold"/>
-                      <TextBlock Text="Typ des Moduls" FontStyle="Italic" FontSize="11"/>
-                      <ListBox x:Name="ModultypListBox" SelectionMode="Multiple">
+                      <TextBlock Text="Modultyp:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                      <TextBlock Text="Typ des Moduls" Style="{StaticResource CommentFieldDescriptionStyle}"/>
+                      <ListBox x:Name="ModultypListBox" SelectionMode="Multiple" Width="440">
                           <ListBoxItem Content="Pflichtmodul"/>
                           <ListBoxItem Content="Wahlpflichtmodul"/>
                           <ListBoxItem Content="Wahlmodul (Freies Wahlfach)"/>
@@ -77,15 +77,15 @@
                   </StackPanel>
                   <!-- Studiengang -->
                   <StackPanel Margin="0,0,0,10">
-                      <TextBlock Text="Studiengang:" FontWeight="Bold"/>
-                      <TextBlock Text="Empfohlener Studiengang" FontStyle="Italic" FontSize="11"/>
-                      <TextBox x:Name="StudiengangTextBox" Height="24"/>
+                      <TextBlock Text="Studiengang:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                      <TextBlock Text="Empfohlener Studiengang" Style="{StaticResource CommentFieldDescriptionStyle}"/>
+                      <TextBox x:Name="StudiengangTextBox" Height="24" Width="440" MaxLength="50"/>
                   </StackPanel>
                   <!-- semester -->
                   <StackPanel Margin="0,0,0,10">
-                      <TextBlock Text="Semester:" FontWeight="Bold"/>
-                      <TextBlock Text="Empfohlenes Semester" FontStyle="Italic" FontSize="11"/>
-                      <ListBox x:Name="SemesterListBox" SelectionMode="Multiple">
+                      <TextBlock Text="Semester:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                      <TextBlock Text="Empfohlenes Semester" Style="{StaticResource CommentFieldDescriptionStyle}"/>
+                      <ListBox x:Name="SemesterListBox" SelectionMode="Multiple" Width="440">
                           <ListBoxItem Content="1"/>
                           <ListBoxItem Content="2"/>
                           <ListBoxItem Content="3"/>
@@ -98,9 +98,9 @@
                   </StackPanel>
                   <!-- pruefungsform -->
                   <StackPanel Margin="0,0,0,10">
-                      <TextBlock Text="Prüfungsform:" FontWeight="Bold"/>
-                      <TextBlock Text="Art der Prüfung" FontStyle="Italic" FontSize="11"/>
-                      <ListBox x:Name="PruefungsformListBox" SelectionMode="Multiple">
+                      <TextBlock Text="Prüfungsform:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                      <TextBlock Text="Art der Prüfung" Style="{StaticResource CommentFieldDescriptionStyle}"/>
+                      <ListBox x:Name="PruefungsformListBox" SelectionMode="Multiple" Width="440">
                           <ListBoxItem Content="Klausur"/>
                           <ListBoxItem Content="Mündliche Prüfung"/>
                           <ListBoxItem Content="Hausarbeit (Seminararbeit)"/>
@@ -113,9 +113,9 @@
                   </StackPanel>
                   <!-- turnus -->
                   <StackPanel Margin="0,0,0,10">
-                      <TextBlock Text="Turnus:" FontWeight="Bold"/>
-                      <TextBlock Text="Angebotsrhythmus" FontStyle="Italic" FontSize="11"/>
-                      <ListBox x:Name="TurnusListBox" SelectionMode="Multiple">
+                      <TextBlock Text="Turnus:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                      <TextBlock Text="Angebotsrhythmus" Style="{StaticResource CommentFieldDescriptionStyle}"/>
+                      <ListBox x:Name="TurnusListBox" SelectionMode="Multiple" Width="440">
                           <ListBoxItem Content="Jährlich (WiSe)"/>
                           <ListBoxItem Content="Jährlich (SoSe)"/>
                           <ListBoxItem Content="Halbjährlich (Jedes Semester)"/>
@@ -125,30 +125,30 @@
                   </StackPanel>
                   <!-- ects -->
                   <StackPanel Margin="0,0,0,10">
-                      <TextBlock Text="ECTS:" FontWeight="Bold"/>
-                      <TextBlock Text="Leistungspunkte" FontStyle="Italic" FontSize="11"/>
-                      <TextBox x:Name="EctsTextBox" Height="24"/>
+                      <TextBlock Text="ECTS:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                      <TextBlock Text="Leistungspunkte" Style="{StaticResource CommentFieldDescriptionStyle}"/>
+                      <TextBox x:Name="EctsTextBox" Height="24" Width="440" MaxLength="5" PreviewTextInput="NumericTextBox_PreviewTextInput"/>
                   </StackPanel>
                   <!-- workloadPraesenz -->
                   <StackPanel Margin="0,0,0,10">
-                      <TextBlock Text="Workload Präsenz:" FontWeight="Bold"/>
-                      <TextBlock Text="Zeitaufwand in Präsenz (Stunden)" FontStyle="Italic" FontSize="11"/>
-                      <TextBox x:Name="WorkloadPraesenzTextBox" Height="24"/>
+                      <TextBlock Text="Workload Präsenz:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                      <TextBlock Text="Zeitaufwand in Präsenz (Stunden)" Style="{StaticResource CommentFieldDescriptionStyle}"/>
+                      <TextBox x:Name="WorkloadPraesenzTextBox" Height="24" Width="440" MaxLength="5" PreviewTextInput="NumericTextBox_PreviewTextInput"/>
                   </StackPanel>
                   <!-- workloadSelbststudium -->
                   <StackPanel Margin="0,0,0,10">
-                      <TextBlock Text="Workload Selbststudium:" FontWeight="Bold"/>
-                      <TextBlock Text="Zeitaufwand im Selbststudium (Stunden)" FontStyle="Italic" FontSize="11"/>
-                      <TextBox x:Name="WorkloadSelbststudiumTextBox" Height="24"/>
+                      <TextBlock Text="Workload Selbststudium:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                      <TextBlock Text="Zeitaufwand im Selbststudium (Stunden)" Style="{StaticResource CommentFieldDescriptionStyle}"/>
+                      <TextBox x:Name="WorkloadSelbststudiumTextBox" Height="24" Width="440" MaxLength="5" PreviewTextInput="NumericTextBox_PreviewTextInput"/>
                   </StackPanel>
                   <!-- verantwortlicher -->
                   <StackPanel Margin="0,0,0,10">
-                      <TextBlock Text="Verantwortlicher:" FontWeight="Bold"/>
-                      <TextBlock Text="Modulverantwortliche Person" FontStyle="Italic" FontSize="11"/>
-                      <TextBox x:Name="VerantwortlicherTextBox" Height="24"
+                      <TextBlock Text="Verantwortlicher:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                      <TextBlock Text="Modulverantwortliche Person" Style="{StaticResource CommentFieldDescriptionStyle}"/>
+                      <TextBox x:Name="VerantwortlicherTextBox" Height="24" Width="440"
                                TextWrapping="NoWrap"
                                HorizontalScrollBarVisibility="Disabled"
-                               MaxLength="100">
+                               MaxLength="50">
                           <TextBox.Style>
                               <Style TargetType="TextBox">
                                   <Style.Triggers>
@@ -162,9 +162,9 @@
                   </StackPanel>
                   <!-- voraussetzungen -->
                   <StackPanel Margin="0,0,0,10">
-                      <TextBlock Text="Voraussetzungen:" FontWeight="Bold"/>
-                      <TextBlock Text="Erforderliche Vorkenntnisse oder Module" FontStyle="Italic" FontSize="11"/>
-                      <TextBox x:Name="VoraussetzungenTextBox"
+                      <TextBlock Text="Voraussetzungen:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                      <TextBlock Text="Erforderliche Vorkenntnisse oder Module" Style="{StaticResource CommentFieldDescriptionStyle}"/>
+                      <TextBox x:Name="VoraussetzungenTextBox" Width="440"
                                AcceptsReturn="True"
                                TextWrapping="Wrap"
                                MinLines="4"
@@ -183,9 +183,9 @@
                   </StackPanel>
                   <!-- lernziele -->
                   <StackPanel Margin="0,0,0,10">
-                      <TextBlock Text="Lernziele:" FontWeight="Bold"/>
-                      <TextBlock Text="Ziele, die Studierende erreichen sollen" FontStyle="Italic" FontSize="11"/>
-                      <TextBox x:Name="LernzieleTextBox"
+                      <TextBlock Text="Lernziele:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                      <TextBlock Text="Ziele, die Studierende erreichen sollen" Style="{StaticResource CommentFieldDescriptionStyle}"/>
+                      <TextBox x:Name="LernzieleTextBox" Width="440"
                                AcceptsReturn="True"
                                TextWrapping="Wrap"
                                MinLines="4"
@@ -204,9 +204,9 @@
                   </StackPanel>
                   <!-- lehrinhalte -->
                   <StackPanel Margin="0,0,0,10">
-                      <TextBlock Text="Lehrinhalte:" FontWeight="Bold"/>
-                      <TextBlock Text="Inhalte des Moduls" FontStyle="Italic" FontSize="11"/>
-                      <TextBox x:Name="LehrinhalteTextBox"
+                      <TextBlock Text="Lehrinhalte:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                      <TextBlock Text="Inhalte des Moduls" Style="{StaticResource CommentFieldDescriptionStyle}"/>
+                      <TextBox x:Name="LehrinhalteTextBox" Width="440"
                                AcceptsReturn="True"
                                TextWrapping="Wrap"
                                MinLines="4"
@@ -225,9 +225,9 @@
                   </StackPanel>
                   <!-- literatur -->
                   <StackPanel Margin="0,0,0,10">
-                      <TextBlock Text="Literatur:" FontWeight="Bold"/>
-                      <TextBlock Text="Empfohlene oder verpflichtende Literatur" FontStyle="Italic" FontSize="11"/>
-                      <TextBox x:Name="LiteraturTextBox"
+                      <TextBlock Text="Literatur:" Style="{StaticResource CommentFieldLabelStyle}"/>
+                      <TextBlock Text="Empfohlene oder verpflichtende Literatur" Style="{StaticResource CommentFieldDescriptionStyle}"/>
+                      <TextBox x:Name="LiteraturTextBox" Width="440"
                                AcceptsReturn="True"
                                TextWrapping="Wrap"
                                MinLines="4"

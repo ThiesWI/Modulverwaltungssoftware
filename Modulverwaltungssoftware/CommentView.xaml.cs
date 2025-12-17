@@ -107,11 +107,19 @@ namespace Modulverwaltungssoftware
 
             if (result == MessageBoxResult.Yes)
             {
+                var comments = new Dictionary<string, string>
+                {
+                    { "Titel", TitelKommentarTextBox.Text },
+                    { "Modultyp", ModultypKommentarTextBox.Text },
+                    // ... weitere Felder
+                };
+                // TODO: Kommentare speichern (z.B. in Repository)
+
                 MessageBox.Show("Der Kommentar wurde eingereicht.", "Bestätigung", MessageBoxButton.OK, MessageBoxImage.Information);
                 // TODO: Kommentarinhalt in Kombination mit der Version speichern
 
                 // Nach dem Abschicken zur ModulView navigieren
-                this.NavigationService?.Navigate(new ModulView());
+                this.NavigationService?.Navigate(new ModulView(_version));
             }
             // Bei Nein passiert nichts
         }
