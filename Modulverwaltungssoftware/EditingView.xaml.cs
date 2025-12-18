@@ -172,8 +172,8 @@ namespace Modulverwaltungssoftware
                 MessageBox.Show($"Neues Modul '{TitelTextBox.Text}' wurde erstellt.", 
                     "Gespeichert", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                // Zurück zur StartPage
-                this.NavigationService?.Navigate(new StartPage());
+                // Zur ModulView mit dem neu erstellten Modul navigieren
+                this.NavigationService?.Navigate(new ModulView(neueModulId));
             }
         }
 

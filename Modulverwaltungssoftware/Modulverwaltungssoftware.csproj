@@ -140,6 +140,9 @@
     <Compile Include="EditingView.xaml.cs">
       <DependentUpon>EditingView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="EditWithCommentsView.xaml.cs">
+      <DependentUpon>EditWithCommentsView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="LoginWindow.xaml.cs">
       <DependentUpon>LoginWindow.xaml</DependentUpon>
     </Compile>
@@ -170,6 +173,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="EditingView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="EditWithCommentsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -60,7 +60,19 @@ namespace Modulverwaltungssoftware
                 // Navigation History löschen
                 while (MainFrame.CanGoBack)
                     MainFrame.RemoveBackEntry();
+
+                // "Meine Projekte" bei jeder Navigation aktualisieren
+                RefreshMyProjects();
             };
+        }
+
+        // Lädt "Meine Projekte" neu
+        private void RefreshMyProjects()
+        {
+            string currentUser = "P. Brandenburg"; // Später aus Login-System
+            var meineModule = ModuleDataRepository.GetModulesByUser(currentUser);
+            var modulNamen = meineModule.Select(m => m.ModulName).OrderBy(n => n).ToList();
+            UpdateProjects(modulNamen);
         }
 
         // Aktualisiert die ObservableCollection mit den übergebenen Projektnamen

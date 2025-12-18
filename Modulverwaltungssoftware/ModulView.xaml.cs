@@ -37,8 +37,10 @@ namespace Modulverwaltungssoftware
             var modul = ModuleDataRepository.GetModule(modulId);
             if (modul == null) return;
 
-            // Versionen-Dropdown füllen
-            UpdateVersions(modul.Versionen.Select(v => v.VersionsNummer));
+            // Versionen-Dropdown füllen (mit "K" für kommentierte Versionen)
+            var versionDisplay = modul.Versionen.Select(v => 
+                v.HasComments ? $"{v.VersionsNummer}K" : v.VersionsNummer);
+            UpdateVersions(versionDisplay);
 
             // Neueste Version laden
             var neuesteVersion = modul.Versionen
@@ -58,9 +60,15 @@ namespace Modulverwaltungssoftware
 
             _currentVersion = versionNummer; // Aktuell geladene Version merken
 
+            // Prüfen, ob Version kommentiert wurde
+            var modul = ModuleDataRepository.GetModule(_currentModulId);
+            var version = modul?.Versionen.FirstOrDefault(v => v.VersionsNummer == versionNummer);
+            bool hasComments = version?.HasComments ?? false;
+            string versionDisplay = hasComments ? $"{versionNummer}K" : versionNummer;
+
             // Textfelder befüllen
             TitelTextBox.Text = data.Titel;
-            VersionTextBox.Text = versionNummer; // Version anzeigen
+            VersionTextBox.Text = versionDisplay; // Version mit "K"-Suffix anzeigen
             StudiengangTextBox.Text = data.Studiengang;
             EctsTextBox.Text = data.Ects.ToString();
             WorkloadPraesenzTextBox.Text = data.WorkloadPraesenz.ToString();
@@ -118,14 +126,32 @@ namespace Modulverwaltungssoftware
                 return;
             }
 
-            var sourceData = ModuleDataRepository.GetModuleVersion(_currentModulId, _currentVersion);
-            if (sourceData == null)
+            var modul = ModuleDataRepository.GetModule(_currentModulId);
+            var version = modul?.Versionen.FirstOrDefault(v => v.VersionsNummer == _currentVersion);
+            
+            if (version == null)
             {
                 MessageBox.Show("Fehler beim Laden der Version.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
-            this.NavigationService?.Navigate(new EditingView(_currentModulId, _currentVersion, sourceData));
+            var sourceData = ModuleDataRepository.GetModuleVersion(_currentModulId, _currentVersion);
+            
+            if (version.HasComments)
+            {
+                // Version hat Kommentare ? EditWithCommentsView (Bearbeiten MIT Kommentar-Kontext)
+                var comments = ModuleDataRepository.GetComments(_currentModulId, _currentVersion);
+                this.NavigationService?.Navigate(
+                    new EditWithCommentsView(_currentModulId, _currentVersion, sourceData, comments)
+                );
+            }
+            else
+            {
+                // Version ohne Kommentare ? Normale EditingView
+                this.NavigationService?.Navigate(
+                    new EditingView(_currentModulId, _currentVersion, sourceData)
+                );
+            }
         }
 
         private void ModulversionLöschen_Click(object sender, RoutedEventArgs e)
@@ -183,7 +209,7 @@ namespace Modulverwaltungssoftware
                 Literatur = sourceData.Literatur
             };
 
-            this.NavigationService?.Navigate(new CommentView(commentData, _currentVersion));
+            this.NavigationService?.Navigate(new CommentView(commentData, _currentModulId, _currentVersion));
         }
 
         private void ModulversionEinreichen_Click(object sender, RoutedEventArgs e)
@@ -242,7 +268,12 @@ namespace Modulverwaltungssoftware
 
             if (!string.IsNullOrEmpty(selectedVersion))
             {
-                LoadModuleVersion(selectedVersion);
+                // "K"-Suffix entfernen, falls vorhanden
+                string actualVersion = selectedVersion.EndsWith("K") 
+                    ? selectedVersion.Substring(0, selectedVersion.Length - 1) 
+                    : selectedVersion;
+                    
+                LoadModuleVersion(actualVersion);
                 MessageBox.Show($"Version {selectedVersion} geladen", "Version", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }

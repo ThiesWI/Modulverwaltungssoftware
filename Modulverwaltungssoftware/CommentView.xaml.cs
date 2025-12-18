@@ -40,22 +40,24 @@ namespace Modulverwaltungssoftware
         }
 
         private ModuleData _moduleData;
-        private string _version; // Version merken
+        private string _modulId;   // ModulID merken
+        private string _version;   // Version merken
 
         public CommentView()
         {
             InitializeComponent();
         }
 
-        public CommentView(ModuleData moduleData, string version) : this()
+        public CommentView(ModuleData moduleData, string modulId, string version) : this()
         {
             _moduleData = moduleData;
+            _modulId = modulId;
             _version = version;
             LoadModuleData();
         }
 
         // Legacy-Konstruktor (falls noch verwendet)
-        public CommentView(ModuleData moduleData) : this(moduleData, "unbekannt")
+        public CommentView(ModuleData moduleData, string version) : this(moduleData, null, version)
         {
         }
 
@@ -107,21 +109,64 @@ namespace Modulverwaltungssoftware
 
             if (result == MessageBoxResult.Yes)
             {
-                var comments = new Dictionary<string, string>
+                // Kommentare aus UI auslesen
+                var fieldComments = new List<ModuleDataRepository.FieldComment>();
+                
+                // Alle Kommentarfelder durchgehen und nicht-leere Kommentare speichern
+                AddCommentIfNotEmpty(fieldComments, "Titel", TitelKommentarTextBox.Text);
+                AddCommentIfNotEmpty(fieldComments, "Modultyp", ModultypKommentarTextBox.Text);
+                AddCommentIfNotEmpty(fieldComments, "Studiengang", StudiengangKommentarTextBox.Text);
+                AddCommentIfNotEmpty(fieldComments, "Semester", SemesterKommentarTextBox.Text);
+                AddCommentIfNotEmpty(fieldComments, "Prüfungsform", PruefungsformKommentarTextBox.Text);
+                AddCommentIfNotEmpty(fieldComments, "Turnus", TurnusKommentarTextBox.Text);
+                AddCommentIfNotEmpty(fieldComments, "ECTS", EctsKommentarTextBox.Text);
+                AddCommentIfNotEmpty(fieldComments, "Workload Präsenz", WorkloadPraesenzKommentarTextBox.Text);
+                AddCommentIfNotEmpty(fieldComments, "Workload Selbststudium", WorkloadSelbststudiumKommentarTextBox.Text);
+                AddCommentIfNotEmpty(fieldComments, "Verantwortlicher", VerantwortlicherKommentarTextBox.Text);
+                AddCommentIfNotEmpty(fieldComments, "Voraussetzungen", VoraussetzungenKommentarTextBox.Text);
+                AddCommentIfNotEmpty(fieldComments, "Lernziele", LernzieleKommentarTextBox.Text);
+                AddCommentIfNotEmpty(fieldComments, "Lehrinhalte", LehrinhalteKommentarTextBox.Text);
+                AddCommentIfNotEmpty(fieldComments, "Literatur", LiteraturKommentarTextBox.Text);
+
+                // Kommentare im Repository speichern
+                if (!string.IsNullOrEmpty(_modulId) && !string.IsNullOrEmpty(_version))
                 {
-                    { "Titel", TitelKommentarTextBox.Text },
-                    { "Modultyp", ModultypKommentarTextBox.Text },
-                    // ... weitere Felder
-                };
-                // TODO: Kommentare speichern (z.B. in Repository)
+                    string currentUser = "Prof. Dr. Lange"; // Später aus Login-System
+                    ModuleDataRepository.SaveComments(_modulId, _version, fieldComments, currentUser);
+                    
+                    MessageBox.Show($"Der Kommentar wurde eingereicht. Die Version wurde als kommentiert markiert ({fieldComments.Count} Kommentar(e)).", 
+                        "Bestätigung", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show("Der Kommentar wurde eingereicht.", "Bestätigung", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
 
-                MessageBox.Show("Der Kommentar wurde eingereicht.", "Bestätigung", MessageBoxButton.OK, MessageBoxImage.Information);
-                // TODO: Kommentarinhalt in Kombination mit der Version speichern
-
-                // Nach dem Abschicken zur ModulView navigieren
-                this.NavigationService?.Navigate(new ModulView(_version));
+                // Zurück zur ModulView mit korrekter ModulID
+                if (!string.IsNullOrEmpty(_modulId))
+                {
+                    this.NavigationService?.Navigate(new ModulView(_modulId));
+                }
+                else
+                {
+                    this.NavigationService?.Navigate(new StartPage());
+                }
             }
             // Bei Nein passiert nichts
+        }
+
+        private void AddCommentIfNotEmpty(List<ModuleDataRepository.FieldComment> comments, string fieldName, string commentText)
+        {
+            if (!string.IsNullOrWhiteSpace(commentText))
+            {
+                comments.Add(new ModuleDataRepository.FieldComment
+                {
+                    FieldName = fieldName,
+                    Comment = commentText.Trim(),
+                    CommentDate = DateTime.Now,
+                    Commenter = "Prof. Dr. Lange" // Später aus Login-System
+                });
+            }
         }
 
         private void KommentarVerwerfen_Click(object sender, RoutedEventArgs e)
@@ -134,8 +179,15 @@ namespace Modulverwaltungssoftware
 
             if (result == MessageBoxResult.Yes)
             {
-                // Zurück zur ModulView navigieren
-                this.NavigationService?.Navigate(new ModulView());
+                // Zurück zur ModulView mit korrekter ModulID
+                if (!string.IsNullOrEmpty(_modulId))
+                {
+                    this.NavigationService?.Navigate(new ModulView(_modulId));
+                }
+                else
+                {
+                    this.NavigationService?.Navigate(new StartPage());
+                }
             }
             // Bei Nein passiert nichts
         }
