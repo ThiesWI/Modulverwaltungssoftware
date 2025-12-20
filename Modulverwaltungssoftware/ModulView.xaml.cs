@@ -91,11 +91,11 @@ namespace Modulverwaltungssoftware
                 ? string.Join(Environment.NewLine, data.Literatur)
                 : string.Empty;
 
-            // ListBoxen befüllen (vorhandene Items auswählen)
-            // SelectListBoxItems(ModultypListBox, data.Modul.Modultyp.ToString());
-            // SelectListBoxItems(SemesterListBox, data.Semester?.Select(s => s.ToString()).ToList());
-            // SelectListBoxItems(PruefungsformListBox, data.Pruefungsformen);
-            // SelectListBoxItems(TurnusListBox, data.Modul.Turnus != null ? new List<string> { data.Modul.Turnus.ToString() } : new List<string>());
+            // ListBoxen korrekt befüllen
+            SelectListBoxItems(ModultypListBox, new List<string> { data.Modul.Modultyp.ToString() });
+            SelectListBoxItems(SemesterListBox, new List<string> { data.Modul.EmpfohlenesSemester.ToString() });
+            SelectListBoxItems(PruefungsformListBox, new List<string> { data.Modul.PruefungsForm.ToString() });
+            SelectListBoxItems(TurnusListBox, new List<string> { data.Modul.Turnus.ToString() });
         }
 
         // Methode so anpassen, dass sie auch null akzeptiert
