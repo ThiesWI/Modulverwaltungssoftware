@@ -31,5 +31,7 @@ namespace Modulverwaltungssoftware
         {
             RollenName = "Gast";
         }
+        [NotMapped]
+        public static Benutzer CurrentUser { get; set; }
     }
 }

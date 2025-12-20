@@ -50,7 +50,7 @@ namespace Modulverwaltungssoftware.Services
                             Name = "Gremium",
                             Email = "gremium@hochschule.de",
                             Passwort = "dozent123",
-                            RollenName = "Dozent",
+                            RollenName = "Gremium",
                         };
                         var admin = new Benutzer
                         {
@@ -102,6 +102,7 @@ namespace Modulverwaltungssoftware.Services
                             new Modul
                             {
                                 GueltigAb = DateTime.Now,
+                                Studiengang = "B.Sc. WI",
                                 ModulnameDE = "Software Engineering I",
                                 ModulnameEN = "Software Engineering I",
                                 EmpfohlenesSemester = 3,
@@ -144,6 +145,7 @@ namespace Modulverwaltungssoftware.Services
                             new Modul
                             {
                                 GueltigAb = DateTime.Now.AddYears(-2),
+                                Studiengang = "B.Sc. WI",
                                 ModulnameDE = "Mathematik I",
                                 ModulnameEN = "Mathematics I",
                                 EmpfohlenesSemester = 1,
@@ -170,6 +172,7 @@ namespace Modulverwaltungssoftware.Services
                             new Modul
                             {
                                 GueltigAb = DateTime.Now.AddYears(-1),
+                                Studiengang = "B.A. BWL",
                                 ModulnameDE = "Projektmanagement",
                                 ModulnameEN = "Project Management",
                                 EmpfohlenesSemester = 4,
@@ -195,6 +198,7 @@ namespace Modulverwaltungssoftware.Services
                             new Modul
                             {
                                 GueltigAb = DateTime.Now.AddYears(-1),
+                                Studiengang = "B.Sc. WI",
                                 ModulnameDE = "Programming Basics",
                                 ModulnameEN = "Programming Basics",
                                 EmpfohlenesSemester = 1,
@@ -220,6 +224,7 @@ namespace Modulverwaltungssoftware.Services
                             new Modul
                             {
                                 GueltigAb = DateTime.Now.AddMonths(-6),
+                                Studiengang = "B.A. BWL",
                                 ModulnameDE = "Rechnungswesen 2",
                                 EmpfohlenesSemester = 2,
                                 DauerInSemestern = 1,
@@ -244,6 +249,7 @@ namespace Modulverwaltungssoftware.Services
                             new Modul
                             {
                                 ModulnameDE = "Rechtschreibung und Grammatik",
+                                Studiengang = "B.A. TuerkischFuerAnfaenger",
                                 EmpfohlenesSemester = 5,
                                 DauerInSemestern = 2,
                                 VoraussetzungenDb = "Semesterbeitrag rechtzeitig bezahlt",
@@ -268,6 +274,7 @@ namespace Modulverwaltungssoftware.Services
                             {
                                 ModulnameDE = "Einführung in die Pyrotechnik",
                                 ModulnameEN = "Pyrotechnics I",
+                                Studiengang = "B.SC. Buehneneffekte",
                                 EmpfohlenesSemester = 5,
                                 DauerInSemestern = 1,
                                 VoraussetzungenDb = null,
@@ -302,6 +309,7 @@ namespace Modulverwaltungssoftware.Services
                                 GueltigAb = DateTime.Now.AddMonths(-30),
                                 ModulnameDE = "Cooking Basics",
                                 ModulnameEN = "Cooking Basics",
+                                Studiengang = "B.Sc. Culinary Arts",
                                 EmpfohlenesSemester = 1,
                                 DauerInSemestern = 1,
                                 VoraussetzungenDb = null,
@@ -327,6 +335,7 @@ namespace Modulverwaltungssoftware.Services
                                 GueltigAb = DateTime.Now.AddYears(-1),
                                 ModulnameDE = "IT-Recht",
                                 ModulnameEN = "IT-Law",
+                                Studiengang = "B.Sc. Wirtschaftsinformatik",
                                 EmpfohlenesSemester = 4,
                                 DauerInSemestern = 1,
                                 VoraussetzungenDb = null,
@@ -359,6 +368,7 @@ namespace Modulverwaltungssoftware.Services
                             {
                                 ModulnameDE = "Thermodynamik I",
                                 ModulnameEN = null,
+                                Studiengang = "B.Eng. Maschinenbau",
                                 EmpfohlenesSemester = 2,
                                 DauerInSemestern = 1,
                                 VoraussetzungenDb = "Grundlagen Maschinenbau",
@@ -391,6 +401,7 @@ namespace Modulverwaltungssoftware.Services
                             {
                                 ModulnameDE = "Grundlagen Maschinenbau",
                                 ModulnameEN = null,
+                                Studiengang = "B.Eng. Maschinenbau",
                                 EmpfohlenesSemester = 1,
                                 DauerInSemestern = 1,
                                 VoraussetzungenDb = null,

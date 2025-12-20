@@ -2,7 +2,10 @@
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity.Validation; // Für Validierungsfehler
 using System.Data.Entity.Infrastructure; // Für Concurrency (Gleichzeitigkeit)
-using System.Data.Entity.Core; // Für DB-Verbindungsfehler
+using System.Data.Entity.Core;
+using System.Windows.Documents;
+using System.Collections.Generic;
+using System.Linq; // Für DB-Verbindungsfehler
 
 namespace Modulverwaltungssoftware
 {
@@ -30,7 +33,32 @@ namespace Modulverwaltungssoftware
                         GehoertZuModulVersionID = modulVersionID
                     };
                     db.Kommentar.Add(neuerKommentar);
+
+                    var modulVersion = db.ModulVersion.FirstOrDefault(mv => mv.ModulVersionID == modulVersionID);
+                    if (modulVersion != null)
+                    {
+                        modulVersion.hatKommentar = true;
+                    }
+
                     db.SaveChanges();
+                }
+            }
+            catch (Exception ex) { throw; }
+        }
+        public static List<Kommentar> getKommentare(int modulID)
+        {
+            try
+            {
+                using (var db = new Services.DatabaseContext())
+                {
+                    var kommentare = db.Kommentar
+                        .Where(k => k.GehoertZuModulID == modulID)
+                        .OrderByDescending(k => k.ErstellungsDatum)
+                        .ToList();
+                    if (kommentare == null || kommentare.Count == 0)
+                        throw new KeyNotFoundException($"Keine Kommentare für ModulID {modulID} gefunden.");
+                    else
+                        return kommentare;
                 }
             }
             catch (Exception ex) { throw; }

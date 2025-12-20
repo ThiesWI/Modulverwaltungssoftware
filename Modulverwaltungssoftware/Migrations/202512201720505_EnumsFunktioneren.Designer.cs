@@ -7,13 +7,13 @@ namespace Modulverwaltungssoftware.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.5.1")]
-    public sealed partial class BenachrichtigungImplementiert : IMigrationMetadata
+    public sealed partial class EnumsFunktioneren : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(BenachrichtigungImplementiert));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(EnumsFunktioneren));
         
         string IMigrationMetadata.Id
         {
-            get { return "202512151512186_BenachrichtigungImplementiert"; }
+            get { return "202512201720505_EnumsFunktioneren"; }
         }
         
         string IMigrationMetadata.Source

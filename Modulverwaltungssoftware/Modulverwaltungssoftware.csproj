@@ -184,9 +184,24 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Migrations\202512151512186_BenachrichtigungImplementiert.cs" />
-    <Compile Include="Migrations\202512151512186_BenachrichtigungImplementiert.Designer.cs">
-      <DependentUpon>202512151512186_BenachrichtigungImplementiert.cs</DependentUpon>
+    <Compile Include="CommentView.xaml.cs">
+      <DependentUpon>CommentView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="EditingView.xaml.cs">
+      <DependentUpon>EditingView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="EditWithCommentsView.xaml.cs">
+      <DependentUpon>EditWithCommentsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="LoginPage.xaml.cs">
+      <DependentUpon>LoginPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="LoginWindow.xaml.cs">
+      <DependentUpon>LoginWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202512201720505_EnumsFunktioneren.cs" />
+    <Compile Include="Migrations\202512201720505_EnumsFunktioneren.Designer.cs">
+      <DependentUpon>202512201720505_EnumsFunktioneren.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Benachrichtigung.cs" />
@@ -197,6 +212,10 @@
     <Compile Include="Models\Rolle.cs" />
     <Compile Include="Models\RollenKonfiguration.cs" />
     <Compile Include="Models\Studiengang.cs" />
+    <Compile Include="ModuleDataRepository.cs" />
+    <Compile Include="ModulView.xaml.cs">
+      <DependentUpon>ModulView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Services\BenachrichtigungsService.cs" />
     <Compile Include="Services\DatabaseContext.cs" />
     <Compile Include="Services\DatabaseInitializationService.cs" />
@@ -206,6 +225,29 @@
     <Compile Include="Services\PDFService.cs" />
     <Compile Include="Services\PlausibilitaetsService.cs" />
     <Compile Include="Services\WorkflowController.cs" />
+    <Compile Include="StartPage.xaml.cs">
+      <DependentUpon>StartPage.xaml</DependentUpon>
+    </Compile>
+    <Page Include="CommentView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="EditingView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="EditWithCommentsView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="LoginPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="LoginWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -218,6 +260,14 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="ModulView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="StartPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -233,8 +283,8 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <EmbeddedResource Include="Migrations\202512151512186_BenachrichtigungImplementiert.resx">
-      <DependentUpon>202512151512186_BenachrichtigungImplementiert.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\202512201720505_EnumsFunktioneren.resx">
+      <DependentUpon>202512201720505_EnumsFunktioneren.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -251,6 +301,10 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="ViewModels\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="logo.png" />
+    <Resource Include="notification.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\QuestPDF.2025.12.0\build\net4\QuestPDF.targets" Condition="Exists('..\packages\QuestPDF.2025.12.0\build\net4\QuestPDF.targets')" />

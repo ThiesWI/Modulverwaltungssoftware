@@ -3,7 +3,7 @@
     using System;
     using System.Data.Entity.Migrations;
     
-    public partial class BenachrichtigungImplementiert : DbMigration
+    public partial class EnumsFunktioneren : DbMigration
     {
         public override void Up()
         {
@@ -50,8 +50,12 @@
                 c => new
                     {
                         ModulID = c.Int(nullable: false, identity: true),
+                        Studiengang = c.String(nullable: false, maxLength: 200),
                         ModulnameDE = c.String(nullable: false, maxLength: 200),
                         ModulnameEN = c.String(maxLength: 200),
+                        Modultyp = c.Int(nullable: false),
+                        Turnus = c.Int(nullable: false),
+                        PruefungsForm = c.Int(nullable: false),
                         EmpfohlenesSemester = c.Int(nullable: false),
                         GueltigAb = c.DateTime(nullable: false),
                         DauerInSemestern = c.Int(nullable: false),
@@ -66,6 +70,7 @@
                         ModulVersionID = c.Int(nullable: false, identity: true),
                         ModulId = c.Int(nullable: false),
                         Versionsnummer = c.Int(nullable: false),
+                        hatKommentar = c.Boolean(nullable: false),
                         GueltigAbSemester = c.String(nullable: false, maxLength: 25),
                         ModulStatus = c.Int(nullable: false),
                         LetzteAenderung = c.DateTime(nullable: false),

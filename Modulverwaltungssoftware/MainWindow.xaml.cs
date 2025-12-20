@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+
 namespace Modulverwaltungssoftware
 {
     /// <summary>
@@ -20,9 +21,181 @@ namespace Modulverwaltungssoftware
     /// </summary>
     public partial class MainWindow : Window
     {
+        // Observable collection that holds project names for the dropdown menu
+        public System.Collections.ObjectModel.ObservableCollection<string> Projects { get; } =
+            new System.Collections.ObjectModel.ObservableCollection<string>();
+
+        // Property für User-Info Anzeige (Platzhalter, später dynamisch)
+        public string UserInfo => $"User: {Benutzer.CurrentUser.Name}\nRolle: {Benutzer.CurrentUser.RollenName}";
+
         public MainWindow()
         {
             InitializeComponent();
+            // Set DataContext so bindings in XAML can resolve to this window
+            this.DataContext = this;
+
+            // Popup beim Fenster-Deaktivieren schließen
+            this.Deactivated += (s, e) =>
+            {
+                if (ProjectsPopup != null) ProjectsPopup.IsOpen = false;
+            };
+
+            // MEINE PROJEKTE laden (nur Module des Users)
+            string currentUser = Benutzer.CurrentUser.Name;
+            string rolle = Benutzer.CurrentUser.RollenName;
+            var meineModule = ModulRepository.getAllModule();
+            var modulNamen = meineModule.Select(m => m.ModulnameDE).ToList();
+            UpdateProjects(modulNamen);
+
+            // Initial navigation
+            MainFrame.Navigate(new StartPage());
+
+            // Dynamischer Titel & Navigation History löschen
+            MainFrame.Navigated += (s, e) =>
+            {
+                if (e.Content is Page page && !string.IsNullOrEmpty(page.Title))
+                    this.Title = $"Modulverwaltung – {page.Title}";
+                else
+                    this.Title = "Modulverwaltung";
+
+                // Navigation History löschen
+                while (MainFrame.CanGoBack)
+                    MainFrame.RemoveBackEntry();
+
+                // "Meine Projekte" bei jeder Navigation aktualisieren
+                RefreshMyProjects();
+            };
         }
+
+        // Lädt "Meine Projekte" neu
+        private void RefreshMyProjects()
+        {
+            string currentUser = Benutzer.CurrentUser.Name;
+            string rolle = Benutzer.CurrentUser.RollenName;
+            var meineModule = ModulRepository.getAllModule();
+            var modulNamen = meineModule.Select(m => m.ModulnameDE).OrderBy(n => n).ToList();
+            UpdateProjects(modulNamen);
+        }
+
+        // Aktualisiert die ObservableCollection mit den übergebenen Projektnamen
+        private void UpdateProjects(IEnumerable<string> projektListe)
+        {
+            Projects.Clear();
+            if (projektListe == null)
+                return;
+
+            foreach (var p in projektListe)
+            {
+                if (p != null)
+                    Projects.Add(p);
+            }
+        }
+
+        private void LogoButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Prüfen, ob aktuell eine bearbeitbare Ansicht geöffnet ist
+            var currentPage = MainFrame.Content as Page;
+            bool isEditingOrComment = currentPage is EditingView || currentPage is CommentView;
+
+            if (!isEditingOrComment)
+            {
+                MainFrame.Navigate(new StartPage());
+                return;
+            }
+
+            var result = MessageBox.Show(
+                "Der aktuelle Stand wurde noch nicht gespeichert. Soll dieser verworfen werden?",
+                "Warnung",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                MainFrame.Navigate(new StartPage());
+            }
+            // Bei Nein passiert nichts
+        }
+
+        private void OpenProjectsMenu_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.ContextMenu != null)
+            {
+                // Ensure ContextMenu has the correct placement target so binding to PlacementTarget.DataContext works
+                btn.ContextMenu.PlacementTarget = btn;
+                // Force placement directly below the button
+                btn.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+                btn.ContextMenu.HorizontalOffset = 0;
+                btn.ContextMenu.VerticalOffset = 0;
+                btn.ContextMenu.IsOpen = true;
+            }
+        }
+
+        private void ProjectMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            // Optional: determine which project was clicked
+            string projectName = null;
+            if (sender is MenuItem mi && mi.DataContext is string s)
+                projectName = s;
+
+            // Navigate to ModulView (could pass projectName via constructor or set on the page)
+            MainFrame.Navigate(new ModulView());
+        }
+
+        // Öffnet/Schließt das Projekte-Popup unter dem Button
+        private void ToggleProjectsPopup(object sender, RoutedEventArgs e)
+        {
+            // Find the popup by name in the visual tree
+            var popup = this.FindName("ProjectsPopup") as System.Windows.Controls.Primitives.Popup;
+            if (popup != null)
+            {
+                popup.IsOpen = !popup.IsOpen;
+            }
+        }
+
+        // Klick auf Popup-Item: zur ModulView navigieren
+        private void ProjectPopupItem_Click(object sender, RoutedEventArgs e)
+        {
+            string modulName = (sender as Button)?.Content?.ToString();
+
+            // ModulId anhand Modulname finden
+            var modul = ModuleDataRepository.GetAllModules()
+                .FirstOrDefault(m => m.ModulName == modulName);
+
+            if (modul != null)
+            {
+                // ModulId ist bereits ein string, aber der Konstruktor erwartet einen int.
+                // Daher muss die ModulId in einen int konvertiert werden.
+                if (int.TryParse(modul.ModulId, out int modulIdInt))
+                {
+                    MainFrame.Navigate(new ModulView(modulIdInt));
+                }
+                else
+                {
+                    MessageBox.Show("Ungültige ModulId: " + modul.ModulId, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+
+            var popup = this.FindName("ProjectsPopup") as System.Windows.Controls.Primitives.Popup;
+            if (popup != null)
+            {
+                popup.IsOpen = false;
+            }
+        }
+
+        private void NotificationButton_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Keine neuen Benachrichtigungen.", "Benachrichtigungen", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        // Tastatur-Unterstützung für Projekte-Dropdown (Enter/Space)
+        private void ProjectsButton_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter || e.Key == Key.Space)
+            {
+                ToggleProjectsPopup(sender, new RoutedEventArgs());
+                e.Handled = true;
+            }
+        }
+
     }
 }

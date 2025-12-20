@@ -1,25 +1,37 @@
 ﻿using System;
+using System.Linq;
 using System.Security.Authentication;
 
 namespace Modulverwaltungssoftware.Services
 {
     public class LoginService
     {
-        public string Login(string benutzername, string passwort) // DB einbinden
+        public static Benutzer Login(string benutzernameOderEmail, string passwort)
         {
             using (var db = new DatabaseContext())
             {
                 try
                 {
-                    var benutzer = db.Benutzer.Find(benutzername, passwort);
+                    var benutzer = db.Benutzer
+                        .FirstOrDefault(b =>
+                            (b.Name == benutzernameOderEmail || b.Email == benutzernameOderEmail)
+                            && b.Passwort == passwort);
+
                     if (benutzer == null)
                     {
-                        throw new AuthenticationException("Anmeldung fehlgeschlagen. Überprüfen Sie ihre Eingaben.");
+                        return null;
                     }
-                    else return benutzer.RollenName;
+                    else
+                    {
+                        benutzer.Passwort = null;
+                        return benutzer;
+                    }
                 }
-                catch (Exception ex) { throw; }
+                catch (Exception)
+                {
+                    throw;
                 }
+            }
         }
     }
 }

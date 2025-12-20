@@ -105,7 +105,7 @@ namespace Modulverwaltungssoftware
             }
             catch (Exception ex) { throw; }
             }
-        public Modul getModulDetails(int modulID)
+        public static Modul getModulDetails(int modulID)
         {try
             {
                 using (var db = new Services.DatabaseContext())

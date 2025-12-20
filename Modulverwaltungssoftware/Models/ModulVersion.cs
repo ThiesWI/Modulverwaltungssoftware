@@ -19,6 +19,8 @@ namespace Modulverwaltungssoftware
         public int ModulId { get; set; }
         [Required]
         public int Versionsnummer { get; set; }
+        [Required]
+        public bool hatKommentar { get; set; } = false;
         public virtual Modul Modul { get; set; }
         [Required]
         [StringLength(25)]
@@ -45,10 +47,53 @@ namespace Modulverwaltungssoftware
         public List<string> Inhaltsgliederung { get; set; }
         [Required]
         [StringLength(4000)]
-        public string LernergebnisseDb { get { return JsonConvert.SerializeObject(Lernergebnisse); } set { if (string.IsNullOrEmpty(value)) { Lernergebnisse = new List<string>(); } else { Lernergebnisse = JsonConvert.DeserializeObject<List<string>>(value); } } }
+        public string LernergebnisseDb
+        {
+            get => JsonConvert.SerializeObject(Lernergebnisse);
+            set
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    Lernergebnisse = new List<string>();
+                }
+                else
+                {
+                    try
+                    {
+                        Lernergebnisse = JsonConvert.DeserializeObject<List<string>>(value);
+                    }
+                    catch
+                    {
+                        Lernergebnisse = new List<string> { value };
+                    }
+                }
+            }
+        }
+
         [Required]
         [StringLength(4000)]
-        public string InhaltsgliederungDb { get { return JsonConvert.SerializeObject(Inhaltsgliederung); } set { if (string.IsNullOrEmpty(value)) { Inhaltsgliederung = new List<string>(); } else { Inhaltsgliederung = JsonConvert.DeserializeObject<List<string>>(value); } } }
+        public string InhaltsgliederungDb
+        {
+            get => JsonConvert.SerializeObject(Inhaltsgliederung);
+            set
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    Inhaltsgliederung = new List<string>();
+                }
+                else
+                {
+                    try
+                    {
+                        Inhaltsgliederung = JsonConvert.DeserializeObject<List<string>>(value);
+                    }
+                    catch
+                    {
+                        Inhaltsgliederung = new List<string> { value };
+                    }
+                }
+            }
+        }
 
         public ModulVersion()
         {
