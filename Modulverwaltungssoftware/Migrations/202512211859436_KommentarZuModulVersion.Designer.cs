@@ -7,13 +7,13 @@ namespace Modulverwaltungssoftware.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.5.1")]
-    public sealed partial class EnumsFunktioneren : IMigrationMetadata
+    public sealed partial class KommentarZuModulVersion : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(EnumsFunktioneren));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(KommentarZuModulVersion));
         
         string IMigrationMetadata.Id
         {
-            get { return "202512201720505_EnumsFunktioneren"; }
+            get { return "202512211859436_KommentarZuModulVersion"; }
         }
         
         string IMigrationMetadata.Source

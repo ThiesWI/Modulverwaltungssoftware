@@ -199,9 +199,9 @@
     <Compile Include="LoginWindow.xaml.cs">
       <DependentUpon>LoginWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202512201720505_EnumsFunktioneren.cs" />
-    <Compile Include="Migrations\202512201720505_EnumsFunktioneren.Designer.cs">
-      <DependentUpon>202512201720505_EnumsFunktioneren.cs</DependentUpon>
+    <Compile Include="Migrations\202512211859436_KommentarZuModulVersion.cs" />
+    <Compile Include="Migrations\202512211859436_KommentarZuModulVersion.Designer.cs">
+      <DependentUpon>202512211859436_KommentarZuModulVersion.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Benachrichtigung.cs" />
@@ -283,8 +283,8 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <EmbeddedResource Include="Migrations\202512201720505_EnumsFunktioneren.resx">
-      <DependentUpon>202512201720505_EnumsFunktioneren.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\202512211859436_KommentarZuModulVersion.resx">
+      <DependentUpon>202512211859436_KommentarZuModulVersion.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

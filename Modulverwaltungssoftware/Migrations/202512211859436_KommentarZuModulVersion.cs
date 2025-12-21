@@ -3,7 +3,7 @@
     using System;
     using System.Data.Entity.Migrations;
     
-    public partial class EnumsFunktioneren : DbMigration
+    public partial class KommentarZuModulVersion : DbMigration
     {
         public override void Up()
         {
@@ -81,10 +81,13 @@
                         Ersteller = c.String(maxLength: 2147483647),
                         LernergebnisseDb = c.String(nullable: false, maxLength: 4000),
                         InhaltsgliederungDb = c.String(nullable: false, maxLength: 4000),
+                        Kommentar_KommentarID = c.Int(),
                     })
                 .PrimaryKey(t => t.ModulVersionID)
+                .ForeignKey("dbo.Kommentars", t => t.Kommentar_KommentarID)
                 .ForeignKey("dbo.Moduls", t => t.ModulId, cascadeDelete: true)
-                .Index(t => t.ModulId);
+                .Index(t => t.ModulId)
+                .Index(t => t.Kommentar_KommentarID);
             
             CreateTable(
                 "dbo.Studiengangs",
@@ -105,6 +108,8 @@
         public override void Down()
         {
             DropForeignKey("dbo.ModulVersions", "ModulId", "dbo.Moduls");
+            DropForeignKey("dbo.ModulVersions", "Kommentar_KommentarID", "dbo.Kommentars");
+            DropIndex("dbo.ModulVersions", new[] { "Kommentar_KommentarID" });
             DropIndex("dbo.ModulVersions", new[] { "ModulId" });
             DropTable("dbo.Studiengangs");
             DropTable("dbo.ModulVersions");

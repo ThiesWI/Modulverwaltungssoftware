@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Validation;
 using System.Linq;
+using System.Windows;
 
 namespace Modulverwaltungssoftware
 {
@@ -14,7 +15,7 @@ namespace Modulverwaltungssoftware
             {
                 if (aktuellerBenutzer != "Dozent" || aktuellerBenutzer != "Koordination" || aktuellerBenutzer != "Admin")
                 {
-                    throw new UnauthorizedAccessException("Der aktuelle Benutzer hat nicht die erforderlichen Rechte, um die Genehmigung zu starten.");
+                    MessageBox.Show("Der aktuelle Benutzer hat nicht die erforderlichen Rechte, um die Genehmigung zu starten.");
                 }
                 else
                 {
@@ -30,7 +31,7 @@ namespace Modulverwaltungssoftware
             {
                 if (aktuellerBenutzer != "Koordination" || aktuellerBenutzer != "Gremium" || aktuellerBenutzer != "Admin")
                 {
-                    throw new UnauthorizedAccessException("Der aktuelle Benutzer hat nicht die erforderlichen Rechte, um die Genehmigung zu starten.");
+                    MessageBox.Show("Der aktuelle Benutzer hat nicht die erforderlichen Rechte, um die Genehmigung zu starten.");
                 }
                 else
                 {
@@ -47,7 +48,7 @@ namespace Modulverwaltungssoftware
             {
                 if (aktuellerBenutzer != "Koordination" || aktuellerBenutzer != "Admin")
                 {
-                    throw new UnauthorizedAccessException("Der aktuelle Benutzer hat nicht die erforderlichen Rechte, um die Genehmigung zu starten.");
+                    MessageBox.Show("Der aktuelle Benutzer hat nicht die erforderlichen Rechte, um die Genehmigung zu starten.");
                 }
                 else
                 {
@@ -63,7 +64,7 @@ namespace Modulverwaltungssoftware
             {
                 if (aktuellerBenutzer != "Gremium" || aktuellerBenutzer != "Admin")
                 {
-                    throw new UnauthorizedAccessException("Der aktuelle Benutzer hat nicht die erforderlichen Rechte, um die Genehmigung zu starten.");
+                    MessageBox.Show("Der aktuelle Benutzer hat nicht die erforderlichen Rechte, um die Genehmigung zu starten.");
                 }
                 else
                 {
@@ -80,7 +81,7 @@ namespace Modulverwaltungssoftware
             {
                 if (aktuellerBenutzer != "Gremium" || aktuellerBenutzer != "Admin")
                 {
-                    throw new UnauthorizedAccessException("Der aktuelle Benutzer hat nicht die erforderlichen Rechte, um die Genehmigung zu starten.");
+                    MessageBox.Show("Der aktuelle Benutzer hat nicht die erforderlichen Rechte, um die Genehmigung zu starten.");
                 }
                 else
                 {
@@ -96,7 +97,7 @@ namespace Modulverwaltungssoftware
             {
                 if (aktuellerBenutzer != "Gremium" || aktuellerBenutzer != "Admin")
                 {
-                    throw new UnauthorizedAccessException("Der aktuelle Benutzer hat nicht die erforderlichen Rechte, um die Genehmigung zu starten.");
+                    MessageBox.Show("Der aktuelle Benutzer hat nicht die erforderlichen Rechte, um die Genehmigung zu starten.");
                 }
                 else
                 {
@@ -116,7 +117,8 @@ namespace Modulverwaltungssoftware
 
                     if (modul == null)
                     {
-                        throw new KeyNotFoundException($"Modul mit ID {modulID} nicht gefunden.");
+                        MessageBox.Show($"Modul mit ID {modulID} nicht gefunden.");
+                        return null;
                     }
                     else
                     {

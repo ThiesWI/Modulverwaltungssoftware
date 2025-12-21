@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Windows;
 using System.Windows.Documents;
 
 namespace Modulverwaltungssoftware
@@ -40,7 +41,7 @@ namespace Modulverwaltungssoftware
                 {
                     if (modul == null)
                     {
-                        throw new ArgumentNullException(nameof(modul));
+                        MessageBox.Show($"Modul hat keinen Inhalt: {nameof(modul)}");
                     }
                     if (modul.GueltigAb == default)
                     {
@@ -59,7 +60,7 @@ namespace Modulverwaltungssoftware
                 var modul = db.Modul.Find(modulID);
                 if (modul == null) 
                 {
-                    throw new KeyNotFoundException($"Modul mit ID {nameof(modul)} nicht gefunden.");
+                    MessageBox.Show("Modul existiert nicht!");
                 }
                 db.Modul.Remove(modul);
                 db.SaveChanges();
@@ -72,7 +73,7 @@ namespace Modulverwaltungssoftware
                 var version = db.ModulVersion.Find(modulID, modulVersion);
                 if (version == null)
                 {
-                    throw new KeyNotFoundException($"ModulVersion mit ID {modulVersion} und/oder ModulID {modulID} nicht gefunden.");
+                    MessageBox.Show($"ModulVersion mit ID {modulVersion} und/oder ModulID {modulID} nicht gefunden.");
                 }
                 db.ModulVersion.Remove(version);
                 db.SaveChanges();

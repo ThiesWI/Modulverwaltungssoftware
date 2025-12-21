@@ -21,6 +21,7 @@ namespace Modulverwaltungssoftware
         public int Versionsnummer { get; set; }
         [Required]
         public bool hatKommentar { get; set; } = false;
+        public virtual Kommentar Kommentar { get; set; }
         public virtual Modul Modul { get; set; }
         [Required]
         [StringLength(25)]

@@ -56,7 +56,7 @@ namespace Modulverwaltungssoftware
                         .OrderByDescending(k => k.ErstellungsDatum)
                         .ToList();
                     if (kommentare == null || kommentare.Count == 0)
-                        throw new KeyNotFoundException($"Keine Kommentare für ModulID {modulID} gefunden.");
+                        return null;
                     else
                         return kommentare;
                 }

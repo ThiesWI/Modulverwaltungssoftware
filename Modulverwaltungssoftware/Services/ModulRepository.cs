@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Validation;
 using System.Linq;
-using System.Data.Entity; // <--- Diese using-Direktive ergänzen
+using System.Data.Entity;
+using System.Windows; // <--- Diese using-Direktive ergänzen
 
 namespace Modulverwaltungssoftware
 {
@@ -23,7 +24,7 @@ namespace Modulverwaltungssoftware
                         .FirstOrDefault();
 
                     if (version == null)
-                        throw new KeyNotFoundException($"Keine freigegebene Version für Modul mit ID {modulID} gefunden.");
+                        return null;
                     else
                         return version;
                 }
@@ -44,7 +45,10 @@ namespace Modulverwaltungssoftware
                         .ToList();
 
                     if (versionen == null || versionen.Count == 0)
-                        throw new KeyNotFoundException($"Keine Version für Modul mit ID {modulID} gefunden.");
+                    {
+                        MessageBox.Show($"Keine Version für Modul mit ID {modulID} gefunden.");
+                        return null;
+                    }
                     else
                         return versionen;
                 }
@@ -62,9 +66,14 @@ namespace Modulverwaltungssoftware
                 else if (status == "Archiviert" || status == "Freigegeben")
                 {
                     int neueVersionID = ModulController.create((int)version.Versionsnummer, (int)version.ModulId);
+                    if (neueVersionID == 0)
+                    {
+                        MessageBox.Show("Fehler beim Erstellen einer neuen Version.");
+                        return;
+                    }
                     ModulVersion.setDaten(version, neueVersionID, (int)version.ModulId, aktuellerNutzer);
                 }
-                else throw new InvalidOperationException("Speichern im Status 'InPruefung' nicht erlaubt.");
+                else MessageBox.Show("Speichern im Status 'InPruefung' nicht erlaubt.");
             }
             catch (Exception ex) { throw; }
             }
@@ -74,7 +83,7 @@ namespace Modulverwaltungssoftware
             {
                 if (string.IsNullOrWhiteSpace(suchbegriff))
                 {
-                    throw new ArgumentException("Suchbegriff darf nicht leer sein.");
+                    MessageBox.Show("Suchbegriff darf nicht leer sein.");
                 }
                 var term = suchbegriff.ToLower();
 

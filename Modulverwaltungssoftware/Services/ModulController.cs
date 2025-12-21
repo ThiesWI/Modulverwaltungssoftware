@@ -21,23 +21,23 @@ namespace Modulverwaltungssoftware
 
                     if (alteVersion == null)
                     {
-                        throw new KeyNotFoundException($"ModulVersion mit ID {versionID} für Modul {modulID} nicht gefunden.");
+                        return 0;
                     }
 
                     var neueVersion = new ModulVersion
                     {
                         ModulId = alteVersion.ModulId,
                         Versionsnummer = neueVersionID,
-                        GueltigAbSemester = alteVersion.GueltigAbSemester,
+                        GueltigAbSemester = "Entwurf",
                         Modul = alteVersion.Modul,
-                        ModulStatus = alteVersion.ModulStatus,
+                        ModulStatus = ModulVersion.Status.Entwurf,
                         LetzteAenderung = DateTime.Now,
                         WorkloadPraesenz = alteVersion.WorkloadPraesenz,
                         WorkloadSelbststudium = alteVersion.WorkloadSelbststudium,
                         EctsPunkte = alteVersion.EctsPunkte,
                         Pruefungsform = alteVersion.Pruefungsform,
                         Literatur = new List<string>(alteVersion.Literatur),
-                        Ersteller = alteVersion.Ersteller,
+                        Ersteller = Benutzer.CurrentUser.Name,
                         Lernergebnisse = new List<string>(alteVersion.Lernergebnisse),
                         Inhaltsgliederung = new List<string>(alteVersion.Inhaltsgliederung),
                         LernergebnisseDb = alteVersion.LernergebnisseDb,
