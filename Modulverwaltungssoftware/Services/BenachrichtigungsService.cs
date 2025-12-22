@@ -10,7 +10,7 @@ namespace Modulverwaltungssoftware
 {
     public class BenachrichtigungsService
     {
-        public static void SendeBenachrichtigung(string benutzer, string empfaenger, string nachricht, int betroffeneModulVersionID = 0)
+        public static void SendeBenachrichtigung(string empfaenger, string nachricht, int betroffeneModulVersionID = 0)
         {
             try
             {
@@ -20,7 +20,7 @@ namespace Modulverwaltungssoftware
                     {
                         var benachrichtigung = new Benachrichtigung
                         {
-                            Sender = benutzer,
+                            Sender = Benutzer.CurrentUser.Name,
                             Empfaenger = empfaenger,
                             Nachricht = nachricht,
                             GesendetAm = System.DateTime.Now,
@@ -33,7 +33,7 @@ namespace Modulverwaltungssoftware
                         var benachrichtigung = new Benachrichtigung
                         {
                             BetroffeneModulVersionID = betroffeneModulVersionID,
-                            Sender = benutzer,
+                            Sender = Benutzer.CurrentUser.Name,
                             Empfaenger = empfaenger,
                             Nachricht = nachricht,
                             GesendetAm = System.DateTime.Now,
@@ -88,15 +88,15 @@ namespace Modulverwaltungssoftware
 
                 throw new Exception("Ein unerwarteter Fehler ist aufgetreten.", ex);
             }
-        }
-        public static List<Benachrichtigung> EmpfangeBenachrichtigung(string aktuellerBenutzer)
+        } // Benachrichtigung "senden" (in DB speichern)
+        public static List<Benachrichtigung> EmpfangeBenachrichtigung()
         {
             try
             {
                 using (var db = new Services.DatabaseContext())
                 {
                     var benachrichtigungen = db.Benachrichtigung
-                        .Where(b => b.Empfaenger == aktuellerBenutzer && b.Gelesen == false)
+                        .Where(b => b.Empfaenger == Benutzer.CurrentUser.Name && b.Gelesen == false)
                         .OrderByDescending(b => b.GesendetAm);
                     return benachrichtigungen.ToList();
                 }
@@ -105,15 +105,15 @@ namespace Modulverwaltungssoftware
             {
                 throw;
             }
-        }
-        public static void MarkiereAlsGelesen(string aktuellerBenutzer)
+        } // Alle Benachrichtigungen mit istGelesen == false für aktuellen Benuter aus DB abfragen
+        public static void MarkiereAlsGelesen()
         {
             try
             {
                 using (var db = new Services.DatabaseContext())
                 {
                     var ungelesene = db.Benachrichtigung
-                        .Where(b => b.Empfaenger == aktuellerBenutzer && b.Gelesen == false)
+                        .Where(b => b.Empfaenger == Benutzer.CurrentUser.Name && b.Gelesen == false)
                         .ToList();
 
                     foreach (var n in ungelesene)
@@ -124,6 +124,6 @@ namespace Modulverwaltungssoftware
                 }
             }
             catch (Exception ex) { throw; }
-            }
+        }   // Alle Benachrichtigungen für aktuellen Benutzer als gelesen markieren
     }
 }

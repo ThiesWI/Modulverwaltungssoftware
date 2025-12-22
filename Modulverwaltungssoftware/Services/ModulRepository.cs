@@ -23,7 +23,7 @@ namespace Modulverwaltungssoftware
 
                 return version;
             }
-        }
+        } // spezifische ModulVersion aus DB abrufen
         public static List<ModulVersion> getAllModulVersionen(int modulID)
         {
             try
@@ -47,28 +47,34 @@ namespace Modulverwaltungssoftware
                 }
             }
             catch (Exception ex) { throw; }
-        }
-        public void Speichere (ModulVersion version, string aktuellerNutzer, string status) // Entwurf speichern für Dozent
+        } // alle Versionen von Modul abrufen
+        public void Speichere (ModulVersion version, string status) // Entwurf speichern für Dozent
         {
-            try
+            if (version == null)
             {
-                if (status == "Entwurf" || status == "Aenderungsbedarf")
-                {
-                    ModulVersion.setDaten(version, (int)version.ModulVersionID, (int)version.ModulId, aktuellerNutzer);
-                }
-                else if (status == "Archiviert" || status == "Freigegeben")
-                {
-                    int neueVersionID = ModulController.create((int)version.Versionsnummer, (int)version.ModulId);
-                    if (neueVersionID == 0)
-                    {
-                        MessageBox.Show("Fehler beim Erstellen einer neuen Version.");
-                        return;
-                    }
-                    ModulVersion.setDaten(version, neueVersionID, (int)version.ModulId, aktuellerNutzer);
-                }
-                else MessageBox.Show("Speichern im Status 'InPruefung' nicht erlaubt.");
+                MessageBox.Show("ModulVersion darf nicht null sein.");
+                return;
             }
-            catch (Exception ex) { throw; }
+            else if (Benutzer.CurrentUser.AktuelleRolle.DarfFreigeben == false) { MessageBox.Show("Nur Benutzer mit Freigaberechten können speichern."); return; }
+            try
+                {
+                    if (status == "Entwurf" || status == "Aenderungsbedarf")
+                    {
+                        ModulVersion.setDaten(version, (int)version.ModulVersionID, (int)version.ModulId);
+                    }
+                    else if (status == "Archiviert" || status == "Freigegeben")
+                    {
+                        int neueVersionID = ModulController.create((int)version.Versionsnummer, (int)version.ModulId);
+                        if (neueVersionID == 0)
+                        {
+                            MessageBox.Show("Fehler beim Erstellen einer neuen Version.");
+                            return;
+                        }
+                        ModulVersion.setDaten(version, neueVersionID, (int)version.ModulId);
+                    }
+                    else MessageBox.Show("Speichern im Status 'InPruefung' nicht erlaubt.");
+                }
+                catch (Exception ex) { throw; }
             }
         public List<Modul> sucheModule(string suchbegriff)
         {
@@ -194,6 +200,6 @@ namespace Modulverwaltungssoftware
 
                 throw new Exception("Ein unerwarteter Fehler ist aufgetreten.", ex);
             }
-        }
+        } // alle gültigen Module abrufen
     }
 }

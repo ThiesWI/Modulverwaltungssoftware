@@ -9,6 +9,7 @@ using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Validation;
 using System.Linq;
 using System.Transactions;
+using System.Windows;
 
 namespace Modulverwaltungssoftware
 {
@@ -101,10 +102,15 @@ namespace Modulverwaltungssoftware
             Lernergebnisse = new List<string>();
             Inhaltsgliederung = new List<string>();
         }
-        public static void setStatus(int versionID, int modulID, Status neuerStatus)
+        public static void setStatus(int versionID, int modulID, Status neuerStatus) //Setzt den Status der Modulversion
         {
             try
             {
+                if (Benutzer.CurrentUser.RollenName != "Dozent" && Benutzer.CurrentUser.RollenName != "Admin" && Benutzer.CurrentUser.RollenName != "Koordination" && Benutzer.CurrentUser.RollenName != "Gremium")
+                {
+                    MessageBox.Show("Der aktuelle Benutzer hat nicht die erforderlichen Rechte, um diese Aktion durchzuführen.");
+                    return;
+                }
                 using (var db = new Services.DatabaseContext())
                 {
                     var modulVersion = db.ModulVersion.FirstOrDefault(mv => mv.ModulVersionID == versionID && mv.ModulId == modulID);
@@ -116,13 +122,13 @@ namespace Modulverwaltungssoftware
                     }
                     else
                     {
-                        throw new Exception("ModulVersion nicht gefunden");
+                        MessageBox.Show("ModulVersion nicht gefunden");
                     }
                 }
             }
             catch (Exception ex) { throw; }
             }
-        public static void setDaten(ModulVersion version, int modulVersionID, int modulID, string aktuelleBenutzerRolle)
+        public static void setDaten(ModulVersion version, int modulVersionID, int modulID) //Setzt die Daten der Modulversion in der DB, wird idR von anderen Methoden aufgerufen
         {
             try
             {
@@ -131,13 +137,14 @@ namespace Modulverwaltungssoftware
                     var modulVersion = db.ModulVersion.FirstOrDefault(mv => mv.ModulVersionID == modulVersionID && mv.ModulId == modulID);
                     if (modulVersion == null)
                     {
-                        throw new KeyNotFoundException($"ModulVersion mit ID {modulVersionID} und/oder ModulID {modulID} nicht gefunden.");
+                        MessageBox.Show($"ModulVersion mit ID {modulVersionID} und/oder ModulID {modulID} nicht gefunden.");
+                        return;
                     }
-                    if (aktuelleBenutzerRolle == "Dozent" || aktuelleBenutzerRolle == "Admin")
+                    if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == true)
                     {
                         if (modulVersion.ModulStatus != Status.Entwurf && modulVersion.ModulStatus != Status.Aenderungsbedarf)
                         {
-                            throw new UnauthorizedAccessException("Nur Module mit dem Status Entwurf oder Aenderungsbedarf können bearbeitet werden.");
+                            MessageBox.Show("Nur Module mit dem Status Entwurf oder Aenderungsbedarf können bearbeitet werden.");
                         }
                         modulVersion.GueltigAbSemester = version.GueltigAbSemester;
                         modulVersion.WorkloadPraesenz = version.WorkloadPraesenz;
@@ -151,7 +158,7 @@ namespace Modulverwaltungssoftware
                     }
                     else
                     {
-                        throw new UnauthorizedAccessException("Der aktuelle Benutzer hat nicht die erforderlichen Rechte, um diese Aktion durchzuführen.");
+                       MessageBox.Show("Der aktuelle Benutzer hat nicht die erforderlichen Rechte, um diese Aktion durchzuführen.");
                     }
                     db.SaveChanges();
                 }

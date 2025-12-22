@@ -9,93 +9,93 @@ namespace Modulverwaltungssoftware
 {
     public class WorkflowController
     {
-        public void starteGenehmigung(int versionID, int modulID, string aktuellerBenutzer)
+        public void starteGenehmigung(int versionID, int modulID)
         {
             try
             {
-                if (aktuellerBenutzer != "Dozent" || aktuellerBenutzer != "Koordination" || aktuellerBenutzer != "Admin")
+                if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten)
                 {
                     MessageBox.Show("Der aktuelle Benutzer hat nicht die erforderlichen Rechte, um die Genehmigung zu starten.");
                 }
                 else
                 {
                     ModulVersion.setStatus(versionID, modulID, ModulVersion.Status.InPruefungKoordination); // Set Status to "In Prüfung durch Koordination" & Sende Benachrichtigung an Koordination
-                    BenachrichtigungsService.SendeBenachrichtigung(aktuellerBenutzer, "Koordination", $"{aktuellerBenutzer} hat Version {versionID} für Modul {modulID} zur Prüfung eingereicht.", versionID);
+                    BenachrichtigungsService.SendeBenachrichtigung("Koordination", $"{Benutzer.CurrentUser.Name} hat Version {versionID} für Modul {modulID} zur Prüfung eingereicht.", versionID);
                 }
             }
             catch (Exception ex) { throw; }
-        }
-        public void lehneAb(int modulID, int versionID, string kommentarText, string aktuellerBenutzer)
+        } // Modul zur Prüfung einreichen für Dozent und Admin
+        public void lehneAb(int modulID, int versionID, string kommentarText)
         {
             try
             {
-                if (aktuellerBenutzer != "Koordination" || aktuellerBenutzer != "Gremium" || aktuellerBenutzer != "Admin")
+                if (Benutzer.CurrentUser.AktuelleRolle.DarfFreigeben == false)
                 {
                     MessageBox.Show("Der aktuelle Benutzer hat nicht die erforderlichen Rechte, um die Genehmigung zu starten.");
                 }
                 else
                 {
                     ModulVersion.setStatus(versionID, modulID, ModulVersion.Status.Aenderungsbedarf);
-                    BenachrichtigungsService.SendeBenachrichtigung(aktuellerBenutzer, "Dozent", $"{aktuellerBenutzer} hat Version {versionID} für Modul {modulID} abgelehnt. Kommentar: {kommentarText}", versionID);
+                    BenachrichtigungsService.SendeBenachrichtigung ("Dozent", $"{Benutzer.CurrentUser.Name} hat Version {versionID} für Modul {modulID} abgelehnt. Kommentar: {kommentarText}", versionID);
                     Kommentar.addKommentar(modulID, versionID, kommentarText);
                 }
             }
             catch (Exception ex) { throw; }
-        }
-        public void leiteWeiter(int modulID, int versionID, string aktuellerBenutzer)
+        } // Ablehnen für Koordination + Admin
+        public void leiteWeiter(int modulID, int versionID)
         {
             try
             {
-                if (aktuellerBenutzer != "Koordination" || aktuellerBenutzer != "Admin")
+                if (Benutzer.CurrentUser.RollenName != "Koordination" || Benutzer.CurrentUser.RollenName != "Admin")
                 {
                     MessageBox.Show("Der aktuelle Benutzer hat nicht die erforderlichen Rechte, um die Genehmigung zu starten.");
                 }
                 else
                 {
                     ModulVersion.setStatus(versionID, modulID, ModulVersion.Status.InPruefungGremium);
-                    BenachrichtigungsService.SendeBenachrichtigung(aktuellerBenutzer, "Gremium", $"{aktuellerBenutzer} hat Version {versionID} für Modul {modulID} zur Prüfung durch das Gremium weitergeleitet.", versionID);
+                    BenachrichtigungsService.SendeBenachrichtigung("Gremium", $"{Benutzer.CurrentUser.Name} hat Version {versionID} für Modul {modulID} zur Prüfung durch das Gremium weitergeleitet.", versionID);
                 }
             }
             catch (Exception ex) { throw; }
-        }
-        public void lehneFinalAb(int modulID, int versionID, string kommentarText, string aktuellerBenutzer)
+        } // Modul-Entwurf an Gremium weiterleiten (Koordination + Admin)
+        public void lehneFinalAb(int modulID, int versionID, string kommentarText)
         {
             try
             {
-                if (aktuellerBenutzer != "Gremium" || aktuellerBenutzer != "Admin")
+                if (Benutzer.CurrentUser.RollenName != "Gremium" || Benutzer.CurrentUser.RollenName != "Admin")
                 {
                     MessageBox.Show("Der aktuelle Benutzer hat nicht die erforderlichen Rechte, um die Genehmigung zu starten.");
                 }
                 else
                 {
                     ModulVersion.setStatus(versionID, modulID, ModulVersion.Status.Aenderungsbedarf);
-                    BenachrichtigungsService.SendeBenachrichtigung(aktuellerBenutzer, "Dozent", $"{aktuellerBenutzer} hat Version {versionID} für Modul {modulID} final abgelehnt. Kommentar: {kommentarText}", versionID);
+                    BenachrichtigungsService.SendeBenachrichtigung("Dozent", $"{Benutzer.CurrentUser.Name} hat Version {versionID} für Modul {modulID} final abgelehnt. Kommentar: {kommentarText}", versionID);
                     Kommentar.addKommentar(modulID, versionID, kommentarText);
                 }
             }
             catch (Exception ex) { throw; }
-        }
-        public void schliesseGenehmigungAb(int modulID, int versionID, string aktuellerBenutzer)
+        } // Ablehnen für Gremium + Admin
+        public void schliesseGenehmigungAb(int modulID, int versionID)
         {
             try
             {
-                if (aktuellerBenutzer != "Gremium" || aktuellerBenutzer != "Admin")
+                if (Benutzer.CurrentUser.RollenName != "Gremium" || Benutzer.CurrentUser.RollenName != "Admin")
                 {
                     MessageBox.Show("Der aktuelle Benutzer hat nicht die erforderlichen Rechte, um die Genehmigung zu starten.");
                 }
                 else
                 {
                     ModulVersion.setStatus(versionID, modulID, ModulVersion.Status.Freigegeben);
-                    BenachrichtigungsService.SendeBenachrichtigung(aktuellerBenutzer, "Dozent", $"{aktuellerBenutzer} hat Version {versionID} für Modul {modulID} freigegeben.", versionID);
+                    BenachrichtigungsService.SendeBenachrichtigung("Dozent", $"{Benutzer.CurrentUser.Name} hat Version {versionID} für Modul {modulID} freigegeben.", versionID);
                 }
             }
             catch (Exception ex) { throw; }
-            }
-        public void archiviereVersion(int modulID, int versionID, string aktuellerBenutzer)
+            } // Gremium + Admin only -> Modul freigeben
+        public void archiviereVersion(int modulID, int versionID)
         {
             try
             {
-                if (aktuellerBenutzer != "Gremium" || aktuellerBenutzer != "Admin")
+                if (Benutzer.CurrentUser.AktuelleRolle.DarfStatusAendern == false)
                 {
                     MessageBox.Show("Der aktuelle Benutzer hat nicht die erforderlichen Rechte, um die Genehmigung zu starten.");
                 }
@@ -105,8 +105,8 @@ namespace Modulverwaltungssoftware
                 }
             }
             catch (Exception ex) { throw; }
-            }
-        public static Modul getModulDetails(int modulID)
+            } // Status auf Archiviert setzen
+        public static Modul getModulDetails(int modulID) // Modul aus DB abrufen
         {try
             {
                 using (var db = new Services.DatabaseContext())

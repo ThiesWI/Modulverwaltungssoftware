@@ -44,10 +44,9 @@ namespace Modulverwaltungssoftware
 
             // TODO: Authentifizierung (z.B. gegen DB oder Service)
             // Beispiel (hart codiert):
-            var user = Services.LoginService.Login(EmailTextBox.Text, PasswordBox.Password);
-            if (user != null )
+            var anmeldung = Services.LoginService.Login(EmailTextBox.Text, PasswordBox.Password);
+            if (anmeldung == true )
             {
-                Benutzer.CurrentUser = user;
                 var mainWindow = new MainWindow();
                 mainWindow.Show();
                 this.Close();

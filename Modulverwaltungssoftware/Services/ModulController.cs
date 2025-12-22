@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Validation;
 using System.Linq;
+using System.Windows;
 
 namespace Modulverwaltungssoftware
 {
@@ -11,6 +12,7 @@ namespace Modulverwaltungssoftware
     {
         public static int create(int versionID, int modulID)
         {
+            if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == false ) { MessageBox.Show("Fehlende Berechtigungen zum Erstellen."); return 0; }
             try
             {
                 var neueVersionID = versionID + 1;
@@ -50,7 +52,7 @@ namespace Modulverwaltungssoftware
                     return neueVersionID;
                 }
             }
-            catch (DbEntityValidationException valEx)
+            catch (DbEntityValidationException valEx) // Exception Handler-Block
             {
                 var fehlermeldungen = new List<string>();
 
@@ -94,6 +96,6 @@ namespace Modulverwaltungssoftware
 
                 throw new Exception("Ein unerwarteter Fehler ist aufgetreten.", ex);
             }
-        }
+        } // Neue ModulVersion erstellen und mit alten Daten füllen, DefaultStatus "Entwurf"
     }
 }

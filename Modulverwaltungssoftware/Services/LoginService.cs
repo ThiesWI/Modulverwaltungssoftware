@@ -6,7 +6,7 @@ namespace Modulverwaltungssoftware.Services
 {
     public class LoginService
     {
-        public static Benutzer Login(string benutzernameOderEmail, string passwort)
+        public static bool Login(string benutzernameOderEmail, string passwort)
         {
             using (var db = new DatabaseContext())
             {
@@ -19,12 +19,13 @@ namespace Modulverwaltungssoftware.Services
 
                     if (benutzer == null)
                     {
-                        return null;
+                        return false;
                     }
                     else
                     {
                         benutzer.Passwort = null;
-                        return benutzer;
+                        Benutzer.CurrentUser = benutzer;
+                        return true;
                     }
                 }
                 catch (Exception)
@@ -32,6 +33,6 @@ namespace Modulverwaltungssoftware.Services
                     throw;
                 }
             }
-        }
+        } // Nutzerdaten mit DB abgleichen, bei Erfolg Passwort aus Arbeitsspeicher löschen und Nutzerdaten in Benutzer.CurrentUser hinterlegen
     }
 }

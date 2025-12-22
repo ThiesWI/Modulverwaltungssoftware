@@ -48,7 +48,7 @@ namespace Modulverwaltungssoftware.Models
                 DarfKommentieren = true,
                 DarfStatusAendern = true
             }
-        };
+        }; // Liste aller vorhandenen Rollen und Berechtigungen
         public static Rolle GetRolleByName(string rollenName)
         {
             return Rollen.FirstOrDefault(r => r.RollenName.Equals(rollenName, StringComparison.OrdinalIgnoreCase));

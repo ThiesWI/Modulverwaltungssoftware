@@ -32,9 +32,14 @@ namespace Modulverwaltungssoftware
                     .OrderBy(m => m.ModulnameDE);
                 return query.ToList();
             }
-        }
+        } // Alle Module abrufen, die mindestens eine aktive Version haben.
         public void addModul(Modul modul)
         {
+            if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == false) 
+            { 
+                MessageBox.Show("Der aktuelle Benutzer hat keine Berechtigung zum Anlegen von Modulen."); 
+                return;
+            }
             try
             {
                 using (var db = new Services.DatabaseContext())
@@ -52,9 +57,14 @@ namespace Modulverwaltungssoftware
                 }
             }
             catch (Exception ex) { throw; }
-            }
+            } // Modul erstellen
         public void removeModul(int modulID)
         {
+            if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == false && Benutzer.CurrentUser.AktuelleRolle.DarfFreigeben == false)
+            {
+                MessageBox.Show("Der aktuelle Benutzer hat keine Berechtigung zum Löschen von Modulen.");
+                return;
+            }
             using (var db = new Services.DatabaseContext()) 
             { 
                 var modul = db.Modul.Find(modulID);
@@ -63,11 +73,17 @@ namespace Modulverwaltungssoftware
                     MessageBox.Show("Modul existiert nicht!");
                 }
                 db.Modul.Remove(modul);
+                db.ModulVersion.RemoveRange(db.ModulVersion.Where(mv => mv.ModulId == modulID)); // Alle zugehörigen ModulVersionen löschen
                 db.SaveChanges();
             }
-        }
-        public void removeModulVersion(int modulID, int modulVersion) 
+        } // Modul und alle zugehörigen ModulVersionen löschen
+        public void removeModulVersion(int modulID, int modulVersion) // eine spezifische ModulVersion löschen
         {
+            if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == false && Benutzer.CurrentUser.AktuelleRolle.DarfFreigeben == false)
+            {
+                MessageBox.Show("Der aktuelle Benutzer hat keine Berechtigung zum Löschen von Modulen.");
+                return;
+            }
             using (var db = new Services.DatabaseContext())
             {
                 var version = db.ModulVersion.Find(modulID, modulVersion);

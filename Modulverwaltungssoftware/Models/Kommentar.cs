@@ -6,6 +6,7 @@ using System.Data.Entity.Core;
 using System.Windows.Documents;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
 
 namespace Modulverwaltungssoftware
 {
@@ -33,9 +34,11 @@ namespace Modulverwaltungssoftware
         // Legacy-Methode (für Rückwärtskompatibilität)
         public static void addKommentar(int modulID, int modulVersionID, string text)
         {
+            if (Benutzer.CurrentUser.AktuelleRolle.DarfKommentieren == false) // Berechtigungsabfrage
+            { MessageBox.Show("Der aktuelle Benutzer hat keine Berechtigung zum Kommentieren."); return; }
             using (var db = new Services.DatabaseContext())
             {
-                var neuerKommentar = new Kommentar
+                var neuerKommentar = new Kommentar // Kommentar anlegen
                 {
                     FeldName = null,
                     Text = text,
@@ -46,7 +49,7 @@ namespace Modulverwaltungssoftware
                 };
                 db.Kommentar.Add(neuerKommentar);
 
-                var modulVersion = db.ModulVersion.Find(modulVersionID);
+                var modulVersion = db.ModulVersion.Find(modulVersionID); // ModulVersion als kommentiert markieren, falls diese existiert
                 if (modulVersion != null)
                 {
                     modulVersion.hatKommentar = true;
@@ -59,6 +62,7 @@ namespace Modulverwaltungssoftware
         // Neue Methode: Speichere feldspezifische Kommentare und erstelle neue Version
         public static int addFeldKommentareMitNeuerVersion(int modulID, int altModulVersionID, List<FeldKommentar> feldKommentare, string ersteller)
         {
+            if (Benutzer.CurrentUser.AktuelleRolle.DarfKommentieren == false) { MessageBox.Show("Fehlende Berechtigungen zum Kommentieren"); return 0; }
             if (feldKommentare == null || feldKommentare.Count == 0)
                 throw new ArgumentException("Es müssen mindestens ein Kommentar angegeben werden.", nameof(feldKommentare));
 
@@ -129,8 +133,9 @@ namespace Modulverwaltungssoftware
         // Neue Methode: Speichere mehrere feldspezifische Kommentare
         public static void addFeldKommentare(int modulID, int modulVersionID, List<FeldKommentar> feldKommentare, string ersteller)
         {
+            if (Benutzer.CurrentUser.AktuelleRolle.DarfKommentieren == false) { MessageBox.Show("Fehlende Berechtigungen zum Kommentieren."); return; }
             if (feldKommentare == null || feldKommentare.Count == 0)
-                throw new ArgumentException("Es müssen mindestens ein Kommentar angegeben werden.", nameof(feldKommentare));
+            { MessageBox.Show("Es muss mindestens ein Kommentar angegeben werden.", nameof(feldKommentare)); return; }
 
             using (var db = new Services.DatabaseContext())
             {
