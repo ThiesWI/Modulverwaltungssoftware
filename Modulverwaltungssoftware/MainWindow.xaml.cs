@@ -157,24 +157,25 @@ namespace Modulverwaltungssoftware
         {
             string modulName = (sender as Button)?.Content?.ToString();
 
-            // ModulId anhand Modulname finden
-            var modul = ModuleDataRepository.GetAllModules()
-                .FirstOrDefault(m => m.ModulName == modulName);
+            if (string.IsNullOrEmpty(modulName))
+                return;
+
+            // ModulId anhand Modulname aus echter Datenbank finden
+            var alleModule = ModulRepository.getAllModule();
+            var modul = alleModule.FirstOrDefault(m => m.ModulnameDE == modulName);
 
             if (modul != null)
             {
-                // ModulId ist bereits ein string, aber der Konstruktor erwartet einen int.
-                // Daher muss die ModulId in einen int konvertiert werden.
-                if (int.TryParse(modul.ModulId, out int modulIdInt))
-                {
-                    MainFrame.Navigate(new ModulView(modulIdInt));
-                }
-                else
-                {
-                    MessageBox.Show("Ungültige ModulId: " + modul.ModulId, "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+                // Zur ModulView mit gefundener ModulID navigieren
+                MainFrame.Navigate(new ModulView(modul.ModulID));
+            }
+            else
+            {
+                MessageBox.Show($"Modul '{modulName}' konnte nicht gefunden werden.", 
+                    "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
             }
 
+            // Popup schließen
             var popup = this.FindName("ProjectsPopup") as System.Windows.Controls.Primitives.Popup;
             if (popup != null)
             {

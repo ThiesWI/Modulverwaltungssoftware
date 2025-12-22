@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -101,70 +102,128 @@ namespace Modulverwaltungssoftware
 
         private void KommentarAbschicken_Click(object sender, RoutedEventArgs e)
         {
+            if (!ValidateInput())
+                return;
+
             var result = MessageBox.Show(
                 "Soll der Kommentar wirklich final an den Modulersteller weitergereicht werden?",
                 "Bestätigung senden",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question);
 
-            if (result == MessageBoxResult.Yes)
+            if (result != MessageBoxResult.Yes)
+                return;
+
+            try
             {
-                // Kommentare aus UI auslesen
-                var fieldComments = new List<ModuleDataRepository.FieldComment>();
+                var feldKommentare = CollectComments();
                 
-                // Alle Kommentarfelder durchgehen und nicht-leere Kommentare speichern
-                AddCommentIfNotEmpty(fieldComments, "Titel", TitelKommentarTextBox.Text);
-                AddCommentIfNotEmpty(fieldComments, "Modultyp", ModultypKommentarTextBox.Text);
-                AddCommentIfNotEmpty(fieldComments, "Studiengang", StudiengangKommentarTextBox.Text);
-                AddCommentIfNotEmpty(fieldComments, "Semester", SemesterKommentarTextBox.Text);
-                AddCommentIfNotEmpty(fieldComments, "Prüfungsform", PruefungsformKommentarTextBox.Text);
-                AddCommentIfNotEmpty(fieldComments, "Turnus", TurnusKommentarTextBox.Text);
-                AddCommentIfNotEmpty(fieldComments, "ECTS", EctsKommentarTextBox.Text);
-                AddCommentIfNotEmpty(fieldComments, "Workload Präsenz", WorkloadPraesenzKommentarTextBox.Text);
-                AddCommentIfNotEmpty(fieldComments, "Workload Selbststudium", WorkloadSelbststudiumKommentarTextBox.Text);
-                AddCommentIfNotEmpty(fieldComments, "Verantwortlicher", VerantwortlicherKommentarTextBox.Text);
-                AddCommentIfNotEmpty(fieldComments, "Voraussetzungen", VoraussetzungenKommentarTextBox.Text);
-                AddCommentIfNotEmpty(fieldComments, "Lernziele", LernzieleKommentarTextBox.Text);
-                AddCommentIfNotEmpty(fieldComments, "Lehrinhalte", LehrinhalteKommentarTextBox.Text);
-                AddCommentIfNotEmpty(fieldComments, "Literatur", LiteraturKommentarTextBox.Text);
-
-                // Kommentare im Repository speichern
-                if (!string.IsNullOrEmpty(_modulId) && !string.IsNullOrEmpty(_version))
+                if (feldKommentare.Count == 0)
                 {
-                    string currentUser = "Prof. Dr. Lange"; // Später aus Login-System
-                    ModuleDataRepository.SaveComments(_modulId, _version, fieldComments, currentUser);
-                    
-                    MessageBox.Show($"Der Kommentar wurde eingereicht. Die Version wurde als kommentiert markiert ({fieldComments.Count} Kommentar(e)).", 
-                        "Bestätigung", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-                else
-                {
-                    MessageBox.Show("Der Kommentar wurde eingereicht.", "Bestätigung", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("Bitte geben Sie mindestens einen Kommentar ein.", 
+                        "Keine Kommentare", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
                 }
 
-                // Zurück zur ModulView mit korrekter ModulID
-                if (!string.IsNullOrEmpty(_modulId))
-                {
-                    this.NavigationService?.Navigate(new ModulView(int.Parse(_modulId)));
-                }
-                else
-                {
-                    this.NavigationService?.Navigate(new StartPage());
-                }
+                SaveCommentsToDatabase(feldKommentare);
+                
+                MessageBox.Show($"Der Kommentar wurde erfolgreich eingereicht ({feldKommentare.Count} Kommentar(e)).", 
+                    "Bestätigung", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                NavigateToModulView();
             }
-            // Bei Nein passiert nichts
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Fehler beim Speichern der Kommentare: {ex.Message}", 
+                    "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
-        private void AddCommentIfNotEmpty(List<ModuleDataRepository.FieldComment> comments, string fieldName, string commentText)
+        private bool ValidateInput()
         {
-            if (!string.IsNullOrWhiteSpace(commentText))
+            if (string.IsNullOrEmpty(_modulId))
             {
-                comments.Add(new ModuleDataRepository.FieldComment
+                MessageBox.Show("Fehler: Modul-ID nicht gesetzt.", 
+                    "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(_version))
+            {
+                MessageBox.Show("Fehler: Version nicht gesetzt.", 
+                    "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                return false;
+            }
+
+            return true;
+        }
+
+        private List<Kommentar.FeldKommentar> CollectComments()
+        {
+            var feldKommentare = new List<Kommentar.FeldKommentar>();
+            
+            AddKommentarIfNotEmpty(feldKommentare, "Titel", TitelKommentarTextBox.Text);
+            AddKommentarIfNotEmpty(feldKommentare, "Modultyp", ModultypKommentarTextBox.Text);
+            AddKommentarIfNotEmpty(feldKommentare, "Studiengang", StudiengangKommentarTextBox.Text);
+            AddKommentarIfNotEmpty(feldKommentare, "Semester", SemesterKommentarTextBox.Text);
+            AddKommentarIfNotEmpty(feldKommentare, "Prüfungsform", PruefungsformKommentarTextBox.Text);
+            AddKommentarIfNotEmpty(feldKommentare, "Turnus", TurnusKommentarTextBox.Text);
+            AddKommentarIfNotEmpty(feldKommentare, "ECTS", EctsKommentarTextBox.Text);
+            AddKommentarIfNotEmpty(feldKommentare, "Workload Präsenz", WorkloadPraesenzKommentarTextBox.Text);
+            AddKommentarIfNotEmpty(feldKommentare, "Workload Selbststudium", WorkloadSelbststudiumKommentarTextBox.Text);
+            AddKommentarIfNotEmpty(feldKommentare, "Verantwortlicher", VerantwortlicherKommentarTextBox.Text);
+            AddKommentarIfNotEmpty(feldKommentare, "Voraussetzungen", VoraussetzungenKommentarTextBox.Text);
+            AddKommentarIfNotEmpty(feldKommentare, "Lernziele", LernzieleKommentarTextBox.Text);
+            AddKommentarIfNotEmpty(feldKommentare, "Lehrinhalte", LehrinhalteKommentarTextBox.Text);
+            AddKommentarIfNotEmpty(feldKommentare, "Literatur", LiteraturKommentarTextBox.Text);
+
+            return feldKommentare;
+        }
+
+        private void SaveCommentsToDatabase(List<Kommentar.FeldKommentar> feldKommentare)
+        {
+            int modulId = int.Parse(_modulId);
+            
+            using (var db = new Services.DatabaseContext())
+            {
+                var modulVersion = db.ModulVersion
+                    .FirstOrDefault(v => v.ModulId == modulId);
+                
+                if (modulVersion == null)
+                    throw new InvalidOperationException("Modulversion nicht gefunden.");
+
+                string currentUser = Benutzer.CurrentUser?.Name ?? "Unbekannt";  // ✅ FIX: Aktueller User!
+                
+                // Neue Version mit Kommentaren erstellen
+                int neueVersionID = Kommentar.addFeldKommentareMitNeuerVersion(
+                    modulId, 
+                    modulVersion.ModulVersionID, 
+                    feldKommentare, 
+                    currentUser  // ← Statt fest codiert!
+                );
+            }
+        }
+
+        private void NavigateToModulView()
+        {
+            if (!string.IsNullOrEmpty(_modulId))
+            {
+                this.NavigationService?.Navigate(new ModulView(int.Parse(_modulId)));
+            }
+            else
+            {
+                this.NavigationService?.Navigate(new StartPage());
+            }
+        }
+
+        private void AddKommentarIfNotEmpty(List<Kommentar.FeldKommentar> kommentare, string feldName, string kommentarText)
+        {
+            if (!string.IsNullOrWhiteSpace(kommentarText))
+            {
+                kommentare.Add(new Kommentar.FeldKommentar
                 {
-                    FieldName = fieldName,
-                    Comment = commentText.Trim(),
-                    CommentDate = DateTime.Now,
-                    Commenter = "Prof. Dr. Lange" // Später aus Login-System
+                    FeldName = feldName,
+                    Text = kommentarText.Trim()
                 });
             }
         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,6 +25,7 @@ namespace Modulverwaltungssoftware
         private string _modulId;           // Aktuelles Modul (null bei neuem)
         private string _versionNummer;     // Aktuelle Version
         private bool _isEditMode;          // true = Bearbeiten, false = Neues Modul
+        private bool _isCommentedVersion;  // true = Version wurde kommentiert
 
         // Datenklasse für Modulversion (identisch mit ModulView.ModuleData)
         public class ModuleData
@@ -66,7 +68,32 @@ namespace Modulverwaltungssoftware
             _isEditMode = true;
             _modulId = modulId;
             _versionNummer = versionNummer;
+            
+            // Prüfen, ob die AKTUELLE Version kommentiert ist
+            using (var db = new Services.DatabaseContext())
+            {
+                // WICHTIG: Parsing VOR der LINQ-Query durchführen!
+                int modulIdInt = int.Parse(modulId);
+                
+                // Versionsnummer korrekt parsen (z.B. "2.1K" → "2.1" → 21)
+                string cleanVersion = versionNummer.TrimEnd('K');
+                int versionsnummerInt = ParseVersionsnummer(cleanVersion);
+                
+                var dbVersion = db.ModulVersion
+                    .FirstOrDefault(v => v.ModulId == modulIdInt && v.Versionsnummer == versionsnummerInt);
+                    
+                _isCommentedVersion = dbVersion != null && dbVersion.hatKommentar;
+            }
+            
             LoadModuleData(moduleData);
+        }
+
+        // Hilfsmethode: Konvertiere Versionsnummer-String zu Integer ("2.1" → 21)
+        private int ParseVersionsnummer(string version)
+        {
+            if (decimal.TryParse(version, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal dec))
+                return (int)(dec * 10);
+            return 10; // Fallback: Version 1.0
         }
 
         private void LoadModuleData(ModuleDataRepository.ModuleData data)
@@ -130,50 +157,52 @@ namespace Modulverwaltungssoftware
                 return;
             }
 
-            // Daten aus UI auslesen
-            var moduleData = new ModuleDataRepository.ModuleData
-            {
-                Titel = TitelTextBox.Text,
-                Modultypen = GetSelectedListBoxItems(ModultypListBox),
-                Studiengang = StudiengangTextBox.Text,
-                Semester = GetSelectedListBoxItems(SemesterListBox),
-                Pruefungsformen = GetSelectedListBoxItems(PruefungsformListBox),
-                Turnus = GetSelectedListBoxItems(TurnusListBox),
-                Ects = ects,
-                WorkloadPraesenz = workloadPraesenz,
-                WorkloadSelbststudium = workloadSelbststudium,
-                Verantwortlicher = VerantwortlicherTextBox.Text,
-                Voraussetzungen = VoraussetzungenTextBox.Text,
-                Lernziele = LernzieleTextBox.Text,
-                Lehrinhalte = LehrinhalteTextBox.Text,
-                Literatur = LiteraturTextBox.Text
-            };
-
             if (_isEditMode)
             {
-                // BEARBEITUNGSMODUS: Daten unter bestehender Version aktualisieren
-                ModuleDataRepository.UpdateModuleVersion(_modulId, _versionNummer, moduleData);
-                MessageBox.Show($"Änderungen wurden unter Version {_versionNummer} gespeichert.", 
-                    "Gespeichert", MessageBoxButton.OK, MessageBoxImage.Information);
+                try
+                {
+                    int modulIdInt = int.Parse(_modulId);
+                    
+                    if (_isCommentedVersion)
+                    {
+                        // Bei kommentierten Versionen: Neue Version erstellen
+                        ErstelleNeueVersionMitAenderungen(modulIdInt, ects, workloadPraesenz, workloadSelbststudium);
+                    }
+                    else
+                    {
+                        // Bei nicht-kommentierten Versionen: Bestehende Version aktualisieren
+                        AktualisiereBestehendeVersion(modulIdInt, ects, workloadPraesenz, workloadSelbststudium);
+                    }
 
-                // Zurück zur ModulView mit diesem Modul
-                this.NavigationService?.Navigate(new ModulView(int.Parse(_modulId)));
+                    MessageBox.Show($"Änderungen wurden erfolgreich gespeichert.", 
+                        "Gespeichert", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                    // Zurück zur ModulView mit diesem Modul
+                    this.NavigationService?.Navigate(new ModulView(modulIdInt));
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Fehler beim Speichern: {ex.Message}", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
             else
             {
-                // NEUES MODUL: Modul mit Version 1.0 erstellen
-                string currentUser = "P. Brandenburg"; // Später aus Login-System
-                string neueModulId = ModuleDataRepository.CreateModule(
-                    TitelTextBox.Text,  // Modulname = Titel
-                    currentUser,
-                    moduleData
-                );
+                // NEUES MODUL: In echte Datenbank schreiben
+                try
+                {
+                    int neueModulId = ErstelleNeuesModul(ects, workloadPraesenz, workloadSelbststudium);
+                    
+                    MessageBox.Show($"Neues Modul '{TitelTextBox.Text}' wurde erstellt.", 
+                        "Gespeichert", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                MessageBox.Show($"Neues Modul '{TitelTextBox.Text}' wurde erstellt.", 
-                    "Gespeichert", MessageBoxButton.OK, MessageBoxImage.Information);
-
-                // Zur ModulView mit dem neu erstellten Modul navigieren
-                this.NavigationService?.Navigate(new ModulView(int.Parse(neueModulId)));
+                    // Zur ModulView mit dem neuen Modul navigieren
+                    this.NavigationService?.Navigate(new ModulView(neueModulId));
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Fehler beim Erstellen des Moduls: {ex.Message}", 
+                        "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
 
@@ -190,6 +219,329 @@ namespace Modulverwaltungssoftware
             return selected;
         }
 
+        private void ErstelleNeueVersionMitAenderungen(int modulId, int ects, int workloadPraesenz, int workloadSelbststudium)
+        {
+            using (var db = new Services.DatabaseContext())
+            {
+                // SPEZIFISCHE kommentierte Version laden (nicht die erste!)
+                string cleanVersion = _versionNummer.TrimEnd('K');
+                int aktuelleVersionsnummer = ParseVersionsnummer(cleanVersion);
+                
+                var alteVersion = db.ModulVersion
+                    .Include("Modul")
+                    .FirstOrDefault(v => v.ModulId == modulId && v.Versionsnummer == aktuelleVersionsnummer);
+
+                if (alteVersion == null)
+                    throw new InvalidOperationException("Modulversion nicht gefunden.");
+
+                // ✅ Problem 4 Fix: Höchste Versionsnummer für dieses Modul finden
+                var hoechsteVersionsnummer = db.ModulVersion
+                    .Where(v => v.ModulId == modulId)
+                    .Max(v => (int?)v.Versionsnummer) ?? 10;
+                
+                int neueVersionsnummer = hoechsteVersionsnummer + 1;
+                
+                // ✅ Problem 3 Fix: Prüfen ob Version bereits existiert
+                if (db.ModulVersion.Any(v => v.ModulId == modulId && v.Versionsnummer == neueVersionsnummer))
+                    throw new InvalidOperationException($"Version {neueVersionsnummer / 10.0:0.0} existiert bereits!");
+
+                // Neue Version erstellen (NUR versionsspezifische Daten!)
+                var neueVersion = new ModulVersion
+                {
+                    ModulId = alteVersion.ModulId,
+                    Versionsnummer = neueVersionsnummer,
+                    GueltigAbSemester = "Entwurf",
+                    ModulStatus = ModulVersion.Status.Entwurf,
+                    LetzteAenderung = DateTime.Now,
+                    WorkloadPraesenz = workloadPraesenz,
+                    WorkloadSelbststudium = workloadSelbststudium,
+                    EctsPunkte = ects,
+                    Ersteller = Benutzer.CurrentUser?.Name ?? "Unbekannt",  // ← Problem 4: Aktueller User!
+                    hatKommentar = false
+                };
+
+                // Prüfungsform (versionsspezifisch)
+                var pruefungsformen = GetSelectedListBoxItems(PruefungsformListBox);
+                if (pruefungsformen.Count > 0)
+                    neueVersion.Pruefungsform = pruefungsformen[0];
+                else
+                    neueVersion.Pruefungsform = "Klausur";
+
+                // Lernziele (versionsspezifisch)
+                if (!string.IsNullOrWhiteSpace(LernzieleTextBox.Text))
+                {
+                    neueVersion.Lernergebnisse = LernzieleTextBox.Text
+                        .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
+                        .ToList();
+                }
+                else
+                {
+                    neueVersion.Lernergebnisse = new List<string>();
+                }
+
+                // Lehrinhalte (versionsspezifisch)
+                if (!string.IsNullOrWhiteSpace(LehrinhalteTextBox.Text))
+                {
+                    neueVersion.Inhaltsgliederung = LehrinhalteTextBox.Text
+                        .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
+                        .ToList();
+                }
+                else
+                {
+                    neueVersion.Inhaltsgliederung = new List<string>();
+                }
+
+                // Literatur (versionsspezifisch)
+                if (!string.IsNullOrWhiteSpace(LiteraturTextBox.Text))
+                {
+                    neueVersion.Literatur = LiteraturTextBox.Text
+                        .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
+                        .ToList();
+                }
+                else
+                {
+                    neueVersion.Literatur = new List<string>();
+                }
+
+                // WICHTIG: Modul-Daten werden NICHT geändert!
+                // Titel, Studiengang, Modultyp, Turnus, Semester, Voraussetzungen
+                // sind GLOBAL für alle Versionen und können nicht versioniert werden.
+                // Diese Felder sollten in der UI als "read-only" markiert werden oder
+                // Änderungen sollten mit einer Warnung versehen werden.
+
+                db.ModulVersion.Add(neueVersion);
+                db.SaveChanges();
+            }
+        }
+
+        private void AktualisiereBestehendeVersion(int modulId, int ects, int workloadPraesenz, int workloadSelbststudium)
+        {
+            using (var db = new Services.DatabaseContext())
+            {
+                var dbVersion = db.ModulVersion
+                    .Include("Modul")
+                    .FirstOrDefault(v => v.ModulId == modulId);
+
+                if (dbVersion == null)
+                    throw new InvalidOperationException("Modulversion nicht gefunden.");
+
+                // Modul-Daten aktualisieren
+                dbVersion.Modul.ModulnameDE = TitelTextBox.Text;
+                dbVersion.Modul.Studiengang = StudiengangTextBox.Text;
+
+                // Modultyp
+                var modultypen = GetSelectedListBoxItems(ModultypListBox);
+                if (modultypen.Count > 0)
+                {
+                    if (modultypen[0].Contains("Wahlpflicht"))
+                        dbVersion.Modul.Modultyp = Modul.ModultypEnum.Wahlpflicht;
+                    else if (modultypen[0].Contains("Grundlagen"))
+                        dbVersion.Modul.Modultyp = Modul.ModultypEnum.Grundlagen;
+                }
+
+                // Turnus
+                var turnusList = GetSelectedListBoxItems(TurnusListBox);
+                if (turnusList.Count > 0)
+                {
+                    if (turnusList[0].Contains("WiSe"))
+                        dbVersion.Modul.Turnus = Modul.TurnusEnum.NurWintersemester;
+                    else if (turnusList[0].Contains("SoSe"))
+                        dbVersion.Modul.Turnus = Modul.TurnusEnum.NurSommersemester;
+                    else if (turnusList[0].Contains("Jedes Semester") || turnusList[0].Contains("Halbjährlich"))
+                        dbVersion.Modul.Turnus = Modul.TurnusEnum.JedesSemester;
+                }
+
+                // Prüfungsform
+                var pruefungsformen = GetSelectedListBoxItems(PruefungsformListBox);
+                if (pruefungsformen.Count > 0)
+                    dbVersion.Pruefungsform = pruefungsformen[0];
+
+                // Semester
+                var semester = GetSelectedListBoxItems(SemesterListBox);
+                if (semester.Count > 0 && int.TryParse(semester[0], out int sem))
+                    dbVersion.Modul.EmpfohlenesSemester = sem;
+
+                // Voraussetzungen
+                if (!string.IsNullOrWhiteSpace(VoraussetzungenTextBox.Text))
+                {
+                    dbVersion.Modul.Voraussetzungen = VoraussetzungenTextBox.Text
+                        .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
+                        .ToList();
+                }
+
+                // ModulVersion-Daten
+                dbVersion.EctsPunkte = ects;
+                dbVersion.WorkloadPraesenz = workloadPraesenz;
+                dbVersion.WorkloadSelbststudium = workloadSelbststudium;
+                dbVersion.Ersteller = VerantwortlicherTextBox.Text;
+
+                // Lernziele (versionsspezifisch)
+                if (!string.IsNullOrWhiteSpace(LernzieleTextBox.Text))
+                {
+                    dbVersion.Lernergebnisse = LernzieleTextBox.Text
+                        .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
+                        .ToList();
+                }
+                else
+                {
+                    dbVersion.Lernergebnisse = new List<string>();  // ← Problem 1: Leere Liste!
+                }
+
+                // Lehrinhalte (versionsspezifisch)
+                if (!string.IsNullOrWhiteSpace(LehrinhalteTextBox.Text))
+                {
+                    dbVersion.Inhaltsgliederung = LehrinhalteTextBox.Text
+                        .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
+                        .ToList();
+                }
+                else
+                {
+                    dbVersion.Inhaltsgliederung = new List<string>();  // ← Problem 1: Leere Liste!
+                }
+
+                // Literatur (versionsspezifisch)
+                if (!string.IsNullOrWhiteSpace(LiteraturTextBox.Text))
+                {
+                    dbVersion.Literatur = LiteraturTextBox.Text
+                        .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
+                        .ToList();
+                }
+                else
+                {
+                    dbVersion.Literatur = new List<string>();  // ← Problem 1: Leere Liste!
+                }
+
+                dbVersion.LetzteAenderung = DateTime.Now;
+                db.SaveChanges();
+            }
+        }
+
+        private int ErstelleNeuesModul(int ects, int workloadPraesenz, int workloadSelbststudium)
+        {
+            using (var db = new Services.DatabaseContext())
+            {
+                // Neues Modul erstellen
+                var neuesModul = new Modul
+                {
+                    ModulnameDE = TitelTextBox.Text,
+                    Studiengang = StudiengangTextBox.Text,
+                    GueltigAb = DateTime.Now,
+                    DauerInSemestern = 1
+                };
+
+                // Modultyp
+                var modultypen = GetSelectedListBoxItems(ModultypListBox);
+                if (modultypen.Count > 0)
+                {
+                    if (modultypen[0].Contains("Wahlpflicht"))
+                        neuesModul.Modultyp = Modul.ModultypEnum.Wahlpflicht;
+                    else if (modultypen[0].Contains("Grundlagen"))
+                        neuesModul.Modultyp = Modul.ModultypEnum.Grundlagen;
+                }
+
+                // Turnus
+                var turnusList = GetSelectedListBoxItems(TurnusListBox);
+                if (turnusList.Count > 0)
+                {
+                    if (turnusList[0].Contains("WiSe"))
+                        neuesModul.Turnus = Modul.TurnusEnum.NurWintersemester;
+                    else if (turnusList[0].Contains("SoSe"))
+                        neuesModul.Turnus = Modul.TurnusEnum.NurSommersemester;
+                    else if (turnusList[0].Contains("Jedes Semester") || turnusList[0].Contains("Halbjährlich"))
+                        neuesModul.Turnus = Modul.TurnusEnum.JedesSemester;
+                }
+
+                // Prüfungsform (wird im Modul als Enum gespeichert, aber wir nehmen erstmal einen Standardwert)
+                neuesModul.PruefungsForm = Modul.PruefungsFormEnum.PL;
+
+                // Semester
+                var semester = GetSelectedListBoxItems(SemesterListBox);
+                if (semester.Count > 0 && int.TryParse(semester[0], out int sem))
+                    neuesModul.EmpfohlenesSemester = sem;
+                else
+                    neuesModul.EmpfohlenesSemester = 1;
+
+                // Voraussetzungen
+                if (!string.IsNullOrWhiteSpace(VoraussetzungenTextBox.Text))
+                {
+                    neuesModul.Voraussetzungen = VoraussetzungenTextBox.Text
+                        .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
+                        .ToList();
+                }
+                else
+                {
+                    neuesModul.Voraussetzungen = new List<string>();
+                }
+
+                // Modul zur Datenbank hinzufügen
+                db.Modul.Add(neuesModul);
+                db.SaveChanges(); // Speichern, um ModulID zu erhalten
+
+                // Erste Version erstellen (Version 1.0 = Versionsnummer 10)
+                var ersteVersion = new ModulVersion
+                {
+                    ModulId = neuesModul.ModulID,
+                    Versionsnummer = 10, // 1.0 (10 / 10.0 = 1.0)
+                    GueltigAbSemester = "Entwurf",
+                    ModulStatus = ModulVersion.Status.Entwurf,
+                    LetzteAenderung = DateTime.Now,
+                    WorkloadPraesenz = workloadPraesenz,
+                    WorkloadSelbststudium = workloadSelbststudium,
+                    EctsPunkte = ects,
+                    Ersteller = Benutzer.CurrentUser?.Name ?? "Unbekannt",  // ← Problem 4: Aktueller User!
+                    hatKommentar = false
+                };
+
+                // Prüfungsform
+                var pruefungsformen = GetSelectedListBoxItems(PruefungsformListBox);
+                if (pruefungsformen.Count > 0)
+                    ersteVersion.Pruefungsform = pruefungsformen[0];
+                else
+                    ersteVersion.Pruefungsform = "Klausur";
+
+                // Lernziele
+                if (!string.IsNullOrWhiteSpace(LernzieleTextBox.Text))
+                {
+                    ersteVersion.Lernergebnisse = LernzieleTextBox.Text
+                        .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
+                        .ToList();
+                }
+                else
+                {
+                    ersteVersion.Lernergebnisse = new List<string>();
+                }
+
+                // Lehrinhalte
+                if (!string.IsNullOrWhiteSpace(LehrinhalteTextBox.Text))
+                {
+                    ersteVersion.Inhaltsgliederung = LehrinhalteTextBox.Text
+                        .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
+                        .ToList();
+                }
+                else
+                {
+                    ersteVersion.Inhaltsgliederung = new List<string>();
+                }
+
+                // Literatur
+                if (!string.IsNullOrWhiteSpace(LiteraturTextBox.Text))
+                {
+                    ersteVersion.Literatur = LiteraturTextBox.Text
+                        .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
+                        .ToList();
+                }
+                else
+                {
+                    ersteVersion.Literatur = new List<string>();
+                }
+
+                db.ModulVersion.Add(ersteVersion);
+                db.SaveChanges();
+
+                return neuesModul.ModulID;
+            }
+        }
+
         private void EntwurfVerwerfen_Click(object sender, RoutedEventArgs e)
         {
             var result = MessageBox.Show(
@@ -200,8 +552,15 @@ namespace Modulverwaltungssoftware
 
             if (result == MessageBoxResult.Yes)
             {
-                // Zurück zur StartPage navigieren
-                this.NavigationService?.Navigate(new StartPage());
+                // ✅ Problem 2 Fix: Zurück zur ModulView (falls vorhanden) oder StartPage
+                if (_isEditMode && !string.IsNullOrEmpty(_modulId))
+                {
+                    this.NavigationService?.Navigate(new ModulView(int.Parse(_modulId)));
+                }
+                else
+                {
+                    this.NavigationService?.Navigate(new StartPage());
+                }
             }
             // Bei Nein passiert nichts, der Entwurf bleibt bestehen
         }
@@ -220,12 +579,15 @@ namespace Modulverwaltungssoftware
         // Validierung: Nur Zahlen in numerischen Feldern erlauben
         private void NumericTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
-            // Nur Ziffern erlauben
+            // Nur Ziffern erlauben, keine Buchstaben oder Sonderzeichen
             e.Handled = !IsTextNumeric(e.Text);
         }
 
         private bool IsTextNumeric(string text)
         {
+            if (string.IsNullOrEmpty(text))
+                return false;
+                
             foreach (char c in text)
             {
                 if (!char.IsDigit(c))

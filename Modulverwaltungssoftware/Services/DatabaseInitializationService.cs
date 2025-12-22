@@ -1,4 +1,4 @@
-ï»¿using Modulverwaltungssoftware.Models;
+using Modulverwaltungssoftware.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -114,27 +114,27 @@ namespace Modulverwaltungssoftware.Services
                                     // Veraltete Version
                                     new ModulVersion
                                     {
-                                        Versionsnummer = 1,
+                                        Versionsnummer = 10,  // ? FIX: 1.0 = 10 (nicht 1!)
                                         ModulStatus = ModulVersion.Status.Freigegeben,
                                         GueltigAbSemester = "WiSe 2021",
                                         EctsPunkte = 5,
                                         WorkloadPraesenz = 60, WorkloadSelbststudium = 90,
                                         Pruefungsform = "Klausur (90 min)",
                                         LernergebnisseDb = "Wasserfallmodell, V-Modell...",
-                                        InhaltsgliederungDb = "1. EinfÃ¼hrung\n2. Prozessmodelle",
+                                        InhaltsgliederungDb = "1. Einführung\n2. Prozessmodelle",
                 
-                                        // Hier deine Anforderung: Zuweisung Ã¼ber den Namen
+                                        // Hier deine Anforderung: Zuweisung über den Namen
                                         Ersteller = dozent.Name
                                     },
                                     // Aktuelle Version (Entwurf)
                                     new ModulVersion
                                     {
-                                        Versionsnummer = 2,
+                                        Versionsnummer = 20,  // ? FIX: 2.0 = 20 (nicht 2!)
                                         ModulStatus = ModulVersion.Status.Aenderungsbedarf,
                                         GueltigAbSemester = "WiSe 2324",
                                         EctsPunkte = 5,
                                         WorkloadPraesenz = 45, WorkloadSelbststudium = 105,
-                                        Pruefungsform = "Portfolio-PrÃ¼fung",
+                                        Pruefungsform = "Portfolio-Prüfung",
                                         LernergebnisseDb = "Scrum, Kanban, DevOps...",
                                         InhaltsgliederungDb = "1. Agile Werte\n2. Scrum Guide",
                                         Ersteller = dozent.Name
@@ -156,7 +156,7 @@ namespace Modulverwaltungssoftware.Services
                                 {
                                     new ModulVersion
                                     {
-                                        Versionsnummer = 1,
+                                        Versionsnummer = 10,  // ? FIX: 1.0 = 10
                                         ModulStatus = ModulVersion.Status.Freigegeben,
                                         GueltigAbSemester = "WiSe 2223",
                                         EctsPunkte = 5,
@@ -183,7 +183,7 @@ namespace Modulverwaltungssoftware.Services
                                 {
                                     new ModulVersion
                                     {
-                                        Versionsnummer = 1,
+                                        Versionsnummer = 10,  // ? FIX: 1.0 = 10
                                         ModulStatus = ModulVersion.Status.Freigegeben,
                                         GueltigAbSemester = "SoSe 24",
                                         EctsPunkte = 5,
@@ -209,7 +209,7 @@ namespace Modulverwaltungssoftware.Services
                                 {
                                     new ModulVersion
                                     {
-                                        Versionsnummer = 1,
+                                        Versionsnummer = 10,  // ? FIX: 1.0 = 10
                                         ModulStatus = ModulVersion.Status.Freigegeben,
                                         GueltigAbSemester = "WiSe 2425",
                                         EctsPunkte = 5,
@@ -234,7 +234,7 @@ namespace Modulverwaltungssoftware.Services
                                 {
                                     new ModulVersion
                                     {
-                                        Versionsnummer = 1,
+                                        Versionsnummer = 10,  // ? FIX: 1.0 = 10
                                         ModulStatus = ModulVersion.Status.Freigegeben,
                                         GueltigAbSemester = "SoSe 21",
                                         EctsPunkte = 5,
@@ -258,13 +258,13 @@ namespace Modulverwaltungssoftware.Services
                                 {
                                     new ModulVersion
                                     {
-                                        Versionsnummer = 1,
+                                        Versionsnummer = 10,  // ? FIX: 1.0 = 10
                                         ModulStatus = ModulVersion.Status.Freigegeben,
                                         GueltigAbSemester = "SoSe 15",
                                         EctsPunkte = 10,
                                         WorkloadPraesenz = 200, WorkloadSelbststudium = 100,
                                         Pruefungsform = "Hausarbeit",
-                                        LernergebnisseDb = "Texte mit maximal einem Fehler auf 1000 WÃ¶rter schreiben",
+                                        LernergebnisseDb = "Texte mit maximal einem Fehler auf 1000 Wörter schreiben",
                                         InhaltsgliederungDb = "1. Duden-Workouts\n2. Grammatik-Yoga",
                                         Ersteller = dozent.Name
                                     }
@@ -272,7 +272,7 @@ namespace Modulverwaltungssoftware.Services
                             },
                             new Modul
                             {
-                                ModulnameDE = "EinfÃ¼hrung in die Pyrotechnik",
+                                ModulnameDE = "Einführung in die Pyrotechnik",
                                 ModulnameEN = "Pyrotechnics I",
                                 Studiengang = "B.SC. Buehneneffekte",
                                 EmpfohlenesSemester = 5,
@@ -283,21 +283,21 @@ namespace Modulverwaltungssoftware.Services
                                 {
                                     new ModulVersion
                                     {
-                                        Versionsnummer = 1,
+                                        Versionsnummer = 10,  // ? FIX: 1.0 = 10
                                         ModulStatus = ModulVersion.Status.Aenderungsbedarf,
                                         GueltigAbSemester = "WiSe 2526",
                                         EctsPunkte = 5,
                                         WorkloadPraesenz = 60, WorkloadSelbststudium = 90,
                                         Pruefungsform = "Laborabnahmen (50%), Online-Klausur (50%)",
-                                        LernergebnisseDb = "Die Studierenden kennen die rechtlichen Rahmenbedingungen (SprengG) fÃ¼r den Umgang mit pyrotechnischen GegenstÃ¤nden.\n" +
-                                   "Sie verstehen die chemisch-physikalischen VorgÃ¤nge bei der Verbrennung von SÃ¤tzen.\n" +
-                                   "Sie kÃ¶nnen SicherheitsabstÃ¤nde berechnen und GefÃ¤hrdungsanalysen erstellen.\n" +
+                                        LernergebnisseDb = "Die Studierenden kennen die rechtlichen Rahmenbedingungen (SprengG) für den Umgang mit pyrotechnischen Gegenständen.\n" +
+                                   "Sie verstehen die chemisch-physikalischen Vorgänge bei der Verbrennung von Sätzen.\n" +
+                                   "Sie können Sicherheitsabstände berechnen und Gefährdungsanalysen erstellen.\n" +
                                    "Sie sind in der Lage, einfache pyrotechnische Effekte theoretisch zu planen.",
                                         InhaltsgliederungDb = "1. Historie und Entwicklung der Pyrotechnik\n" +
                                       "2. Rechtliche Grundlagen (Sprengstoffgesetz, BAM-Klassen)\n" +
                                       "3. Chemische Grundlagen (Oxidationsmittel, Reduktionsmittel, Binder)\n" +
                                       "4. Farberzeugung und akustische Effekte\n" +
-                                      "5. ZÃ¼ndsysteme und elektrische ZÃ¼ndung\n" +
+                                      "5. Zündsysteme und elektrische Zündung\n" +
                                       "6. Sicherheitstechnik und Lagerung",
                                         Ersteller = dozent.Name
                                     }
@@ -318,7 +318,7 @@ namespace Modulverwaltungssoftware.Services
                                 {
                                     new ModulVersion
                                     {
-                                        Versionsnummer = 1,
+                                        Versionsnummer = 10,  // ? FIX: 1.0 = 10
                                         ModulStatus = ModulVersion.Status.Freigegeben,
                                         GueltigAbSemester = "SoSe 23",
                                         EctsPunkte = 5,
@@ -344,18 +344,18 @@ namespace Modulverwaltungssoftware.Services
                                 {
                                     new ModulVersion
                                     {
-                                        Versionsnummer = 1,
+                                        Versionsnummer = 10,  // ? FIX: 1.0 = 10
                                         ModulStatus = ModulVersion.Status.Freigegeben,
                                         GueltigAbSemester = "WiSe 2425",
                                         EctsPunkte = 5,
                                         WorkloadPraesenz = 30, WorkloadSelbststudium = 120,
                                         Pruefungsform = "Klausur 120 Minuten",
                                         LernergebnisseDb = "Die Studierenden besitzen grundlegende Kenntnisse im Zivil- und Urheberrecht.\n" +
-                                   "Sie kÃ¶nnen IT-VertrÃ¤ge (Werkvertrag, Dienstvertrag) rechtlich einordnen.\n" +
-                                   "Sie verstehen die Prinzipien der DSGVO und kÃ¶nnen diese auf Softwareprojekte anwenden.\n" +
+                                   "Sie können IT-Verträge (Werkvertrag, Dienstvertrag) rechtlich einordnen.\n" +
+                                   "Sie verstehen die Prinzipien der DSGVO und können diese auf Softwareprojekte anwenden.\n" +
                                    "Sie kennen die Haftungsrisiken bei der Softwareentwicklung.",
                                         InhaltsgliederungDb = "1. Grundlagen des BGB und Vertragsrecht\n" +
-                                      "2. Urheberrecht und Lizenzmodelle (Open Source vs. ProprietÃ¤r)\n" +
+                                      "2. Urheberrecht und Lizenzmodelle (Open Source vs. Proprietär)\n" +
                                       "3. Datenschutzrecht (DSGVO, BDSG)\n" +
                                       "4. E-Commerce Recht und Impressumspflicht\n" +
                                       "5. IT-Sicherheit und Strafrecht (Cybercrime)\n" +
@@ -377,22 +377,22 @@ namespace Modulverwaltungssoftware.Services
                                 {
                                     new ModulVersion
                                     {
-                                        Versionsnummer = 1,
+                                        Versionsnummer = 10,  // ? FIX: 1.0 = 10
                                         ModulStatus = ModulVersion.Status.Aenderungsbedarf,
                                         GueltigAbSemester = "SoSe 21",
                                         EctsPunkte = 5,
                                         WorkloadPraesenz = 30, WorkloadSelbststudium = 120,
                                         Pruefungsform = "Hausarbeit",
-                                        LernergebnisseDb = "Die Studierenden beherrschen die HauptsÃ¤tze der Thermodynamik.\n" +
-                                   "Sie verstehen das Verhalten idealer Gase und kÃ¶nnen ZustandsÃ¤nderungen berechnen.\n" +
-                                   "Sie kÃ¶nnen Kreisprozesse (z.B. Carnot) analysieren und Wirkungsgrade ermitteln.\n" +
-                                   "Sie verstehen den Begriff der Entropie und IrreversibilitÃ¤t.",
+                                        LernergebnisseDb = "Die Studierenden beherrschen die Hauptsätze der Thermodynamik.\n" +
+                                   "Sie verstehen das Verhalten idealer Gase und können Zustandsänderungen berechnen.\n" +
+                                   "Sie können Kreisprozesse (z.B. Carnot) analysieren und Wirkungsgrade ermitteln.\n" +
+                                   "Sie verstehen den Begriff der Entropie und Irreversibilität.",
                                         InhaltsgliederungDb = "1. Grundbegriffe und thermodynamische Systeme\n" +
-                                      "2. ZustandsgrÃ¶ÃŸen und Zustandsgleichungen idealer Gase\n" +
+                                      "2. Zustandsgrößen und Zustandsgleichungen idealer Gase\n" +
                                       "3. Der 1. Hauptsatz der Thermodynamik (Energieerhaltung)\n" +
                                       "4. Der 2. Hauptsatz der Thermodynamik (Entropie)\n" +
                                       "5. Kreisprozesse und thermische Maschinen\n" +
-                                      "6. WÃ¤rmeÃ¼bertragung (Grundlagen)",
+                                      "6. Wärmeübertragung (Grundlagen)",
                                         Ersteller = dozent.Name
                                     }
                                 }
@@ -410,22 +410,22 @@ namespace Modulverwaltungssoftware.Services
                                 {
                                     new ModulVersion
                                     {
-                                        Versionsnummer = 1,
+                                        Versionsnummer = 10,  // ? FIX: 1.0 = 10
                                         ModulStatus = ModulVersion.Status.Freigegeben,
                                         GueltigAbSemester = "WiSe 1819",
                                         EctsPunkte = 5,
                                         WorkloadPraesenz = 60, WorkloadSelbststudium = 90,
                                         Pruefungsform = "Praesentation, Abgaben",
-                                        LernergebnisseDb = "Die Studierenden haben einen Ãœberblick Ã¼ber die Teilgebiete des Maschinenbaus.\n" +
+                                        LernergebnisseDb = "Die Studierenden haben einen Überblick über die Teilgebiete des Maschinenbaus.\n" +
                                    "Sie kennen die wichtigsten Werkstoffgruppen (Metalle, Kunststoffe).\n" +
-                                   "Sie kÃ¶nnen einfache technische Zeichnungen nach Norm lesen und erstellen.\n" +
+                                   "Sie können einfache technische Zeichnungen nach Norm lesen und erstellen.\n" +
                                    "Sie verstehen grundlegende Fertigungsverfahren (Urformen, Umformen, Trennen).",
-                                        InhaltsgliederungDb = "1. EinfÃ¼hrung und Berufsbild des Ingenieurs\n" +
+                                        InhaltsgliederungDb = "1. Einführung und Berufsbild des Ingenieurs\n" +
                                       "2. Grundlagen der Werkstoffkunde (Eisen, Stahl, NE-Metalle)\n" +
                                       "3. Technische Kommunikation und Normung (DIN/ISO)\n" +
-                                      "4. Maschinenelemente (Schrauben, Lager, ZahnrÃ¤der)\n" +
-                                      "5. Ãœberblick Fertigungstechnik\n" +
-                                      "6. CAD-EinfÃ¼hrung",
+                                      "4. Maschinenelemente (Schrauben, Lager, Zahnräder)\n" +
+                                      "5. Überblick Fertigungstechnik\n" +
+                                      "6. CAD-Einführung",
                                         Ersteller = dozent.Name
                                     }
                                 }
@@ -446,58 +446,68 @@ namespace Modulverwaltungssoftware.Services
                                             .FirstOrDefault(m => m.ModulnameDE == "Thermodynamik I");
 
                         var pyroModul = db.Modul.Include("ModulVersionen")
-                                          .FirstOrDefault(m => m.ModulnameDE == "EinfÃ¼hrung in die Pyrotechnik");
+                                          .FirstOrDefault(m => m.ModulnameDE == "Einführung in die Pyrotechnik");
                         if (seModul != null && thermoModul != null && pyroModul != null)
                         {
                             var kommentare = new List<Kommentar>
     {
-        // Kommentar 1: Zu Software Engineering
+        // Kommentar 1: Zu Software Engineering - Literatur
         new Kommentar
         {
-            Text = "RÃ¼ckgabe zur Ãœberarbeitung (Koordination): Die angegebene Literaturliste ist veraltet " +
-                   "und entspricht nicht mehr dem aktuellen Stand der Technik (Agile Methoden fehlen). " +
-                   "Zudem sind die Lernziele zu ungenau formuliert." +
-                   "Bitte korrigieren.",
-            ErstellungsDatum = DateTime.Now.AddDays(-10), // Vor 10 Tagen geschrieben
-            
+            FeldName = "Literatur",
+            Text = "Die angegebene Literaturliste ist veraltet und entspricht nicht mehr dem aktuellen Stand der Technik (Agile Methoden fehlen).",
+            ErstellungsDatum = DateTime.Now.AddDays(-10),
+            Ersteller = "Prof. Dr. Koordinator",
+            GehoertZuModulID = seModul.ModulID,
+            GehoertZuModulVersionID = seModul.ModulVersionen.Last().ModulVersionID
+        },
+        // Kommentar 2: Zu Software Engineering - Lernziele
+        new Kommentar
+        {
+            FeldName = "Lernziele",
+            Text = "Die Lernziele sind zu ungenau formuliert. Bitte konkreter beschreiben.",
+            ErstellungsDatum = DateTime.Now.AddDays(-10),
+            Ersteller = "Prof. Dr. Koordinator",
             GehoertZuModulID = seModul.ModulID,
             GehoertZuModulVersionID = seModul.ModulVersionen.Last().ModulVersionID
         },
 
-        // Kommentar 2: Zu Thermodynamik
+        // Kommentar 3: Zu Thermodynamik - Prüfungsform
         new Kommentar
         {
-            Text = "Abgelehnt durch das Gremium: Die PrÃ¼fungsdichte im 2. Semester ist bereits sehr hoch. " +
-                   "Eine 120-minÃ¼tige Klausur wird als unverhÃ¤ltnismÃ¤ÃŸig angesehen. " +
-                   "Wir fordern eine Ã„nderung der PrÃ¼fungsform hin zu semesterbegleitenden Leistungen " +
-                   "oder eine Reduktion des Stoffumfangs.",
+            FeldName = "Prüfungsform",
+            Text = "Die Prüfungsdichte im 2. Semester ist bereits sehr hoch. Eine 120-minütige Klausur wird als unverhältnismäßig angesehen. Wir fordern eine Änderung der Prüfungsform hin zu semesterbegleitenden Leistungen oder eine Reduktion des Stoffumfangs.",
             ErstellungsDatum = DateTime.Now.AddMonths(-2),
-
+            Ersteller = "Gremium",
             GehoertZuModulID = thermoModul.ModulID,
             GehoertZuModulVersionID = thermoModul.ModulVersionen.First().ModulVersionID
         },
 
-        // Kommentar 3: Zu Pyrotechnik
+        // Kommentar 4: Zu Pyrotechnik - Voraussetzungen
         new Kommentar
         {
-            Text = "RÃ¼ckgabe (Koordination): Das Modul kann in dieser Form nicht angeboten werden. " +
-                   "Es fehlt ein expliziter Vermerk im Abschnitt 'Voraussetzungen', dass eine " +
-                   "Sicherheitsbelehrung vor der ersten praktischen Ãœbung verpflichtend ist. " +
-                   "Bitte fÃ¼gen Sie den entsprechenden Textbaustein aus dem Arbeitssicherheit-Handbuch ein.",
+            FeldName = "Voraussetzungen",
+            Text = "Es fehlt ein expliziter Vermerk, dass eine Sicherheitsbelehrung vor der ersten praktischen Übung verpflichtend ist. Bitte fügen Sie den entsprechenden Textbaustein aus dem Arbeitssicherheit-Handbuch ein.",
             ErstellungsDatum = DateTime.Now.AddDays(-2),
-
+            Ersteller = "Prof. Dr. Koordinator",
             GehoertZuModulID = pyroModul.ModulID,
             GehoertZuModulVersionID = pyroModul.ModulVersionen.First().ModulVersionID
         }
     };
 
                             db.Kommentar.AddRange(kommentare);
+                            
+                            // Module als kommentiert markieren
+                            seModul.ModulVersionen.Last().hatKommentar = true;
+                            thermoModul.ModulVersionen.First().hatKommentar = true;
+                            pyroModul.ModulVersionen.First().hatKommentar = true;
+                            
                             db.SaveChanges();
-                            Console.WriteLine("3 Kommentare erfolgreich angelegt.");
+                            Console.WriteLine("4 feldspezifische Kommentare erfolgreich angelegt.");
                         }
                         else
                         {
-                            Console.WriteLine("WARNUNG: Konnte Module fÃ¼r Kommentare nicht finden (Namen prÃ¼fen!).");
+                            Console.WriteLine("WARNUNG: Konnte Module für Kommentare nicht finden (Namen prüfen!).");
                         }
 
                         var seedBenachrichtigungen = new List<Benachrichtigung>
@@ -507,7 +517,7 @@ namespace Modulverwaltungssoftware.Services
     {
         Empfaenger = "Gast",
         Sender = "System",
-        Nachricht = "Willkommen im Modul-Management-System. Sie haben Lesezugriff auf alle verÃ¶ffentlichten Module.",
+        Nachricht = "Willkommen im Modul-Management-System. Sie haben Lesezugriff auf alle veröffentlichten Module.",
         GesendetAm = DateTime.Now.AddDays(-5),
         Gelesen = true, // Schon gelesen
         BetroffeneModulVersionID = null
@@ -527,7 +537,7 @@ namespace Modulverwaltungssoftware.Services
     {
         Empfaenger = "Dozent",
         Sender = "Koordination",
-        Nachricht = "Ihr Modul 'Mathe I' wurde zur Ãœberarbeitung zurÃ¼ckgegeben. Bitte prÃ¼fen Sie die ECTS-Verteilung.",
+        Nachricht = "Ihr Modul 'Mathe I' wurde zur Überarbeitung zurückgegeben. Bitte prüfen Sie die ECTS-Verteilung.",
         GesendetAm = DateTime.Now.AddHours(-24),
         Gelesen = false,
         BetroffeneModulVersionID = 1 // Annahme: Es gibt eine Version 1
@@ -536,7 +546,7 @@ namespace Modulverwaltungssoftware.Services
     {
         Empfaenger = "Dozent",
         Sender = "System",
-        Nachricht = "Erinnerung: Die Einreichungsfrist fÃ¼r das kommende Semester endet in 3 Tagen.",
+        Nachricht = "Erinnerung: Die Einreichungsfrist für das kommende Semester endet in 3 Tagen.",
         GesendetAm = DateTime.Now.AddHours(-1),
         Gelesen = false,
         BetroffeneModulVersionID = null
@@ -545,18 +555,18 @@ namespace Modulverwaltungssoftware.Services
     {
         Empfaenger = "Dozent",
         Sender = "Gremium",
-        Nachricht = "GlÃ¼ckwunsch! Ihr Modul 'Informatik Grundlagen' wurde ohne Ã„nderungen genehmigt.",
+        Nachricht = "Glückwunsch! Ihr Modul 'Informatik Grundlagen' wurde ohne Änderungen genehmigt.",
         GesendetAm = DateTime.Now.AddDays(-2),
         Gelesen = true,
         BetroffeneModulVersionID = 5 // Annahme: Version 5 existiert
     },
 
-    // --- KOORDINATION (PrÃ¼fungsaufgaben) ---
+    // --- KOORDINATION (Prüfungsaufgaben) ---
     new Benachrichtigung
     {
         Empfaenger = "Koordination",
         Sender = "System",
-        Nachricht = "Neues Modul eingereicht: 'Fortgeschrittene Algorithmen' wartet auf formale PrÃ¼fung.",
+        Nachricht = "Neues Modul eingereicht: 'Fortgeschrittene Algorithmen' wartet auf formale Prüfung.",
         GesendetAm = DateTime.Now.AddMinutes(-30),
         Gelesen = false,
         BetroffeneModulVersionID = 12
@@ -565,7 +575,7 @@ namespace Modulverwaltungssoftware.Services
     {
         Empfaenger = "Koordination",
         Sender = "Dozent",
-        Nachricht = "Ich habe die Ã„nderungen an 'Physik II' vorgenommen. KÃ¶nnen Sie kurz drÃ¼berschauen?",
+        Nachricht = "Ich habe die Änderungen an 'Physik II' vorgenommen. Können Sie kurz drüberschauen?",
         GesendetAm = DateTime.Now.AddHours(-5),
         Gelesen = false,
         BetroffeneModulVersionID = 8
@@ -576,7 +586,7 @@ namespace Modulverwaltungssoftware.Services
     {
         Empfaenger = "Gremium",
         Sender = "Koordination",
-        Nachricht = "Agenda fÃ¼r nÃ¤chste Sitzung: 5 Module stehen zur finalen Genehmigung bereit.",
+        Nachricht = "Agenda für nächste Sitzung: 5 Module stehen zur finalen Genehmigung bereit.",
         GesendetAm = DateTime.Now.AddDays(-1),
         Gelesen = false,
         BetroffeneModulVersionID = null
@@ -585,7 +595,7 @@ namespace Modulverwaltungssoftware.Services
     {
         Empfaenger = "Gremium",
         Sender = "Dekan",
-        Nachricht = "Bitte beachten Sie die neue PrÃ¼fungsordnung bei der Genehmigung von Master-Modulen.",
+        Nachricht = "Bitte beachten Sie die neue Prüfungsordnung bei der Genehmigung von Master-Modulen.",
         GesendetAm = DateTime.Now.AddDays(-7),
         Gelesen = true, // Alte Info
         BetroffeneModulVersionID = null
@@ -605,7 +615,7 @@ namespace Modulverwaltungssoftware.Services
     {
         Empfaenger = "Admin",
         Sender = "System",
-        Nachricht = "Warnung: Hohe Serverlast festgestellt. Performance kÃ¶nnte beeintrÃ¤chtigt sein.",
+        Nachricht = "Warnung: Hohe Serverlast festgestellt. Performance könnte beeinträchtigt sein.",
         GesendetAm = DateTime.Now.AddMinutes(-10),
         Gelesen = false,
         BetroffeneModulVersionID = null
@@ -616,13 +626,13 @@ namespace Modulverwaltungssoftware.Services
                         db.Benachrichtigung.AddRange(seedBenachrichtigungen);
                         db.SaveChanges();
 
-                        transaction.Commit(); // Transaktion bestÃ¤tigen
+                        transaction.Commit(); // Transaktion bestätigen
 
-                        Console.WriteLine("Datenbank erfolgreich befÃ¼llt!");
+                        Console.WriteLine("Datenbank erfolgreich befüllt!");
                     }
                     catch (Exception ex)
                     {
-                        transaction.Rollback(); // Bei Fehler alles rÃ¼ckgÃ¤ngig machen
+                        transaction.Rollback(); // Bei Fehler alles rückgängig machen
                         Console.WriteLine("Fehler bei der Initialisierung: " + ex.Message);
                         // Optional: Exception weiterwerfen, damit die App crasht und man den Fehler sieht
                         throw;

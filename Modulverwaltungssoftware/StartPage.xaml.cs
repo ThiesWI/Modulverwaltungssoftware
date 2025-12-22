@@ -36,13 +36,23 @@ namespace Modulverwaltungssoftware
         {
             InitializeComponent();
             this.DataContext = this;
+            
+            // Module beim Laden der Seite aktualisieren
+            this.Loaded += StartPage_Loaded;
+        }
 
-            // Lade Module für Mock-User "Dozent"
+        // Wird aufgerufen wenn die Seite geladen wird
+        private void StartPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Module bei jedem Laden neu laden (auch nach Navigation zurück)
             LoadModulePreviews();
         }
 
         private void LoadModulePreviews()
         {
+            // Collection leeren (wichtig bei erneutem Laden!)
+            ModulePreviews.Clear();
+
             // Alle Module abrufen (nicht Versionen!)
             var alleModule = ModulRepository.getAllModule();
 
@@ -56,11 +66,14 @@ namespace Modulverwaltungssoftware
 
                 if (neuesteVersion != null)
                 {
+                    // Versionsnummer formatieren
+                    string versionDisplay = FormatVersionsnummer(neuesteVersion.Versionsnummer);
+                    
                     tempList.Add(new ModulePreview
                     {
                         Title = modul.ModulnameDE,  // MODULNAME
                         Studiengang = neuesteVersion.Modul.Studiengang,
-                        Version = $"{neuesteVersion.Versionsnummer} ({neuesteVersion.ModulStatus})",
+                        Version = $"{versionDisplay} ({neuesteVersion.ModulStatus})",
                         ContentPreview = GenerateContentPreview(neuesteVersion),
                         ModulId = modul.ModulID.ToString()
                     });
@@ -75,6 +88,13 @@ namespace Modulverwaltungssoftware
             {
                 ModulePreviews.Add(module);
             }
+        }
+
+        // Hilfsmethode: Konvertiere interne Versionsnummer zu Anzeige-Format (10 → "1.0")
+        private string FormatVersionsnummer(int versionsnummer)
+        {
+            decimal version = versionsnummer / 10.0m;
+            return version.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture);
         }
 
         private string GenerateContentPreview(ModulVersion data)

@@ -12,25 +12,18 @@ namespace Modulverwaltungssoftware
     {
         public static ModulVersion getModulVersion(int modulID)
         {
-            try
+            using (var db = new Services.DatabaseContext())
             {
-                using (var db = new Services.DatabaseContext())
-                {
-                    var version = db.ModulVersion
-                        .Include("Modul") // <--- String-Überladung statt Lambda verwenden
-                        .Where(v => v.ModulId == modulID && v.ModulStatus == ModulVersion.Status.Freigegeben)
-                        .Include("Modul")
-                        .OrderByDescending(v => v.Versionsnummer)
-                        .FirstOrDefault();
+                // Neueste Version laden (unabhängig vom Status)
+                var version = db.ModulVersion
+                    .Include("Modul")
+                    .Where(v => v.ModulId == modulID)
+                    .OrderByDescending(v => v.Versionsnummer)
+                    .FirstOrDefault();
 
-                    if (version == null)
-                        return null;
-                    else
-                        return version;
-                }
+                return version;
             }
-            catch (Exception ex) { throw; }
-            }
+        }
         public static List<ModulVersion> getAllModulVersionen(int modulID)
         {
             try

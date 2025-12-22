@@ -39,10 +39,18 @@ namespace Modulverwaltungssoftware
 
             // Versionen-Dropdown füllen (mit "K" für kommentierte Versionen)
             var versionDisplay = versionen.Select(v =>
-                (v.hatKommentar == true)
-                    ? $"{v.Versionsnummer}K"
-                    : v.Versionsnummer.ToString());
+            {
+                string displayVersion = FormatVersionsnummer(v.Versionsnummer);
+                return v.hatKommentar ? $"{displayVersion}K" : displayVersion;
+            });
             UpdateVersions(versionDisplay);
+            
+            // DEBUG: Versionsnummern-Ausgabe
+            System.Diagnostics.Debug.WriteLine($"Versionen für Modul {modulId}:");
+            foreach (var v in versionen)
+            {
+                System.Diagnostics.Debug.WriteLine($"  - Versionsnummer DB: {v.Versionsnummer}, Anzeige: {FormatVersionsnummer(v.Versionsnummer)}");
+            }
 
             // Neueste Version laden
             var neuesteVersion = versionen
@@ -50,52 +58,66 @@ namespace Modulverwaltungssoftware
                 .FirstOrDefault();
 
             if (neuesteVersion != null)
-                LoadModuleVersion(neuesteVersion.Versionsnummer.ToString());
+                LoadModuleVersion(FormatVersionsnummer(neuesteVersion.Versionsnummer));
+        }
+
+        // Hilfsmethode: Konvertiere interne Versionsnummer zu Anzeige-Format (10 ? "1.0")
+        private string FormatVersionsnummer(int versionsnummer)
+        {
+            decimal version = versionsnummer / 10.0m;
+            return version.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture);
         }
 
         private void LoadModuleVersion(string versionNummer)
         {
-            // Daten aus Repository holen
-            var data = ModulRepository.getModulVersion(int.Parse(_currentModulId));
-            if (data == null)
-                return;
+            // ? Problem 3 Fix: Spezifische Version laden statt nur neueste!
+            int modulId = int.Parse(_currentModulId);
+            int versionsnummerInt = ParseVersionsnummer(versionNummer);
+            
+            using (var db = new Services.DatabaseContext())
+            {
+                var data = db.ModulVersion
+                    .Include("Modul")
+                    .FirstOrDefault(v => v.ModulId == modulId && v.Versionsnummer == versionsnummerInt);
+                    
+                if (data == null)
+                    return;
 
-            _currentVersion = versionNummer; // Aktuell geladene Version merken
+                _currentVersion = versionNummer; // Aktuell geladene Version merken (z.B. "1.0")
 
-            // Prüfen, ob Version kommentiert wurde
-            var modul = WorkflowController.getModulDetails(int.Parse(_currentModulId));
-            var version = data.ModulVersionID.ToString();
-            bool hasComments = data?.hatKommentar ?? false;
-            string versionDisplay = hasComments ? $"{versionNummer}K" : versionNummer;
+                // ? Problem 2 Fix: Version-Feld zeigt "K" bei kommentierten Versionen
+                bool hasComments = data.hatKommentar;
+                string versionDisplay = hasComments ? $"{versionNummer}K" : versionNummer;
 
-            // Textfelder befüllen
-            TitelTextBox.Text = data.Modul.ModulnameDE;
-            VersionTextBox.Text = versionDisplay; // Version mit "K"-Suffix anzeigen
-            StudiengangTextBox.Text = data.Modul.Studiengang;
-            EctsTextBox.Text = data.EctsPunkte.ToString();
-            WorkloadPraesenzTextBox.Text = data.WorkloadPraesenz.ToString();
-            WorkloadSelbststudiumTextBox.Text = data.WorkloadSelbststudium.ToString();
-            VerantwortlicherTextBox.Text = data.Ersteller;
+                // Textfelder befüllen
+                TitelTextBox.Text = data.Modul.ModulnameDE;
+                VersionTextBox.Text = versionDisplay; // ? Mit "K" bei Kommentaren!
+                StudiengangTextBox.Text = data.Modul.Studiengang;
+                EctsTextBox.Text = data.EctsPunkte.ToString();
+                WorkloadPraesenzTextBox.Text = data.WorkloadPraesenz.ToString();
+                WorkloadSelbststudiumTextBox.Text = data.WorkloadSelbststudium.ToString();
+                VerantwortlicherTextBox.Text = data.Ersteller;
 
-            // Listen zu Strings zusammenfügen (z.B. durch Zeilenumbruch)
-            VoraussetzungenTextBox.Text = data.Modul.Voraussetzungen != null
-                ? string.Join(Environment.NewLine, data.Modul.Voraussetzungen)
-                : string.Empty;
-            LernzieleTextBox.Text = data.Lernergebnisse != null
-                ? string.Join(Environment.NewLine, data.Lernergebnisse)
-                : string.Empty;
-            LehrinhalteTextBox.Text = data.Inhaltsgliederung != null
-                ? string.Join(Environment.NewLine, data.Inhaltsgliederung)
-                : string.Empty;
-            LiteraturTextBox.Text = data.Literatur != null
-                ? string.Join(Environment.NewLine, data.Literatur)
-                : string.Empty;
+                // Listen zu Strings zusammenfügen (z.B. durch Zeilenumbruch)
+                VoraussetzungenTextBox.Text = data.Modul.Voraussetzungen != null
+                    ? string.Join(Environment.NewLine, data.Modul.Voraussetzungen)
+                    : string.Empty;
+                LernzieleTextBox.Text = data.Lernergebnisse != null
+                    ? string.Join(Environment.NewLine, data.Lernergebnisse)
+                    : string.Empty;
+                LehrinhalteTextBox.Text = data.Inhaltsgliederung != null
+                    ? string.Join(Environment.NewLine, data.Inhaltsgliederung)
+                    : string.Empty;
+                LiteraturTextBox.Text = data.Literatur != null
+                    ? string.Join(Environment.NewLine, data.Literatur)
+                    : string.Empty;
 
-            // ListBoxen korrekt befüllen
-            SelectListBoxItems(ModultypListBox, new List<string> { data.Modul.Modultyp.ToString() });
-            SelectListBoxItems(SemesterListBox, new List<string> { data.Modul.EmpfohlenesSemester.ToString() });
-            SelectListBoxItems(PruefungsformListBox, new List<string> { data.Modul.PruefungsForm.ToString() });
-            SelectListBoxItems(TurnusListBox, new List<string> { data.Modul.Turnus.ToString() });
+                // ListBoxen korrekt befüllen
+                SelectListBoxItems(ModultypListBox, new List<string> { data.Modul.Modultyp.ToString() });
+                SelectListBoxItems(SemesterListBox, new List<string> { data.Modul.EmpfohlenesSemester.ToString() });
+                SelectListBoxItems(PruefungsformListBox, new List<string> { data.Modul.PruefungsForm.ToString() });
+                SelectListBoxItems(TurnusListBox, new List<string> { data.Modul.Turnus.ToString() });
+            }  // ? Fehlende schließende Klammer für using-Block!
         }
 
         // Methode so anpassen, dass sie auch null akzeptiert
@@ -145,30 +167,83 @@ namespace Modulverwaltungssoftware
                 return;
             }
 
-            var modul = ModuleDataRepository.GetModule(_currentModulId);
-            var version = modul?.Versionen.FirstOrDefault(v => v.VersionsNummer == _currentVersion);
+            // Daten aus der Datenbank laden
+            var dbVersion = ModulRepository.getModulVersion(int.Parse(_currentModulId));
             
-            if (version == null)
+            if (dbVersion == null)
             {
-                MessageBox.Show("Fehler beim Laden der Version.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Fehler beim Laden der Modulversion aus der Datenbank.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
-            var sourceData = ModuleDataRepository.GetModuleVersion(_currentModulId, _currentVersion);
-            
-            if (version.HasComments)
+            // Daten in ModuleData-Format konvertieren
+            var moduleData = new ModuleDataRepository.ModuleData
             {
-                // Version hat Kommentare ? EditWithCommentsView (Bearbeiten MIT Kommentar-Kontext)
-                var comments = ModuleDataRepository.GetComments(_currentModulId, _currentVersion);
+                Titel = dbVersion.Modul.ModulnameDE,
+                Modultypen = new List<string> { dbVersion.Modul.Modultyp.ToString() },
+                Studiengang = dbVersion.Modul.Studiengang,
+                Semester = new List<string> { dbVersion.Modul.EmpfohlenesSemester.ToString() },
+                Pruefungsformen = new List<string> { dbVersion.Pruefungsform },
+                Turnus = new List<string> { dbVersion.Modul.Turnus.ToString() },
+                Ects = dbVersion.EctsPunkte,
+                WorkloadPraesenz = dbVersion.WorkloadPraesenz,
+                WorkloadSelbststudium = dbVersion.WorkloadSelbststudium,
+                Verantwortlicher = dbVersion.Ersteller,
+                Voraussetzungen = dbVersion.Modul.Voraussetzungen != null
+                    ? string.Join(Environment.NewLine, dbVersion.Modul.Voraussetzungen)
+                    : string.Empty,
+                Lernziele = dbVersion.Lernergebnisse != null
+                    ? string.Join(Environment.NewLine, dbVersion.Lernergebnisse)
+                    : string.Empty,
+                Lehrinhalte = dbVersion.Inhaltsgliederung != null
+                    ? string.Join(Environment.NewLine, dbVersion.Inhaltsgliederung)
+                    : string.Empty,
+                Literatur = dbVersion.Literatur != null
+                    ? string.Join(Environment.NewLine, dbVersion.Literatur)
+                    : string.Empty
+            };
+
+            // ? Problem 2 Fix: Navigation basierend auf hatKommentar-DB-Feld
+            bool hasComments = dbVersion.hatKommentar;
+            
+            if (hasComments)
+            {
+                // Kommentare aus der Datenbank laden
+                var kommentare = Kommentar.getKommentareFuerVersion(int.Parse(_currentModulId), dbVersion.ModulVersionID);
+                
+                // CommentData erstellen (auch wenn Liste leer ist!)
+                var commentData = new ModuleDataRepository.CommentData
+                {
+                    FieldComments = new List<ModuleDataRepository.FieldComment>(),
+                    SubmittedDate = DateTime.Now,
+                    SubmittedBy = "Unbekannt"
+                };
+                
+                if (kommentare != null && kommentare.Count > 0)
+                {
+                    // Kommentare in ModuleDataRepository.CommentData Format konvertieren
+                    commentData.FieldComments = kommentare.Select(k => new ModuleDataRepository.FieldComment
+                    {
+                        FieldName = k.FeldName ?? "Allgemein",
+                        Comment = k.Text,
+                        CommentDate = k.ErstellungsDatum ?? DateTime.Now,
+                        Commenter = k.Ersteller ?? "Unbekannt"
+                    }).ToList();
+                    
+                    commentData.SubmittedDate = kommentare.First().ErstellungsDatum ?? DateTime.Now;
+                    commentData.SubmittedBy = kommentare.First().Ersteller ?? "Unbekannt";
+                }
+
+                // ? EditWithCommentsView öffnen (auch wenn Liste leer - basierend auf hatKommentar!)
                 this.NavigationService?.Navigate(
-                    new EditWithCommentsView(_currentModulId, _currentVersion, sourceData, comments)
+                    new EditWithCommentsView(_currentModulId, _currentVersion, moduleData, commentData)
                 );
             }
             else
             {
                 // Version ohne Kommentare ? Normale EditingView
                 this.NavigationService?.Navigate(
-                    new EditingView(_currentModulId, _currentVersion, sourceData)
+                    new EditingView(_currentModulId, _currentVersion, moduleData)
                 );
             }
         }
@@ -181,18 +256,112 @@ namespace Modulverwaltungssoftware
                 return;
             }
 
-            var result = MessageBox.Show(
-                $"Soll die Version {_currentVersion} wirklich gelöscht werden?",
-                "Löschen bestätigen",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
-
-            if (result == MessageBoxResult.Yes)
+            try
             {
-                MessageBox.Show($"Version {_currentVersion} wurde gelöscht.",
-                    "Gelöscht", MessageBoxButton.OK, MessageBoxImage.Information);
-                // TODO: Löschlogik hier ausführen
+                int modulId = int.Parse(_currentModulId);
+                string cleanVersion = _currentVersion.TrimEnd('K');
+                int versionsnummer = ParseVersionsnummer(cleanVersion);
+
+                using (var db = new Services.DatabaseContext())
+                {
+                    // Anzahl der Versionen für dieses Modul zählen
+                    var anzahlVersionen = db.ModulVersion.Count(v => v.ModulId == modulId);
+
+                    if (anzahlVersionen <= 1)
+                    {
+                        // Letzte Version ? Ganzes Modul löschen
+                        var result = MessageBox.Show(
+                            $"Dies ist die letzte Version des Moduls.\n\nMöchten Sie das gesamte Modul endgültig aus der Datenbank löschen?",
+                            "Modul endgültig löschen?",
+                            MessageBoxButton.YesNo,
+                            MessageBoxImage.Warning);
+
+                        if (result != MessageBoxResult.Yes)
+                            return;
+
+                        // Modul mit allen zugehörigen Daten löschen
+                        var modul = db.Modul.Include("ModulVersionen").FirstOrDefault(m => m.ModulID == modulId);
+                        if (modul != null)
+                        {
+                            // Erst alle Kommentare zu allen Versionen löschen
+                            var kommentare = db.Kommentar.Where(k => k.GehoertZuModulID == modulId).ToList();
+                            db.Kommentar.RemoveRange(kommentare);
+
+                            // Dann alle Versionen löschen
+                            db.ModulVersion.RemoveRange(modul.ModulVersionen);
+
+                            // Schließlich das Modul selbst
+                            db.Modul.Remove(modul);
+                            db.SaveChanges();
+
+                            MessageBox.Show($"Das Modul wurde vollständig gelöscht.",
+                                "Modul gelöscht", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                            // Zur Startseite navigieren
+                            this.NavigationService?.Navigate(new StartPage());
+                        }
+                    }
+                    else
+                    {
+                        // Mehrere Versionen vorhanden ? Nur die ausgewählte Version löschen
+                        var result = MessageBox.Show(
+                            $"Möchten Sie die Version {_currentVersion} wirklich endgültig löschen?",
+                            "Version löschen?",
+                            MessageBoxButton.YesNo,
+                            MessageBoxImage.Question);
+
+                        if (result != MessageBoxResult.Yes)
+                            return;
+
+                        var version = db.ModulVersion.FirstOrDefault(v => v.ModulId == modulId && v.Versionsnummer == versionsnummer);
+                        if (version != null)
+                        {
+                            // Erst alle Kommentare zu dieser Version löschen
+                            var kommentare = db.Kommentar.Where(k => k.GehoertZuModulVersionID == version.ModulVersionID).ToList();
+                            db.Kommentar.RemoveRange(kommentare);
+
+                            // Dann die Version löschen
+                            db.ModulVersion.Remove(version);
+                            db.SaveChanges();
+
+                            MessageBox.Show($"Version {_currentVersion} wurde gelöscht.",
+                                "Version gelöscht", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                            // ? Problem 3 Fix: Versions-Dropdown aktualisieren!
+                            var verbleibendeVersionen = db.ModulVersion
+                                .Where(v => v.ModulId == modulId)
+                                .OrderByDescending(v => v.Versionsnummer)
+                                .ToList();
+                            
+                            var versionDisplay = verbleibendeVersionen.Select(v =>
+                            {
+                                string displayVersion = FormatVersionsnummer(v.Versionsnummer);
+                                return v.hatKommentar ? $"{displayVersion}K" : displayVersion;
+                            });
+                            UpdateVersions(versionDisplay);
+                            
+                            // Neueste verbleibende Version laden
+                            if (verbleibendeVersionen.Any())
+                            {
+                                var neuesteVersion = verbleibendeVersionen.First();
+                                LoadModuleVersion(FormatVersionsnummer(neuesteVersion.Versionsnummer));
+                            }
+                        }
+                    }
+                }
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Fehler beim Löschen: {ex.Message}", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private int ParseVersionsnummer(string version)
+        {
+            if (decimal.TryParse(version, System.Globalization.NumberStyles.Any,
+                System.Globalization.CultureInfo.InvariantCulture, out decimal dec))
+                return (int)(dec * 10);
+            return 10;
         }
 
         private void ModulversionKommentieren_Click(object sender, RoutedEventArgs e)
@@ -203,31 +372,43 @@ namespace Modulverwaltungssoftware
                 return;
             }
 
-            var sourceData = ModuleDataRepository.GetModuleVersion(_currentModulId, _currentVersion);
-            if (sourceData == null)
+            // Daten aus der Datenbank laden
+            var dbVersion = ModulRepository.getModulVersion(int.Parse(_currentModulId));
+            
+            if (dbVersion == null)
             {
-                MessageBox.Show("Fehler beim Laden der Version.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Fehler beim Laden der Modulversion aus der Datenbank.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
+            // Daten in ModuleData-Format konvertieren (für CommentView)
             var commentData = new CommentView.ModuleData
             {
-                Titel = sourceData.Titel,
-                Modultypen = sourceData.Modultypen,
-                Studiengang = sourceData.Studiengang,
-                Semester = sourceData.Semester,
-                Pruefungsformen = sourceData.Pruefungsformen,
-                Turnus = sourceData.Turnus,
-                Ects = sourceData.Ects,
-                WorkloadPraesenz = sourceData.WorkloadPraesenz,
-                WorkloadSelbststudium = sourceData.WorkloadSelbststudium,
-                Verantwortlicher = sourceData.Verantwortlicher,
-                Voraussetzungen = sourceData.Voraussetzungen,
-                Lernziele = sourceData.Lernziele,
-                Lehrinhalte = sourceData.Lehrinhalte,
-                Literatur = sourceData.Literatur
+                Titel = dbVersion.Modul.ModulnameDE,
+                Modultypen = new List<string> { dbVersion.Modul.Modultyp.ToString() },
+                Studiengang = dbVersion.Modul.Studiengang,
+                Semester = new List<string> { dbVersion.Modul.EmpfohlenesSemester.ToString() },
+                Pruefungsformen = new List<string> { dbVersion.Pruefungsform },
+                Turnus = new List<string> { dbVersion.Modul.Turnus.ToString() },
+                Ects = dbVersion.EctsPunkte,
+                WorkloadPraesenz = dbVersion.WorkloadPraesenz,
+                WorkloadSelbststudium = dbVersion.WorkloadSelbststudium,
+                Verantwortlicher = dbVersion.Ersteller,
+                Voraussetzungen = dbVersion.Modul.Voraussetzungen != null
+                    ? string.Join(Environment.NewLine, dbVersion.Modul.Voraussetzungen)
+                    : string.Empty,
+                Lernziele = dbVersion.Lernergebnisse != null
+                    ? string.Join(Environment.NewLine, dbVersion.Lernergebnisse)
+                    : string.Empty,
+                Lehrinhalte = dbVersion.Inhaltsgliederung != null
+                    ? string.Join(Environment.NewLine, dbVersion.Inhaltsgliederung)
+                    : string.Empty,
+                Literatur = dbVersion.Literatur != null
+                    ? string.Join(Environment.NewLine, dbVersion.Literatur)
+                    : string.Empty
             };
 
+            // Zur CommentView navigieren mit den geladenen Daten
             this.NavigationService?.Navigate(new CommentView(commentData, _currentModulId, _currentVersion));
         }
 

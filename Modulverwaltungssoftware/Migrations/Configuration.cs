@@ -9,7 +9,8 @@ namespace Modulverwaltungssoftware.Migrations
     {
         public Configuration()
         {
-            AutomaticMigrationsEnabled = false;
+            AutomaticMigrationsEnabled = true;
+            AutomaticMigrationDataLossAllowed = true;
             // Registrierung des SQLite MigrationSqlGenerators
             SetSqlGenerator("System.Data.SQLite", new SQLiteMigrationSqlGenerator());
         }
