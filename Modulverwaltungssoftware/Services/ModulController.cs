@@ -19,7 +19,7 @@ namespace Modulverwaltungssoftware
                 using (var db = new Services.DatabaseContext())
                 {
                     var alteVersion = db.ModulVersion
-                        .FirstOrDefault(v => v.ModulVersionID == versionID && v.ModulId == modulID);
+                        .FirstOrDefault(v => v.Versionsnummer == versionID && v.ModulId == modulID);
 
                     if (alteVersion == null)
                     {

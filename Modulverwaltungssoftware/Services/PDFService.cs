@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Modulverwaltungssoftware;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
@@ -9,8 +10,25 @@ namespace PDF_Test
 {
     public class PDFService
     {
-        public static void ErstellePDF(string titel, string modultyp, int semester, string pruefungsform, string turnus, int ects, int workloadPraesenz, int workloadSelbststudium, string verantwortlicher, string voraussetzungen, List<string> lernziele, List<string> lehrinhalte, int version, List<string> literatur = null)
+        public static void ErstellePDF(Modulverwaltungssoftware.ModulVersion v)
         {
+            string titel = v.Modul.ModulnameDE;
+            string modultyp = v.Modul.Modultyp.ToString();
+            int semester = v.Modul.EmpfohlenesSemester;
+            string pruefungsform = v.Pruefungsform.ToString();
+            string turnus = v.Modul.Turnus.ToString();
+            int ects = v.EctsPunkte;
+            int workloadPraesenz = v.WorkloadPraesenz;
+            int workloadSelbststudium = v.WorkloadSelbststudium;
+            string verantwortlicher = v.Ersteller;
+            List<string> voraussetzungen = v.Modul.Voraussetzungen;
+            string voraussetzungenPDF = (voraussetzungen != null && voraussetzungen.Count > 0)
+                ? string.Join("\n", voraussetzungen)
+                : "";
+            List<string> lernziele = v.Lernergebnisse;
+            List<string> lehrinhalte = v.Inhaltsgliederung;
+            int version = v.Versionsnummer;
+            List<string> literatur = v.Literatur;
             QuestPDF.Settings.License = LicenseType.Community;
             string ueberschrift = "Modulhandbuch \t" + modultyp + "\t" + titel;
             DateTime jetzt = DateTime.Now;
@@ -74,7 +92,6 @@ namespace PDF_Test
                                 table.Cell().Element(CellStyle).Text(ects.ToString());
                                 table.Cell().Element(CellStyle).Text($"{workloadPraesenz} Stunden Präsenz\n{workloadSelbststudium} Stunden Selbststudium");
                             });
-
                             // Dritte Tabelle: Voraussetzungen, Prüfungsform, Verantwortlicher
                             column.Item().PaddingTop(10).DefaultTextStyle(x => x.FontColor(Colors.Black).FontSize(12)).Table(table =>
                             {
@@ -91,7 +108,7 @@ namespace PDF_Test
                                 table.Cell().Element(CellStyle).Text("Voraussetzungen").Bold();
                                 table.Cell().Element(CellStyle).Text("Prüfungsform").Bold();
                                 table.Cell().Element(CellStyle).Text("Modulverantwortliche/r").Bold();
-                                table.Cell().Element(CellStyle).Text(voraussetzungen ?? "");
+                                table.Cell().Element(CellStyle).Text(voraussetzungenPDF ?? "");
                                 table.Cell().Element(CellStyle).Text(pruefungsform ?? "");
                                 table.Cell().Element(CellStyle).Text(verantwortlicher ?? "");
                             });

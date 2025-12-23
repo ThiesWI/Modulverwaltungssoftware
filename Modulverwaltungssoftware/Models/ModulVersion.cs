@@ -41,12 +41,13 @@ namespace Modulverwaltungssoftware
         [Required]
         [StringLength(100)]
         public string Pruefungsform { get; set; }
-        public List<string> Literatur { get; set; }
         public string Ersteller { get; set; }
         [NotMapped]
         public List<string> Lernergebnisse { get; set; }
         [NotMapped]
         public List<string> Inhaltsgliederung { get; set; }
+        [NotMapped]
+        public List<string> Literatur { get; set; }
         [Required]
         [StringLength(4000)]
         public string LernergebnisseDb
@@ -97,10 +98,35 @@ namespace Modulverwaltungssoftware
             }
         }
 
+        [StringLength(4000)]
+        public string LiteraturDb
+        {
+            get => JsonConvert.SerializeObject(Literatur);
+            set
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    Literatur = new List<string>();
+                }
+                else
+                {
+                    try
+                    {
+                        Literatur = JsonConvert.DeserializeObject<List<string>>(value);
+                    }
+                    catch
+                    {
+                        Literatur = new List<string> { value };
+                    }
+                }
+            }
+        }
+
         public ModulVersion()
         {
             Lernergebnisse = new List<string>();
             Inhaltsgliederung = new List<string>();
+            Literatur = new List<string>();
         }
         public static void setStatus(int versionID, int modulID, Status neuerStatus) //Setzt den Status der Modulversion
         {
@@ -113,7 +139,7 @@ namespace Modulverwaltungssoftware
                 }
                 using (var db = new Services.DatabaseContext())
                 {
-                    var modulVersion = db.ModulVersion.FirstOrDefault(mv => mv.ModulVersionID == versionID && mv.ModulId == modulID);
+                    var modulVersion = db.ModulVersion.FirstOrDefault(mv => mv.Versionsnummer == versionID && mv.ModulId == modulID);
                     if (modulVersion != null)
                     {
                         modulVersion.ModulStatus = neuerStatus;
@@ -128,16 +154,22 @@ namespace Modulverwaltungssoftware
             }
             catch (Exception ex) { throw; }
             }
-        public static void setDaten(ModulVersion version, int modulVersionID, int modulID) //Setzt die Daten der Modulversion in der DB, wird idR von anderen Methoden aufgerufen
+        public static void setDaten(ModulVersion version) //Setzt die Daten der Modulversion in der DB
         {
+            string fehlermeldung = PlausibilitaetsService.pruefeForm(version);
+            if (fehlermeldung != "Keine Fehler gefunden.")
+            {
+                MessageBox.Show(fehlermeldung, "Moduldaten wurden nicht in die Datenbank übernommen.");
+                return;
+            }
             try
             {
                 using (var db = new Services.DatabaseContext())
                 {
-                    var modulVersion = db.ModulVersion.FirstOrDefault(mv => mv.ModulVersionID == modulVersionID && mv.ModulId == modulID);
+                    var modulVersion = db.ModulVersion.FirstOrDefault(mv => mv.Versionsnummer == version.Versionsnummer && mv.ModulId == version.ModulId);
                     if (modulVersion == null)
                     {
-                        MessageBox.Show($"ModulVersion mit ID {modulVersionID} und/oder ModulID {modulID} nicht gefunden.");
+                        MessageBox.Show($"ModulVersion mit ID {version.Versionsnummer} und/oder ModulID {version.ModulId} nicht gefunden.");
                         return;
                     }
                     if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == true)

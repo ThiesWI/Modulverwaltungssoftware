@@ -9,7 +9,7 @@ namespace Modulverwaltungssoftware
 {
     public class WorkflowController
     {
-        public void starteGenehmigung(int versionID, int modulID)
+        public static void starteGenehmigung(int versionID, int modulID)
         {
             try
             {
@@ -25,7 +25,7 @@ namespace Modulverwaltungssoftware
             }
             catch (Exception ex) { throw; }
         } // Modul zur Prüfung einreichen für Dozent und Admin
-        public void lehneAb(int modulID, int versionID, string kommentarText)
+        public static void lehneAb(int modulID, int versionID, string kommentarText)
         {
             try
             {
@@ -42,7 +42,7 @@ namespace Modulverwaltungssoftware
             }
             catch (Exception ex) { throw; }
         } // Ablehnen für Koordination + Admin
-        public void leiteWeiter(int modulID, int versionID)
+        public static void leiteWeiter(int modulID, int versionID)
         {
             try
             {
@@ -58,7 +58,7 @@ namespace Modulverwaltungssoftware
             }
             catch (Exception ex) { throw; }
         } // Modul-Entwurf an Gremium weiterleiten (Koordination + Admin)
-        public void lehneFinalAb(int modulID, int versionID, string kommentarText)
+        public static void lehneFinalAb(int modulID, int versionID, string kommentarText)
         {
             try
             {
@@ -75,7 +75,7 @@ namespace Modulverwaltungssoftware
             }
             catch (Exception ex) { throw; }
         } // Ablehnen für Gremium + Admin
-        public void schliesseGenehmigungAb(int modulID, int versionID)
+        public static void schliesseGenehmigungAb(int modulID, int versionID)
         {
             try
             {
@@ -91,7 +91,7 @@ namespace Modulverwaltungssoftware
             }
             catch (Exception ex) { throw; }
             } // Gremium + Admin only -> Modul freigeben
-        public void archiviereVersion(int modulID, int versionID)
+        public static void archiviereVersion(int modulID, int versionID)
         {
             try
             {

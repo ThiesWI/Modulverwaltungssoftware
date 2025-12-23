@@ -294,6 +294,10 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="Docs\Button-Steuerung-Matrix.md" />
+    <None Include="Docs\Meine-Projekte-Logik.md" />
+    <None Include="Docs\Problem-Fixes.md" />
+    <None Include="Docs\Status-Workflow.md" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

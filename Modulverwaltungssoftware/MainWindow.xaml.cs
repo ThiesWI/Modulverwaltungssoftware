@@ -41,11 +41,8 @@ namespace Modulverwaltungssoftware
             };
 
             // MEINE PROJEKTE laden (nur Module des Users)
-            string currentUser = Benutzer.CurrentUser.Name;
-            string rolle = Benutzer.CurrentUser.RollenName;
-            var meineModule = ModulRepository.getAllModule();
-            var modulNamen = meineModule.Select(m => m.ModulnameDE).ToList();
-            UpdateProjects(modulNamen);
+            // ✅ INTELLIGENTE FILTERUNG: RefreshMyProjects() übernimmt die Logik
+            RefreshMyProjects();
 
             // Initial navigation
             MainFrame.Navigate(new StartPage());
@@ -70,11 +67,89 @@ namespace Modulverwaltungssoftware
         // Lädt "Meine Projekte" neu
         private void RefreshMyProjects()
         {
-            string currentUser = Benutzer.CurrentUser.Name;
-            string rolle = Benutzer.CurrentUser.RollenName;
-            var meineModule = ModulRepository.getAllModule();
-            var modulNamen = meineModule.Select(m => m.ModulnameDE).OrderBy(n => n).ToList();
+            // ✅ INTELLIGENTE FILTERUNG FÜR "MEINE PROJEKTE"
+            string currentUser = Benutzer.CurrentUser?.Name;
+            string rolle = Benutzer.CurrentUser?.RollenName ?? "Gast";
+            
+            List<string> modulNamen = new List<string>();
+
+            using (var db = new Services.DatabaseContext())
+            {
+                IQueryable<Modul> meineModule = null;
+
+                switch (rolle)
+                {
+                    case "Gast":
+                        // Gäste haben KEINE eigenen Projekte
+                        modulNamen = new List<string> { "Keine eigenen Projekte vorhanden" };
+                        UpdateProjects(modulNamen);
+                        return;
+
+                    case "Dozent":
+                        // Dozenten sehen NUR ihre selbst erstellten Module
+                        var dozentenModulIds = db.ModulVersion
+                            .Where(v => v.Ersteller == currentUser)
+                            .Select(v => v.ModulId)
+                            .Distinct()
+                            .ToList();
+                        
+                        meineModule = db.Modul.Where(m => dozentenModulIds.Contains(m.ModulID));
+                        break;
+
+                    case "Koordination":
+                        // Koordination sieht Module mit Status "InPruefungKoordination"
+                        var koordinationModulIds = db.ModulVersion
+                            .Where(v => v.ModulStatus == ModulVersion.Status.InPruefungKoordination)
+                            .Select(v => v.ModulId)
+                            .Distinct()
+                            .ToList();
+                        
+                        meineModule = db.Modul.Where(m => koordinationModulIds.Contains(m.ModulID));
+                        break;
+
+                    case "Gremium":
+                        // Gremium sieht Module mit Status "InPruefungGremium"
+                        var gremiumModulIds = db.ModulVersion
+                            .Where(v => v.ModulStatus == ModulVersion.Status.InPruefungGremium)
+                            .Select(v => v.ModulId)
+                            .Distinct()
+                            .ToList();
+                        
+                        meineModule = db.Modul.Where(m => gremiumModulIds.Contains(m.ModulID));
+                        break;
+
+                    case "Admin":
+                        // Admin sieht ALLE Module
+                        meineModule = db.Modul;
+                        break;
+
+                    default:
+                        // Sicherheitshalber: Keine Module
+                        modulNamen = new List<string> { "Keine eigenen Projekte vorhanden" };
+                        UpdateProjects(modulNamen);
+                        return;
+                }
+
+                if (meineModule != null)
+                {
+                    // ✅ ERST LADEN, DANN SORTIEREN (Entity Framework kann StringComparer nicht übersetzen)
+                    modulNamen = meineModule
+                        .Select(m => m.ModulnameDE)
+                        .ToList()  // ← WICHTIG: ToList() VORHER ausführen
+                        .OrderBy(m => m, StringComparer.CurrentCultureIgnoreCase)
+                        .ToList();
+                }
+            }
+
+            // Falls keine Module gefunden → Meldung anzeigen
+            if (modulNamen == null || modulNamen.Count == 0)
+            {
+                modulNamen = new List<string> { "Keine eigenen Projekte vorhanden" };
+            }
+
             UpdateProjects(modulNamen);
+            
+            System.Diagnostics.Debug.WriteLine($"'Meine Projekte' geladen: Rolle={rolle}, Anzahl={modulNamen.Count}");
         }
 
         // Aktualisiert die ObservableCollection mit den übergebenen Projektnamen
@@ -160,26 +235,42 @@ namespace Modulverwaltungssoftware
             if (string.IsNullOrEmpty(modulName))
                 return;
 
-            // ModulId anhand Modulname aus echter Datenbank finden
-            var alleModule = ModulRepository.getAllModule();
-            var modul = alleModule.FirstOrDefault(m => m.ModulnameDE == modulName);
-
-            if (modul != null)
+            // ✨ Prüfe ob es die Meldung "Keine eigenen Projekte vorhanden" ist
+            if (modulName == "Keine eigenen Projekte vorhanden")
             {
-                // Zur ModulView mit gefundener ModulID navigieren
-                MainFrame.Navigate(new ModulView(modul.ModulID));
+                MessageBox.Show("Sie haben momentan keine eigenen Projekte.", 
+                    "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                
+                // Popup schließen
+                var popup = this.FindName("ProjectsPopup") as System.Windows.Controls.Primitives.Popup;
+                if (popup != null)
+                    popup.IsOpen = false;
+                
+                return;
             }
-            else
+
+            // ModulId anhand Modulname aus echter Datenbank finden
+            using (var db = new Services.DatabaseContext())
             {
-                MessageBox.Show($"Modul '{modulName}' konnte nicht gefunden werden.", 
-                    "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                var modul = db.Modul.FirstOrDefault(m => m.ModulnameDE == modulName);
+
+                if (modul != null)
+                {
+                    // Zur ModulView mit gefundener ModulID navigieren
+                    MainFrame.Navigate(new ModulView(modul.ModulID));
+                }
+                else
+                {
+                    MessageBox.Show($"Modul '{modulName}' konnte nicht gefunden werden.", 
+                        "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
 
             // Popup schließen
-            var popup = this.FindName("ProjectsPopup") as System.Windows.Controls.Primitives.Popup;
-            if (popup != null)
+            var popup2 = this.FindName("ProjectsPopup") as System.Windows.Controls.Primitives.Popup;
+            if (popup2 != null)
             {
-                popup.IsOpen = false;
+                popup2.IsOpen = false;
             }
         }
 

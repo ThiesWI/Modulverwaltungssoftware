@@ -68,23 +68,23 @@ namespace Modulverwaltungssoftware
             _isEditMode = true;
             _modulId = modulId;
             _versionNummer = versionNummer;
-            
+
             // Prüfen, ob die AKTUELLE Version kommentiert ist
             using (var db = new Services.DatabaseContext())
             {
                 // WICHTIG: Parsing VOR der LINQ-Query durchführen!
                 int modulIdInt = int.Parse(modulId);
-                
+
                 // Versionsnummer korrekt parsen (z.B. "2.1K" → "2.1" → 21)
                 string cleanVersion = versionNummer.TrimEnd('K');
                 int versionsnummerInt = ParseVersionsnummer(cleanVersion);
-                
+
                 var dbVersion = db.ModulVersion
                     .FirstOrDefault(v => v.ModulId == modulIdInt && v.Versionsnummer == versionsnummerInt);
-                    
+
                 _isCommentedVersion = dbVersion != null && dbVersion.hatKommentar;
             }
-            
+
             LoadModuleData(moduleData);
         }
 
@@ -126,9 +126,14 @@ namespace Modulverwaltungssoftware
             listBox.SelectedItems.Clear();
             foreach (var item in listBox.Items)
             {
-                if (item is ListBoxItem lbi && itemsToSelect.Contains(lbi.Content.ToString()))
+                if (item is ListBoxItem lbi)
                 {
-                    listBox.SelectedItems.Add(lbi);
+                    string itemText = lbi.Content.ToString();
+                    // Prüfe ob einer der zu selektierenden Strings mit dem Item übereinstimmt
+                    if (itemsToSelect.Any(s => itemText.Contains(s) || s.Contains(itemText)))
+                    {
+                        listBox.SelectedItems.Add(lbi);
+                    }
                 }
             }
         }
@@ -162,7 +167,7 @@ namespace Modulverwaltungssoftware
                 try
                 {
                     int modulIdInt = int.Parse(_modulId);
-                    
+
                     if (_isCommentedVersion)
                     {
                         // Bei kommentierten Versionen: Neue Version erstellen
@@ -174,7 +179,7 @@ namespace Modulverwaltungssoftware
                         AktualisiereBestehendeVersion(modulIdInt, ects, workloadPraesenz, workloadSelbststudium);
                     }
 
-                    MessageBox.Show($"Änderungen wurden erfolgreich gespeichert.", 
+                    MessageBox.Show($"Änderungen wurden erfolgreich gespeichert.",
                         "Gespeichert", MessageBoxButton.OK, MessageBoxImage.Information);
 
                     // Zurück zur ModulView mit diesem Modul
@@ -191,8 +196,8 @@ namespace Modulverwaltungssoftware
                 try
                 {
                     int neueModulId = ErstelleNeuesModul(ects, workloadPraesenz, workloadSelbststudium);
-                    
-                    MessageBox.Show($"Neues Modul '{TitelTextBox.Text}' wurde erstellt.", 
+
+                    MessageBox.Show($"Neues Modul '{TitelTextBox.Text}' wurde erstellt.",
                         "Gespeichert", MessageBoxButton.OK, MessageBoxImage.Information);
 
                     // Zur ModulView mit dem neuen Modul navigieren
@@ -200,7 +205,7 @@ namespace Modulverwaltungssoftware
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Fehler beim Erstellen des Moduls: {ex.Message}", 
+                    MessageBox.Show($"Fehler beim Erstellen des Moduls: {ex.Message}",
                         "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
@@ -226,24 +231,25 @@ namespace Modulverwaltungssoftware
                 // SPEZIFISCHE kommentierte Version laden (nicht die erste!)
                 string cleanVersion = _versionNummer.TrimEnd('K');
                 int aktuelleVersionsnummer = ParseVersionsnummer(cleanVersion);
-                
+
                 var alteVersion = db.ModulVersion
                     .Include("Modul")
                     .FirstOrDefault(v => v.ModulId == modulId && v.Versionsnummer == aktuelleVersionsnummer);
 
-                if (alteVersion == null)
-                    throw new InvalidOperationException("Modulversion nicht gefunden.");
+                if (alteVersion == null) { MessageBox.Show("Modulversion nicht gefunden."); return; }
 
                 // ✅ Problem 4 Fix: Höchste Versionsnummer für dieses Modul finden
                 var hoechsteVersionsnummer = db.ModulVersion
                     .Where(v => v.ModulId == modulId)
                     .Max(v => (int?)v.Versionsnummer) ?? 10;
-                
+
                 int neueVersionsnummer = hoechsteVersionsnummer + 1;
-                
+
                 // ✅ Problem 3 Fix: Prüfen ob Version bereits existiert
                 if (db.ModulVersion.Any(v => v.ModulId == modulId && v.Versionsnummer == neueVersionsnummer))
-                    throw new InvalidOperationException($"Version {neueVersionsnummer / 10.0:0.0} existiert bereits!");
+                {
+                    MessageBox.Show($"Version {neueVersionsnummer / 10.0:0.0} existiert bereits!"); return;
+                }
 
                 // Neue Version erstellen (NUR versionsspezifische Daten!)
                 var neueVersion = new ModulVersion
@@ -316,103 +322,137 @@ namespace Modulverwaltungssoftware
 
         private void AktualisiereBestehendeVersion(int modulId, int ects, int workloadPraesenz, int workloadSelbststudium)
         {
-            using (var db = new Services.DatabaseContext())
+            string fehlermeldung = "";
+            if (fehlermeldung != "Keine Fehler gefunden") 
+            { 
+                MessageBox.Show(fehlermeldung, "Fehler", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            } 
+            else
             {
-                var dbVersion = db.ModulVersion
-                    .Include("Modul")
-                    .FirstOrDefault(v => v.ModulId == modulId);
-
-                if (dbVersion == null)
-                    throw new InvalidOperationException("Modulversion nicht gefunden.");
-
-                // Modul-Daten aktualisieren
-                dbVersion.Modul.ModulnameDE = TitelTextBox.Text;
-                dbVersion.Modul.Studiengang = StudiengangTextBox.Text;
-
-                // Modultyp
-                var modultypen = GetSelectedListBoxItems(ModultypListBox);
-                if (modultypen.Count > 0)
+                using (var db = new Services.DatabaseContext())
                 {
-                    if (modultypen[0].Contains("Wahlpflicht"))
-                        dbVersion.Modul.Modultyp = Modul.ModultypEnum.Wahlpflicht;
-                    else if (modultypen[0].Contains("Grundlagen"))
-                        dbVersion.Modul.Modultyp = Modul.ModultypEnum.Grundlagen;
-                }
+                    // Lade die AKTUELLE Version (nicht neueste, sondern die mit der passenden Versionsnummer)
+                    string cleanVersion = _versionNummer.TrimEnd('K');
+                    int versionsnummerInt = ParseVersionsnummer(cleanVersion);
 
-                // Turnus
-                var turnusList = GetSelectedListBoxItems(TurnusListBox);
-                if (turnusList.Count > 0)
-                {
-                    if (turnusList[0].Contains("WiSe"))
-                        dbVersion.Modul.Turnus = Modul.TurnusEnum.NurWintersemester;
-                    else if (turnusList[0].Contains("SoSe"))
-                        dbVersion.Modul.Turnus = Modul.TurnusEnum.NurSommersemester;
-                    else if (turnusList[0].Contains("Jedes Semester") || turnusList[0].Contains("Halbjährlich"))
-                        dbVersion.Modul.Turnus = Modul.TurnusEnum.JedesSemester;
-                }
+                    var dbVersion = db.ModulVersion
+                        .Include("Modul")
+                        .FirstOrDefault(v => v.ModulId == modulId && v.Versionsnummer == versionsnummerInt);
 
-                // Prüfungsform
-                var pruefungsformen = GetSelectedListBoxItems(PruefungsformListBox);
-                if (pruefungsformen.Count > 0)
-                    dbVersion.Pruefungsform = pruefungsformen[0];
+                    if (dbVersion == null)
+                    {
+                        MessageBox.Show("Modulversion nicht gefunden."); return;
+                    }
 
-                // Semester
-                var semester = GetSelectedListBoxItems(SemesterListBox);
-                if (semester.Count > 0 && int.TryParse(semester[0], out int sem))
-                    dbVersion.Modul.EmpfohlenesSemester = sem;
+                    // Modul-Daten aktualisieren
+                    dbVersion.Modul.ModulnameDE = TitelTextBox.Text;
+                    dbVersion.Modul.Studiengang = StudiengangTextBox.Text;
 
-                // Voraussetzungen
-                if (!string.IsNullOrWhiteSpace(VoraussetzungenTextBox.Text))
-                {
-                    dbVersion.Modul.Voraussetzungen = VoraussetzungenTextBox.Text
-                        .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
-                        .ToList();
-                }
+                    // Modultyp - NIMM NUR DIE ERSTE AUSWAHL!
+                    var modultypen = GetSelectedListBoxItems(ModultypListBox);
+                    if (modultypen.Count > 0)
+                    {
+                        string ersteAuswahl = modultypen[0];
+                        if (ersteAuswahl.Contains("Wahlpflicht"))
+                            dbVersion.Modul.Modultyp = Modul.ModultypEnum.Wahlpflicht;
+                        else if (ersteAuswahl.Contains("Grundlagen") || ersteAuswahl.Contains("Pflichtmodul"))
+                            dbVersion.Modul.Modultyp = Modul.ModultypEnum.Grundlagen;
 
-                // ModulVersion-Daten
-                dbVersion.EctsPunkte = ects;
-                dbVersion.WorkloadPraesenz = workloadPraesenz;
-                dbVersion.WorkloadSelbststudium = workloadSelbststudium;
-                dbVersion.Ersteller = VerantwortlicherTextBox.Text;
+                        System.Diagnostics.Debug.WriteLine($"Speichere Modultyp: '{ersteAuswahl}' -> {dbVersion.Modul.Modultyp}");
+                    }
 
-                // Lernziele (versionsspezifisch)
-                if (!string.IsNullOrWhiteSpace(LernzieleTextBox.Text))
-                {
-                    dbVersion.Lernergebnisse = LernzieleTextBox.Text
-                        .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
-                        .ToList();
-                }
-                else
-                {
-                    dbVersion.Lernergebnisse = new List<string>();  // ← Problem 1: Leere Liste!
-                }
+                    // Turnus - NIMM NUR DIE ERSTE AUSWAHL!
+                    var turnusList = GetSelectedListBoxItems(TurnusListBox);
+                    if (turnusList.Count > 0)
+                    {
+                        string ersteAuswahl = turnusList[0];
+                        if (ersteAuswahl.Contains("WiSe") || ersteAuswahl.Contains("Wintersemester"))
+                            dbVersion.Modul.Turnus = Modul.TurnusEnum.NurWintersemester;
+                        else if (ersteAuswahl.Contains("SoSe") || ersteAuswahl.Contains("Sommersemester"))
+                            dbVersion.Modul.Turnus = Modul.TurnusEnum.NurSommersemester;
+                        else if (ersteAuswahl.Contains("Jedes Semester") || ersteAuswahl.Contains("Halbjährlich"))
+                            dbVersion.Modul.Turnus = Modul.TurnusEnum.JedesSemester;
 
-                // Lehrinhalte (versionsspezifisch)
-                if (!string.IsNullOrWhiteSpace(LehrinhalteTextBox.Text))
-                {
-                    dbVersion.Inhaltsgliederung = LehrinhalteTextBox.Text
-                        .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
-                        .ToList();
-                }
-                else
-                {
-                    dbVersion.Inhaltsgliederung = new List<string>();  // ← Problem 1: Leere Liste!
-                }
+                        System.Diagnostics.Debug.WriteLine($"Speichere Turnus: '{ersteAuswahl}' -> {dbVersion.Modul.Turnus}");
+                    }
 
-                // Literatur (versionsspezifisch)
-                if (!string.IsNullOrWhiteSpace(LiteraturTextBox.Text))
-                {
-                    dbVersion.Literatur = LiteraturTextBox.Text
-                        .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
-                        .ToList();
-                }
-                else
-                {
-                    dbVersion.Literatur = new List<string>();  // ← Problem 1: Leere Liste!
-                }
+                    // Prüfungsform - NIMM NUR DIE ERSTE AUSWAHL!
+                    var pruefungsformen = GetSelectedListBoxItems(PruefungsformListBox);
+                    if (pruefungsformen.Count > 0)
+                    {
+                        dbVersion.Pruefungsform = pruefungsformen[0];
+                        System.Diagnostics.Debug.WriteLine($"Speichere Prüfungsform: '{pruefungsformen[0]}'");
+                    }
 
-                dbVersion.LetzteAenderung = DateTime.Now;
-                db.SaveChanges();
+                    // Semester - NIMM NUR DIE ERSTE AUSWAHL!
+                    var semester = GetSelectedListBoxItems(SemesterListBox);
+                    if (semester.Count > 0 && int.TryParse(semester[0], out int sem))
+                    {
+                        dbVersion.Modul.EmpfohlenesSemester = sem;
+                        System.Diagnostics.Debug.WriteLine($"Speichere Semester: {sem}");
+                    }
+
+                    // Voraussetzungen
+                    if (!string.IsNullOrWhiteSpace(VoraussetzungenTextBox.Text))
+                    {
+                        dbVersion.Modul.Voraussetzungen = VoraussetzungenTextBox.Text
+                            .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
+                            .ToList();
+                    }
+                    else
+                    {
+                        dbVersion.Modul.Voraussetzungen = new List<string>();  // Leere Liste!
+                    }
+
+                    // ModulVersion-Daten
+                    dbVersion.EctsPunkte = ects;
+                    dbVersion.WorkloadPraesenz = workloadPraesenz;
+                    dbVersion.WorkloadSelbststudium = workloadSelbststudium;
+                    dbVersion.Ersteller = VerantwortlicherTextBox.Text;
+
+                    // Lernziele (versionsspezifisch)
+                    if (!string.IsNullOrWhiteSpace(LernzieleTextBox.Text))
+                    {
+                        dbVersion.Lernergebnisse = LernzieleTextBox.Text
+                            .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
+                            .ToList();
+                    }
+                    else
+                    {
+                        dbVersion.Lernergebnisse = new List<string>();
+                    }
+
+                    // Lehrinhalte (versionsspezifisch)
+                    if (!string.IsNullOrWhiteSpace(LehrinhalteTextBox.Text))
+                    {
+                        dbVersion.Inhaltsgliederung = LehrinhalteTextBox.Text
+                            .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
+                            .ToList();
+                    }
+                    else
+                    {
+                        dbVersion.Inhaltsgliederung = new List<string>();
+                    }
+
+                    // Literatur (versionsspezifisch)
+                    if (!string.IsNullOrWhiteSpace(LiteraturTextBox.Text))
+                    {
+                        dbVersion.Literatur = LiteraturTextBox.Text
+                            .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
+                            .ToList();
+                    }
+                    else
+                    {
+                        dbVersion.Literatur = new List<string>();
+                    }
+
+                    dbVersion.LetzteAenderung = DateTime.Now;
+
+                    System.Diagnostics.Debug.WriteLine("Speichere Änderungen in Datenbank...");
+                    db.SaveChanges();
+                    System.Diagnostics.Debug.WriteLine("Erfolgreich gespeichert!");
+                }
             }
         }
 
@@ -420,6 +460,11 @@ namespace Modulverwaltungssoftware
         {
             using (var db = new Services.DatabaseContext())
             {
+                if (PlausibilitaetsService.pruefeWorkloadStandard(workloadPraesenz + workloadSelbststudium, ects) != "Der Workload entspricht nicht dem Standard von 30 Stunden pro ECTS.")
+                {
+                    MessageBox.Show("Die angegebene Workload ist nicht plausibel für die ECTS-Punkte.");
+                    return -1;
+                }
                 // Neues Modul erstellen
                 var neuesModul = new Modul
                 {
@@ -435,20 +480,28 @@ namespace Modulverwaltungssoftware
                 {
                     if (modultypen[0].Contains("Wahlpflicht"))
                         neuesModul.Modultyp = Modul.ModultypEnum.Wahlpflicht;
-                    else if (modultypen[0].Contains("Grundlagen"))
+                    else if (modultypen[0].Contains("Grundlagen") || modultypen[0].Contains("Pflichtmodul"))
                         neuesModul.Modultyp = Modul.ModultypEnum.Grundlagen;
+                }
+                else
+                {
+                    neuesModul.Modultyp = Modul.ModultypEnum.Wahlpflicht;  // Standardwert
                 }
 
                 // Turnus
                 var turnusList = GetSelectedListBoxItems(TurnusListBox);
                 if (turnusList.Count > 0)
                 {
-                    if (turnusList[0].Contains("WiSe"))
+                    if (turnusList[0].Contains("WiSe") || turnusList[0].Contains("Wintersemester"))
                         neuesModul.Turnus = Modul.TurnusEnum.NurWintersemester;
-                    else if (turnusList[0].Contains("SoSe"))
+                    else if (turnusList[0].Contains("SoSe") || turnusList[0].Contains("Sommersemester"))
                         neuesModul.Turnus = Modul.TurnusEnum.NurSommersemester;
                     else if (turnusList[0].Contains("Jedes Semester") || turnusList[0].Contains("Halbjährlich"))
                         neuesModul.Turnus = Modul.TurnusEnum.JedesSemester;
+                }
+                else
+                {
+                    neuesModul.Turnus = Modul.TurnusEnum.JedesSemester;  // Standardwert
                 }
 
                 // Prüfungsform (wird im Modul als Enum gespeichert, aber wir nehmen erstmal einen Standardwert)
@@ -587,7 +640,7 @@ namespace Modulverwaltungssoftware
         {
             if (string.IsNullOrEmpty(text))
                 return false;
-                
+
             foreach (char c in text)
             {
                 if (!char.IsDigit(c))

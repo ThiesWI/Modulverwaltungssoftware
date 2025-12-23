@@ -47,6 +47,11 @@ namespace Modulverwaltungssoftware
         public CommentView()
         {
             InitializeComponent();
+            
+            // ✨ SUCHFUNKTION: TextChanged Event für SearchBox
+            var searchBox = FindName("SearchBox") as TextBox;
+            if (searchBox != null)
+                searchBox.TextChanged += SearchBox_TextChanged;
         }
 
         public CommentView(ModuleData moduleData, string modulId, string version) : this()
@@ -93,9 +98,14 @@ namespace Modulverwaltungssoftware
             listBox.SelectedItems.Clear();
             foreach (var item in listBox.Items)
             {
-                if (item is ListBoxItem lbi && itemsToSelect.Contains(lbi.Content.ToString()))
+                if (item is ListBoxItem lbi)
                 {
-                    listBox.SelectedItems.Add(lbi);
+                    string itemText = lbi.Content.ToString();
+                    // Prüfe ob einer der zu selektierenden Strings mit dem Item übereinstimmt
+                    if (itemsToSelect.Any(s => itemText.Contains(s) || s.Contains(itemText)))
+                    {
+                        listBox.SelectedItems.Add(lbi);
+                    }
                 }
             }
         }
@@ -103,15 +113,6 @@ namespace Modulverwaltungssoftware
         private void KommentarAbschicken_Click(object sender, RoutedEventArgs e)
         {
             if (!ValidateInput())
-                return;
-
-            var result = MessageBox.Show(
-                "Soll der Kommentar wirklich final an den Modulersteller weitergereicht werden?",
-                "Bestätigung senden",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
-
-            if (result != MessageBoxResult.Yes)
                 return;
 
             try
@@ -125,10 +126,85 @@ namespace Modulverwaltungssoftware
                     return;
                 }
 
+                int modulId = int.Parse(_modulId);
+                string rolle = Benutzer.CurrentUser?.RollenName ?? "Gast";
+                string currentUser = Benutzer.CurrentUser?.Name ?? "Unbekannt";
+
+                // ✨ STATUSWECHSEL BEI KOMMENTIERUNG
+                string statusInfoText = "";
+                string bestaetigungsText = "";
+
+                switch (rolle)
+                {
+                    case "Koordination":
+                        statusInfoText = "Das Modul wird als 'Änderungsbedarf' markiert und an den Ersteller zurückgegeben.";
+                        bestaetigungsText = "Der Kommentar wurde erfolgreich eingereicht.\n\n" +
+                                          "Das Modul wurde an den Ersteller zurückgegeben und hat jetzt den Status 'Änderungsbedarf'.";
+                        break;
+
+                    case "Gremium":
+                        statusInfoText = "Das Modul wird als 'Änderungsbedarf' markiert und an den Ersteller zurückgegeben.";
+                        bestaetigungsText = "Der Kommentar wurde erfolgreich eingereicht.\n\n" +
+                                          "Das Modul wurde an den Ersteller zurückgegeben und hat jetzt den Status 'Änderungsbedarf'.";
+                        break;
+
+                    case "Admin":
+                        statusInfoText = "Das Modul wird als 'Änderungsbedarf' markiert.";
+                        bestaetigungsText = $"Der Kommentar wurde erfolgreich eingereicht ({feldKommentare.Count} Kommentar(e)).\n\n" +
+                                          "Das Modul hat jetzt den Status 'Änderungsbedarf'.";
+                        break;
+
+                    default:
+                        MessageBox.Show("Sie haben keine Berechtigung, Kommentare abzugeben.",
+                            "Keine Berechtigung", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                }
+
+                // Bestätigung mit Status-Info
+                var result = MessageBox.Show(
+                    $"Möchten Sie den Kommentar wirklich an den Modulersteller weitergeben?\n\n" +
+                    $"{statusInfoText}\n\n" +
+                    $"Anzahl Kommentare: {feldKommentare.Count}",
+                    "Kommentierung bestätigen",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (result != MessageBoxResult.Yes)
+                    return;
+
+                // Kommentare speichern
                 SaveCommentsToDatabase(feldKommentare);
-                
-                MessageBox.Show($"Der Kommentar wurde erfolgreich eingereicht ({feldKommentare.Count} Kommentar(e)).", 
-                    "Bestätigung", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                // ✨ STATUS AUF ÄNDERUNGSBEDARF SETZEN
+                using (var db = new Services.DatabaseContext())
+                {
+                    var modulVersion = db.ModulVersion
+                        .Include("Modul")
+                        .FirstOrDefault(v => v.ModulId == modulId);
+
+                    if (modulVersion != null)
+                    {
+                        var alterStatus = modulVersion.ModulStatus;
+                        modulVersion.ModulStatus = ModulVersion.Status.Aenderungsbedarf;
+                        modulVersion.LetzteAenderung = DateTime.Now;
+                        db.SaveChanges();
+
+                        // Benachrichtigung an Ersteller
+                        BenachrichtigungsService.SendeBenachrichtigung(
+                            modulVersion.Ersteller,
+                            $"{currentUser} ({rolle}) hat Ihr Modul '{modulVersion.Modul.ModulnameDE}' kommentiert. " +
+                            $"Bitte überarbeiten Sie das Modul entsprechend der Kommentare. " +
+                            $"(Status: {alterStatus} → Änderungsbedarf)",
+                            modulVersion.ModulVersionID
+                        );
+
+                        System.Diagnostics.Debug.WriteLine($"Status geändert: {alterStatus} → Änderungsbedarf (durch {rolle})");
+                    }
+                }
+
+                // Erfolgs-Meldung
+                MessageBox.Show(bestaetigungsText,
+                    "Kommentierung erfolgreich", MessageBoxButton.OK, MessageBoxImage.Information);
 
                 NavigateToModulView();
             }
@@ -249,6 +325,148 @@ namespace Modulverwaltungssoftware
                 }
             }
             // Bei Nein passiert nichts
+        }
+
+        /// <summary>
+        /// Durchsucht alle Felder (Namen + Inhalte + Kommentare) und scrollt zum ersten Treffer
+        /// </summary>
+        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var searchBox = sender as TextBox;
+            string suchbegriff = searchBox?.Text?.Trim().ToLower();
+
+            // Alle Hintergrundfarben zurücksetzen
+            ResetHighlights();
+
+            if (string.IsNullOrEmpty(suchbegriff))
+                return;
+
+            // Liste aller durchsuchbaren Felder (Links: Modul-Daten, Rechts: Kommentare)
+            var searchableFields = new List<(string FeldName, Control DataControl, Control CommentControl)>
+            {
+                ("Titel", FindName("TitelTextBox") as TextBox, FindName("TitelKommentarTextBox") as TextBox),
+                ("Modultyp", FindName("ModultypListBox") as ListBox, FindName("ModultypKommentarTextBox") as TextBox),
+                ("Studiengang", FindName("StudiengangTextBox") as TextBox, FindName("StudiengangKommentarTextBox") as TextBox),
+                ("Semester", FindName("SemesterListBox") as ListBox, FindName("SemesterKommentarTextBox") as TextBox),
+                ("Prüfungsform", FindName("PruefungsformListBox") as ListBox, FindName("PruefungsformKommentarTextBox") as TextBox),
+                ("Turnus", FindName("TurnusListBox") as ListBox, FindName("TurnusKommentarTextBox") as TextBox),
+                ("ECTS", FindName("EctsTextBox") as TextBox, FindName("EctsKommentarTextBox") as TextBox),
+                ("Workload Präsenz", FindName("WorkloadPraesenzTextBox") as TextBox, FindName("WorkloadPraesenzKommentarTextBox") as TextBox),
+                ("Workload Selbststudium", FindName("WorkloadSelbststudiumTextBox") as TextBox, FindName("WorkloadSelbststudiumKommentarTextBox") as TextBox),
+                ("Verantwortlicher", FindName("VerantwortlicherTextBox") as TextBox, FindName("VerantwortlicherKommentarTextBox") as TextBox),
+                ("Voraussetzungen", FindName("VoraussetzungenTextBox") as TextBox, FindName("VoraussetzungenKommentarTextBox") as TextBox),
+                ("Lernziele", FindName("LernzieleTextBox") as TextBox, FindName("LernzieleKommentarTextBox") as TextBox),
+                ("Lehrinhalte", FindName("LehrinhalteTextBox") as TextBox, FindName("LehrinhalteKommentarTextBox") as TextBox),
+                ("Literatur", FindName("LiteraturTextBox") as TextBox, FindName("LiteraturKommentarTextBox") as TextBox)
+            };
+
+            UIElement ersterTreffer = null;
+            int trefferAnzahl = 0;
+
+            foreach (var (feldName, dataControl, commentControl) in searchableFields)
+            {
+                bool istTreffer = false;
+                Control trefferControl = null;
+
+                // Prüfe Feldname
+                if (feldName.ToLower().Contains(suchbegriff))
+                {
+                    istTreffer = true;
+                    trefferControl = dataControl ?? commentControl;
+                }
+                // Prüfe Daten-Inhalt (links)
+                else if (dataControl is TextBox dataTextBox && !string.IsNullOrEmpty(dataTextBox.Text))
+                {
+                    if (dataTextBox.Text.ToLower().Contains(suchbegriff))
+                    {
+                        istTreffer = true;
+                        trefferControl = dataTextBox;
+                    }
+                }
+                else if (dataControl is ListBox dataListBox)
+                {
+                    foreach (var item in dataListBox.SelectedItems)
+                    {
+                        if (item is ListBoxItem lbi && lbi.Content.ToString().ToLower().Contains(suchbegriff))
+                        {
+                            istTreffer = true;
+                            trefferControl = dataListBox;
+                            break;
+                        }
+                    }
+                }
+
+                // Prüfe Kommentar-Inhalt (rechts)
+                if (!istTreffer && commentControl is TextBox commentTextBox && !string.IsNullOrEmpty(commentTextBox.Text))
+                {
+                    if (commentTextBox.Text.ToLower().Contains(suchbegriff))
+                    {
+                        istTreffer = true;
+                        trefferControl = commentTextBox;
+                    }
+                }
+
+                if (istTreffer && trefferControl != null)
+                {
+                    // Hervorheben
+                    trefferControl.Background = new SolidColorBrush(Color.FromArgb(100, 255, 255, 0)); // Gelb transparent
+                    trefferAnzahl++;
+
+                    if (ersterTreffer == null)
+                        ersterTreffer = trefferControl;
+                }
+            }
+
+            // Zum ersten Treffer scrollen
+            if (ersterTreffer != null)
+            {
+                // Cast zu FrameworkElement für BringIntoView
+                if (ersterTreffer is FrameworkElement element)
+                {
+                    element.BringIntoView();
+                    System.Diagnostics.Debug.WriteLine($"CommentView Suche '{suchbegriff}': {trefferAnzahl} Treffer");
+                }
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine($"CommentView Suche '{suchbegriff}': Keine Treffer");
+            }
+        }
+
+        /// <summary>
+        /// Setzt alle Hintergrundfarben auf Standard zurück
+        /// </summary>
+        private void ResetHighlights()
+        {
+            // Alle möglichen TextBoxen und ListBoxen zurücksetzen
+            var textBoxNames = new[] {
+                "TitelTextBox", "StudiengangTextBox", "EctsTextBox", "WorkloadPraesenzTextBox",
+                "WorkloadSelbststudiumTextBox", "VerantwortlicherTextBox", "VoraussetzungenTextBox",
+                "LernzieleTextBox", "LehrinhalteTextBox", "LiteraturTextBox",
+                "TitelKommentarTextBox", "ModultypKommentarTextBox", "StudiengangKommentarTextBox",
+                "SemesterKommentarTextBox", "PruefungsformKommentarTextBox", "TurnusKommentarTextBox",
+                "EctsKommentarTextBox", "WorkloadPraesenzKommentarTextBox", "WorkloadSelbststudiumKommentarTextBox",
+                "VerantwortlicherKommentarTextBox", "VoraussetzungenKommentarTextBox", "LernzieleKommentarTextBox",
+                "LehrinhalteKommentarTextBox", "LiteraturKommentarTextBox"
+            };
+
+            var listBoxNames = new[] {
+                "ModultypListBox", "SemesterListBox", "PruefungsformListBox", "TurnusListBox"
+            };
+
+            foreach (var name in textBoxNames)
+            {
+                var textBox = FindName(name) as TextBox;
+                if (textBox != null)
+                    textBox.Background = Brushes.White;
+            }
+
+            foreach (var name in listBoxNames)
+            {
+                var listBox = FindName(name) as ListBox;
+                if (listBox != null)
+                    listBox.Background = new SolidColorBrush(Color.FromRgb(245, 245, 245)); // #F5F5F5
+            }
         }
     }
 }

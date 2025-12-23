@@ -4,7 +4,7 @@ namespace Modulverwaltungssoftware
 {
     public class PlausibilitaetsService
     {
-        public string pruefeWorkloadStandard(int stunden, int ects)
+        public static string pruefeWorkloadStandard(int stunden, int ects)
         {
             if (stunden / ects >= 28 && stunden / ects <= 32)
             {
@@ -23,7 +23,7 @@ namespace Modulverwaltungssoftware
                 return "Der Workload liegt außerhalb des üblichen Bereichs. Bitte prüfen Sie, ob ein Eingabefehler vorliegt.";
             }
         }
-        private bool pruefeWorkloadStandardIntern(int stunden, int ects)
+        internal static bool pruefeWorkloadStandardIntern(int stunden, int ects)
         {
             if (stunden / ects < 28 || stunden / ects > 32)
             {
@@ -42,8 +42,19 @@ namespace Modulverwaltungssoftware
                 return false;
             }
         }
-        public string pruefeForm(string modultyp, int semester, string pruefungsform, string turnus, int ects, int workloadPraesenz, int workloadSelbststudium, string verantwortlicher, List<string> lernziele, List<string> lehrinhalte, int version)
+        public static string pruefeForm(ModulVersion v)
         {
+            string modultyp = v.Modul.Modultyp.ToString();
+            int semester = v.Modul.EmpfohlenesSemester;
+            string pruefungsform = v.Pruefungsform;
+            string turnus = v.Modul.Turnus.ToString();
+            int ects = v.EctsPunkte;
+            int workloadPraesenz = v.WorkloadPraesenz;
+            int workloadSelbststudium = v.WorkloadSelbststudium;
+            string verantwortlicher = v.Ersteller;
+            List<string> lernziele = v.Lernergebnisse;
+            List<string> lehrinhalte = v.Inhaltsgliederung;
+            int version = v.Versionsnummer;
             int workloadGesamt = workloadPraesenz + workloadSelbststudium;
             bool workloadTest = pruefeWorkloadStandardIntern(workloadGesamt, ects);
             bool typTest;
@@ -113,7 +124,7 @@ namespace Modulverwaltungssoftware
 
             return fehler;
         }
-        private string fehlerListe(bool workload, bool typ, bool semester, bool pruefung, bool turnus, bool verantwortlicher, bool lehrinhalte, bool lernziele)
+        private static string fehlerListe(bool workload, bool typ, bool semester, bool pruefung, bool turnus, bool verantwortlicher, bool lehrinhalte, bool lernziele)
         {
             string fehlerMeldungen = "Fehler gefunden in folgenden Bereichen:\n";
             if (workload && typ && semester && pruefung && turnus && verantwortlicher && lehrinhalte && lernziele == true) 

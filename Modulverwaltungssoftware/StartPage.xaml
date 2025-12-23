@@ -19,7 +19,7 @@
 
             <!-- Linker Bereich: "Neues Modul" Button -->
             <StackPanel Grid.Column="0" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="10,0,0,0">
-                <Button Content="Neues Modul" Width="100" Height="35" Margin="0,0,0,10" Click="NeuesModulButton_Click"/>
+                <Button x:Name="NeuesModulButton" Content="Neues Modul" Width="100" Height="35" Margin="0,0,0,10" Click="NeuesModulButton_Click"/>
             </StackPanel>
 
             <!-- Mittlerer Bereich: Suchleiste und Anzeige -->
