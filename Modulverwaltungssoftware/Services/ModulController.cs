@@ -10,26 +10,26 @@ namespace Modulverwaltungssoftware
 {
     public class ModulController
     {
-        public static int create(int versionID, int modulID)
+        public static int create(int modulID)
         {
             if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == false ) { MessageBox.Show("Fehlende Berechtigungen zum Erstellen."); return 0; }
             try
             {
-                var neueVersionID = versionID + 1;
+                int neueVersionsnummer;
                 using (var db = new Services.DatabaseContext())
                 {
                     var alteVersion = db.ModulVersion
-                        .FirstOrDefault(v => v.Versionsnummer == versionID && v.ModulId == modulID);
+                        .LastOrDefault(v => v.ModulId == modulID);
 
                     if (alteVersion == null)
                     {
                         return 0;
                     }
-
+                    neueVersionsnummer = alteVersion.Versionsnummer + 1;
                     var neueVersion = new ModulVersion
                     {
                         ModulId = alteVersion.ModulId,
-                        Versionsnummer = neueVersionID,
+                        Versionsnummer = neueVersionsnummer,
                         GueltigAbSemester = "Entwurf",
                         Modul = alteVersion.Modul,
                         ModulStatus = ModulVersion.Status.Entwurf,
@@ -49,7 +49,7 @@ namespace Modulverwaltungssoftware
                     db.ModulVersion.Add(neueVersion);
                     db.SaveChanges();
 
-                    return neueVersionID;
+                    return neueVersionsnummer;
                 }
             }
             catch (DbEntityValidationException valEx) // Exception Handler-Block

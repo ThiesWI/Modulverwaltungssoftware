@@ -17,6 +17,7 @@ namespace Modulverwaltungssoftware
                 // Neueste Version laden (unabhängig vom Status)
                 var version = db.ModulVersion
                     .Include("Modul")
+                    .Include("Kommentar")
                     .Where(v => v.ModulId == modulID)
                     .OrderByDescending(v => v.Versionsnummer)
                     .FirstOrDefault();
@@ -61,7 +62,7 @@ namespace Modulverwaltungssoftware
                 MessageBox.Show("ModulVersion darf nicht null sein.");
                 return;
             }
-            else if (Benutzer.CurrentUser.AktuelleRolle.DarfFreigeben == false) { MessageBox.Show("Nur Benutzer mit Freigaberechten können speichern."); return; }
+            else if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == false && Benutzer.CurrentUser.AktuelleRolle.DarfFreigeben) { MessageBox.Show("Nur Benutzer mit Bearbeitungs- oder Freigaberechten können speichern."); return; }
             try
                 {
                     if (version.ModulStatus == ModulVersion.Status.Entwurf || version.ModulStatus == ModulVersion.Status.Aenderungsbedarf)
@@ -70,13 +71,14 @@ namespace Modulverwaltungssoftware
                     }
                     else if (version.ModulStatus == ModulVersion.Status.Archiviert || version.ModulStatus == ModulVersion.Status.Freigegeben)
                     {
-                        int neueVersionID = ModulController.create((int)version.Versionsnummer, (int)version.ModulId);
+                        int neueVersionID = ModulController.create((int)version.ModulId);
                         if (neueVersionID == 0)
                         {
                             MessageBox.Show("Fehler beim Erstellen einer neuen Version.");
                             return;
                         }
-                        ModulVersion.setDaten(version);
+                        version.Versionsnummer = neueVersionID;
+                    ModulVersion.setDaten(version);
                     }
                     else MessageBox.Show("Speichern im Status 'InPruefung' nicht erlaubt.");
                 }

@@ -10,7 +10,7 @@ namespace PDF_Test
 {
     public class PDFService
     {
-        public static void ErstellePDF(Modulverwaltungssoftware.ModulVersion v)
+        public static void ErstellePDF(ModulVersion v)
         {
             string titel = v.Modul.ModulnameDE;
             string modultyp = v.Modul.Modultyp.ToString();

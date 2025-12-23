@@ -77,7 +77,7 @@ namespace Modulverwaltungssoftware
                 db.SaveChanges();
             }
         } // Modul und alle zugehörigen ModulVersionen löschen
-        public void removeModulVersion(int modulID, int modulVersion) // eine spezifische ModulVersion löschen
+        public void removeModulVersion(int modulID, int versionsnummer) // eine spezifische ModulVersion löschen
         {
             if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == false && Benutzer.CurrentUser.AktuelleRolle.DarfFreigeben == false)
             {
@@ -86,10 +86,12 @@ namespace Modulverwaltungssoftware
             }
             using (var db = new Services.DatabaseContext())
             {
-                var version = db.ModulVersion.Find(modulID, modulVersion);
+                var version = db.ModulVersion
+                    .FirstOrDefault(v => v.ModulId == modulID && v.Versionsnummer == versionsnummer);
                 if (version == null)
                 {
-                    MessageBox.Show($"ModulVersion mit ID {modulVersion} und/oder ModulID {modulID} nicht gefunden.");
+                    MessageBox.Show($"ModulVersion mit ID {versionsnummer} und/oder ModulID {modulID} nicht gefunden.");
+                    return;
                 }
                 db.ModulVersion.Remove(version);
                 db.SaveChanges();

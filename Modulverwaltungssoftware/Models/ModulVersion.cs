@@ -132,7 +132,7 @@ namespace Modulverwaltungssoftware
         {
             try
             {
-                if (Benutzer.CurrentUser.RollenName != "Dozent" && Benutzer.CurrentUser.RollenName != "Admin" && Benutzer.CurrentUser.RollenName != "Koordination" && Benutzer.CurrentUser.RollenName != "Gremium")
+                if (Benutzer.CurrentUser.AktuelleRolle.DarfStatusAendern == false)
                 {
                     MessageBox.Show("Der aktuelle Benutzer hat nicht die erforderlichen Rechte, um diese Aktion durchzuführen.");
                     return;

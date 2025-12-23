@@ -9,7 +9,7 @@ namespace Modulverwaltungssoftware
 {
     public class WorkflowController
     {
-        public static void starteGenehmigung(int versionID, int modulID)
+        public static void starteGenehmigung(int versionsnummer, int modulID)
         {
             try
             {
@@ -19,13 +19,13 @@ namespace Modulverwaltungssoftware
                 }
                 else
                 {
-                    ModulVersion.setStatus(versionID, modulID, ModulVersion.Status.InPruefungKoordination); // Set Status to "In Prüfung durch Koordination" & Sende Benachrichtigung an Koordination
-                    BenachrichtigungsService.SendeBenachrichtigung("Koordination", $"{Benutzer.CurrentUser.Name} hat Version {versionID} für Modul {modulID} zur Prüfung eingereicht.", versionID);
+                    ModulVersion.setStatus(versionsnummer, modulID, ModulVersion.Status.InPruefungKoordination); // Set Status to "In Prüfung durch Koordination" & Sende Benachrichtigung an Koordination
+                    BenachrichtigungsService.SendeBenachrichtigung("Koordination", $"{Benutzer.CurrentUser.Name} hat Version {versionsnummer} für Modul {modulID} zur Prüfung eingereicht.", versionsnummer);
                 }
             }
             catch (Exception ex) { throw; }
         } // Modul zur Prüfung einreichen für Dozent und Admin
-        public static void lehneAb(int modulID, int versionID, string kommentarText)
+        public static void lehneAb(int versionsnummer, int modulID, string kommentarText)
         {
             try
             {
@@ -35,14 +35,14 @@ namespace Modulverwaltungssoftware
                 }
                 else
                 {
-                    ModulVersion.setStatus(versionID, modulID, ModulVersion.Status.Aenderungsbedarf);
-                    BenachrichtigungsService.SendeBenachrichtigung ("Dozent", $"{Benutzer.CurrentUser.Name} hat Version {versionID} für Modul {modulID} abgelehnt. Kommentar: {kommentarText}", versionID);
-                    Kommentar.addKommentar(modulID, versionID, kommentarText);
+                    ModulVersion.setStatus(versionsnummer, modulID, ModulVersion.Status.Aenderungsbedarf);
+                    BenachrichtigungsService.SendeBenachrichtigung ("Dozent", $"{Benutzer.CurrentUser.Name} hat Version {versionsnummer} für Modul {modulID} abgelehnt. Kommentar: {kommentarText}", versionsnummer);
+                    Kommentar.addKommentar(modulID, versionsnummer, kommentarText);
                 }
             }
             catch (Exception ex) { throw; }
         } // Ablehnen für Koordination + Admin
-        public static void leiteWeiter(int modulID, int versionID)
+        public static void leiteWeiter(int versionsnummer, int modulID)
         {
             try
             {
@@ -52,13 +52,13 @@ namespace Modulverwaltungssoftware
                 }
                 else
                 {
-                    ModulVersion.setStatus(versionID, modulID, ModulVersion.Status.InPruefungGremium);
-                    BenachrichtigungsService.SendeBenachrichtigung("Gremium", $"{Benutzer.CurrentUser.Name} hat Version {versionID} für Modul {modulID} zur Prüfung durch das Gremium weitergeleitet.", versionID);
+                    ModulVersion.setStatus(versionsnummer, modulID, ModulVersion.Status.InPruefungGremium);
+                    BenachrichtigungsService.SendeBenachrichtigung("Gremium", $"{Benutzer.CurrentUser.Name} hat Version {versionsnummer} für Modul {modulID} zur Prüfung durch das Gremium weitergeleitet.", versionsnummer);
                 }
             }
             catch (Exception ex) { throw; }
         } // Modul-Entwurf an Gremium weiterleiten (Koordination + Admin)
-        public static void lehneFinalAb(int modulID, int versionID, string kommentarText)
+        public static void lehneFinalAb(int versionsnummer, int modulID, string kommentarText)
         {
             try
             {
@@ -68,14 +68,14 @@ namespace Modulverwaltungssoftware
                 }
                 else
                 {
-                    ModulVersion.setStatus(versionID, modulID, ModulVersion.Status.Aenderungsbedarf);
-                    BenachrichtigungsService.SendeBenachrichtigung("Dozent", $"{Benutzer.CurrentUser.Name} hat Version {versionID} für Modul {modulID} final abgelehnt. Kommentar: {kommentarText}", versionID);
-                    Kommentar.addKommentar(modulID, versionID, kommentarText);
+                    ModulVersion.setStatus(versionsnummer, modulID, ModulVersion.Status.Aenderungsbedarf);
+                    BenachrichtigungsService.SendeBenachrichtigung("Dozent", $"{Benutzer.CurrentUser.Name} hat Version {versionsnummer} für Modul {modulID} final abgelehnt. Kommentar: {kommentarText}", versionsnummer);
+                    Kommentar.addKommentar(modulID, versionsnummer, kommentarText);
                 }
             }
             catch (Exception ex) { throw; }
         } // Ablehnen für Gremium + Admin
-        public static void schliesseGenehmigungAb(int modulID, int versionID)
+        public static void schliesseGenehmigungAb(int versionsnummer, int modulID)
         {
             try
             {
@@ -85,8 +85,8 @@ namespace Modulverwaltungssoftware
                 }
                 else
                 {
-                    ModulVersion.setStatus(versionID, modulID, ModulVersion.Status.Freigegeben);
-                    BenachrichtigungsService.SendeBenachrichtigung("Dozent", $"{Benutzer.CurrentUser.Name} hat Version {versionID} für Modul {modulID} freigegeben.", versionID);
+                    ModulVersion.setStatus(versionsnummer, modulID, ModulVersion.Status.Freigegeben);
+                    BenachrichtigungsService.SendeBenachrichtigung("Dozent", $"{Benutzer.CurrentUser.Name} hat Version {versionsnummer} für Modul {modulID} freigegeben.", versionsnummer);
                 }
             }
             catch (Exception ex) { throw; }
