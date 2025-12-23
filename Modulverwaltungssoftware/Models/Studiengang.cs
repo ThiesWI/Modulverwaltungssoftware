@@ -79,23 +79,32 @@ namespace Modulverwaltungssoftware
         } // Modul und alle zugehörigen ModulVersionen löschen
         public void removeModulVersion(int modulID, int versionsnummer) // eine spezifische ModulVersion löschen
         {
-            if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == false && Benutzer.CurrentUser.AktuelleRolle.DarfFreigeben == false)
+            try
             {
-                MessageBox.Show("Der aktuelle Benutzer hat keine Berechtigung zum Löschen von Modulen.");
-                return;
-            }
-            using (var db = new Services.DatabaseContext())
-            {
-                var version = db.ModulVersion
-                    .FirstOrDefault(v => v.ModulId == modulID && v.Versionsnummer == versionsnummer);
-                if (version == null)
+                if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == false && Benutzer.CurrentUser.AktuelleRolle.DarfFreigeben == false)
                 {
-                    MessageBox.Show($"ModulVersion mit ID {versionsnummer} und/oder ModulID {modulID} nicht gefunden.");
+                    MessageBox.Show("Der aktuelle Benutzer hat keine Berechtigung zum Löschen von Modulen.");
                     return;
                 }
-                db.ModulVersion.Remove(version);
-                db.SaveChanges();
+                using (var db = new Services.DatabaseContext())
+                {
+                    var version = db.ModulVersion
+                        .FirstOrDefault(v => v.ModulId == modulID && v.Versionsnummer == versionsnummer);
+                    if (version == null)
+                    {
+                        MessageBox.Show($"ModulVersion mit ID {versionsnummer} und/oder ModulID {modulID} nicht gefunden.");
+                        return;
+                    }
+                    db.ModulVersion.Remove(version);
+                    db.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten"); ;
+                return;
             }
         }
+        }
     }
-}
+

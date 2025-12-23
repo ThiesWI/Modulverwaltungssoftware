@@ -12,17 +12,25 @@ namespace Modulverwaltungssoftware
     {
         public static ModulVersion getModulVersion(int modulID)
         {
-            using (var db = new Services.DatabaseContext())
+            try
             {
-                // Neueste Version laden (unabhängig vom Status)
-                var version = db.ModulVersion
-                    .Include("Modul")
-                    .Include("Kommentar")
-                    .Where(v => v.ModulId == modulID)
-                    .OrderByDescending(v => v.Versionsnummer)
-                    .FirstOrDefault();
+                using (var db = new Services.DatabaseContext())
+                {
+                    // Neueste Version laden (unabhängig vom Status)
+                    var version = db.ModulVersion
+                        .Include("Modul")
+                        .Include("Kommentar")
+                        .Where(v => v.ModulId == modulID)
+                        .OrderByDescending(v => v.Versionsnummer)
+                        .FirstOrDefault();
 
-                return version;
+                    return version;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten"); ;
+                return null;
             }
         } // aktuellste ModulVersion für Modul aus DB abrufen
         public static List<ModulVersion> getAllModulVersionen(int modulID)
@@ -47,7 +55,11 @@ namespace Modulverwaltungssoftware
                         return versionen;
                 }
             }
-            catch (Exception ex) { throw; }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten"); ;
+                return null;
+            }
         } // alle Versionen von Modul abrufen
         public static void Speichere (ModulVersion version) // Entwurf speichern für Dozent
         {
@@ -82,8 +94,12 @@ namespace Modulverwaltungssoftware
                     }
                     else MessageBox.Show("Speichern im Status 'InPruefung' nicht erlaubt.");
                 }
-                catch (Exception ex) { throw; }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten"); ;
+                return;
             }
+        }
         public static List<Modul> sucheModule(string suchbegriff)
         {
             try
@@ -105,49 +121,10 @@ namespace Modulverwaltungssoftware
                     return result;
                 }
             }
-            catch (DbEntityValidationException valEx)
-            {
-                var fehlermeldungen = new List<string>();
-
-                foreach (var validationErrors in valEx.EntityValidationErrors)
-                {
-                    foreach (var error in validationErrors.ValidationErrors)
-                    {
-                        string meldung = $"Feld '{error.PropertyName}': {error.ErrorMessage}";
-                        fehlermeldungen.Add(meldung);
-                        // Optional: Logging hier (Console.WriteLine(meldung));
-                    }
-                }
-
-                // Wirf eine neue, saubere Exception mit allen Details, damit das Frontend sie anzeigen kann
-                throw new InvalidOperationException($"Validierung fehlgeschlagen: {string.Join(", ", fehlermeldungen)}", valEx);
-            }
-            // 2. Gleichzeitigkeitsfehler (Optimistic Concurrency)
-            // Tritt auf, wenn zwei User gleichzeitig speichern wollen.
-            catch (DbUpdateConcurrencyException conEx)
-            {
-                // Reload der Werte oder Fehlermeldung
-                throw new InvalidOperationException("Der Datensatz wurde zwischenzeitlich von einem anderen Benutzer geändert. Bitte laden Sie die Seite neu.", conEx);
-            }
-            // 3. Datenbank-Update-Fehler (z.B. Foreign Key Verletzung, Unique Constraint)
-            catch (DbUpdateException dbEx)
-            {
-                var innerMessage = dbEx.InnerException?.InnerException?.Message ?? dbEx.Message;
-
-                if (innerMessage.Contains("UNIQUE constraint failed"))
-                {
-                    throw new InvalidOperationException("Dieser Eintrag existiert bereits (Duplikat).", dbEx);
-                }
-
-                throw new Exception($"Datenbankfehler beim Speichern: {innerMessage}", dbEx);
-            }
-            // 4. Allgemeine Fehler (NullReference, Logikfehler etc.)
             catch (Exception ex)
             {
-                // Hier solltest du idealerweise Loggen (in eine Datei oder DB)
-                // Logger.LogError(ex);
-
-                throw new Exception("Ein unerwarteter Fehler ist aufgetreten.", ex);
+                MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten"); ;
+                return null;
             }
         }
     public static List<Modul> getAllModule()
@@ -164,39 +141,10 @@ namespace Modulverwaltungssoftware
                     return result;
                 }
             }
-            catch (DbEntityValidationException valEx)
-            {
-                var fehlermeldungen = new List<string>();
-
-                foreach (var validationErrors in valEx.EntityValidationErrors)
-                {
-                    foreach (var error in validationErrors.ValidationErrors)
-                    {
-                        string meldung = $"Feld '{error.PropertyName}': {error.ErrorMessage}";
-                        fehlermeldungen.Add(meldung);
-                    }
-                }
-
-                throw new InvalidOperationException($"Validierung fehlgeschlagen: {string.Join(", ", fehlermeldungen)}", valEx);
-            }
-            catch (DbUpdateConcurrencyException conEx)
-            {
-                throw new InvalidOperationException("Der Datensatz wurde zwischenzeitlich von einem anderen Benutzer geändert. Bitte laden Sie die Seite neu.", conEx);
-            }
-            catch (DbUpdateException dbEx)
-            {
-                var innerMessage = dbEx.InnerException?.InnerException?.Message ?? dbEx.Message;
-
-                if (innerMessage.Contains("UNIQUE constraint failed"))
-                {
-                    throw new InvalidOperationException("Dieser Eintrag existiert bereits (Duplikat).", dbEx);
-                }
-
-                throw new Exception($"Datenbankfehler beim Speichern: {innerMessage}", dbEx);
-            }
             catch (Exception ex)
             {
-                throw new Exception("Ein unerwarteter Fehler ist aufgetreten.", ex);
+                MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten"); ;
+                return null;
             }
         } // alle gültigen Module abrufen
         
@@ -260,7 +208,8 @@ namespace Modulverwaltungssoftware
             }
             catch (Exception ex)
             {
-                throw new Exception($"Fehler beim Laden der Module: {ex.Message}", ex);
+                MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten"); ;
+                return null;
             }
         }
     }

@@ -152,8 +152,12 @@ namespace Modulverwaltungssoftware
                     }
                 }
             }
-            catch (Exception ex) { throw; }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten"); ;
+                return;
             }
+        }
         public static void setDaten(ModulVersion version) //Setzt die Daten der Modulversion in der DB
         {
             string fehlermeldung = PlausibilitaetsService.pruefeForm(version);
@@ -190,54 +194,15 @@ namespace Modulverwaltungssoftware
                     }
                     else
                     {
-                       MessageBox.Show("Der aktuelle Benutzer hat nicht die erforderlichen Rechte, um diese Aktion durchzuführen.");
+                        MessageBox.Show("Der aktuelle Benutzer hat nicht die erforderlichen Rechte, um diese Aktion durchzuführen.");
                     }
                     db.SaveChanges();
                 }
             }
-            catch (DbEntityValidationException valEx)
-            {
-                var fehlermeldungen = new List<string>();
-
-                foreach (var validationErrors in valEx.EntityValidationErrors)
-                {
-                    foreach (var error in validationErrors.ValidationErrors)
-                    {
-                        string meldung = $"Feld '{error.PropertyName}': {error.ErrorMessage}";
-                        fehlermeldungen.Add(meldung);
-                        // Optional: Logging hier (Console.WriteLine(meldung));
-                    }
-                }
-
-                // Wirf eine neue, saubere Exception mit allen Details, damit das Frontend sie anzeigen kann
-                throw new InvalidOperationException($"Validierung fehlgeschlagen: {string.Join(", ", fehlermeldungen)}", valEx);
-            }
-            // 2. Gleichzeitigkeitsfehler (Optimistic Concurrency)
-            // Tritt auf, wenn zwei User gleichzeitig speichern wollen.
-            catch (DbUpdateConcurrencyException conEx)
-            {
-                // Reload der Werte oder Fehlermeldung
-                throw new InvalidOperationException("Der Datensatz wurde zwischenzeitlich von einem anderen Benutzer geändert. Bitte laden Sie die Seite neu.", conEx);
-            }
-            // 3. Datenbank-Update-Fehler (z.B. Foreign Key Verletzung, Unique Constraint)
-            catch (DbUpdateException dbEx)
-            {
-                var innerMessage = dbEx.InnerException?.InnerException?.Message ?? dbEx.Message;
-
-                if (innerMessage.Contains("UNIQUE constraint failed"))
-                {
-                    throw new InvalidOperationException("Dieser Eintrag existiert bereits (Duplikat).", dbEx);
-                }
-
-                throw new Exception($"Datenbankfehler beim Speichern: {innerMessage}", dbEx);
-            }
-            // 4. Allgemeine Fehler (NullReference, Logikfehler etc.)
             catch (Exception ex)
             {
-                // Hier solltest du idealerweise Loggen (in eine Datei oder DB)
-                // Logger.LogError(ex);
-
-                throw new Exception("Ein unerwarteter Fehler ist aufgetreten.", ex);
+                MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten"); ;
+                return;
             }
         }
     }

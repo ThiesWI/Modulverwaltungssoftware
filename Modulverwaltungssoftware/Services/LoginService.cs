@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Security.Authentication;
+using System.Windows;
 
 namespace Modulverwaltungssoftware.Services
 {
@@ -28,9 +29,10 @@ namespace Modulverwaltungssoftware.Services
                         return true;
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    throw;
+                    MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten"); ;
+                    return false;
                 }
             }
         } // Nutzerdaten mit DB abgleichen, bei Erfolg Passwort aus Arbeitsspeicher löschen und Nutzerdaten in Benutzer.CurrentUser hinterlegen
