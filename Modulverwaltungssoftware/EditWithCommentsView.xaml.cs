@@ -20,6 +20,11 @@ namespace Modulverwaltungssoftware
         public EditWithCommentsView()
         {
             InitializeComponent();
+            
+            // ✨ SUCHFUNKTION: TextChanged Event für SearchBox
+            var searchBox = FindName("SearchBox") as TextBox;
+            if (searchBox != null)
+                searchBox.TextChanged += SearchBox_TextChanged;
         }
 
         public EditWithCommentsView(string modulId, string versionNummer, ModuleDataRepository.ModuleData moduleData, ModuleDataRepository.CommentData comments) : this()
@@ -103,9 +108,14 @@ namespace Modulverwaltungssoftware
             listBox.SelectedItems.Clear();
             foreach (var item in listBox.Items)
             {
-                if (item is ListBoxItem lbi && itemsToSelect.Contains(lbi.Content.ToString()))
+                if (item is ListBoxItem lbi)
                 {
-                    listBox.SelectedItems.Add(lbi);
+                    string itemText = lbi.Content.ToString();
+                    // Prüfe ob einer der zu selektierenden Strings mit dem Item übereinstimmt
+                    if (itemsToSelect.Any(s => itemText.Contains(s) || s.Contains(itemText)))
+                    {
+                        listBox.SelectedItems.Add(lbi);
+                    }
                 }
             }
         }
@@ -340,11 +350,9 @@ namespace Modulverwaltungssoftware
                     neueVersion.Literatur = new List<string>();
                 }
 
-                // WICHTIG: Modul-Daten werden NICHT geändert!
-                // Titel, Studiengang, Modultyp, Turnus, Semester, Voraussetzungen
-                // sind GLOBAL für alle Versionen und können nicht versioniert werden.
-                // Diese Änderungen würden sich auf ALLE Versionen auswirken!
-
+                // Kommentare entfernen: hatKommentar auf false setzen
+                // (Die neue Version ist NICHT kommentiert, nur die alte hat Kommentare!)
+                
                 db.ModulVersion.Add(neueVersion);
                 db.SaveChanges();
             }
@@ -375,6 +383,183 @@ namespace Modulverwaltungssoftware
             {
                 // Zurück zur ModulView
                 this.NavigationService?.Navigate(new ModulView(int.Parse(_modulId)));
+            }
+        }
+
+        /// <summary>
+        /// Durchsucht alle Felder (Namen + Inhalte + Kommentare) und scrollt zum ersten Treffer
+        /// </summary>
+        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var searchBox = sender as TextBox;
+            string suchbegriff = searchBox?.Text?.Trim().ToLower();
+
+            // Alle Hintergrundfarben zurücksetzen
+            ResetHighlights();
+
+            if (string.IsNullOrEmpty(suchbegriff))
+                return;
+
+            // Liste aller durchsuchbaren Felder (Links: Editierbare Modul-Daten, Rechts: Read-Only Kommentare)
+            var searchableFields = new List<(string FeldName, Control DataControl, Control CommentControl)>
+            {
+                ("Titel", FindName("TitelTextBox") as TextBox, FindName("TitelKommentarTextBox") as TextBox),
+                ("Modultyp", FindName("ModultypListBox") as ListBox, FindName("ModultypKommentarTextBox") as TextBox),
+                ("Studiengang", FindName("StudiengangTextBox") as TextBox, FindName("StudiengangKommentarTextBox") as TextBox),
+                ("Semester", FindName("SemesterListBox") as ListBox, FindName("SemesterKommentarTextBox") as TextBox),
+                ("Prüfungsform", FindName("PruefungsformListBox") as ListBox, FindName("PruefungsformKommentarTextBox") as TextBox),
+                ("Turnus", FindName("TurnusListBox") as ListBox, FindName("TurnusKommentarTextBox") as TextBox),
+                ("ECTS", FindName("EctsTextBox") as TextBox, FindName("EctsKommentarTextBox") as TextBox),
+                ("Workload Präsenz", FindName("WorkloadPraesenzTextBox") as TextBox, FindName("WorkloadPraesenzKommentarTextBox") as TextBox),
+                ("Workload Selbststudium", FindName("WorkloadSelbststudiumTextBox") as TextBox, FindName("WorkloadSelbststudiumKommentarTextBox") as TextBox),
+                ("Verantwortlicher", FindName("VerantwortlicherTextBox") as TextBox, FindName("VerantwortlicherKommentarTextBox") as TextBox),
+                ("Voraussetzungen", FindName("VoraussetzungenTextBox") as TextBox, FindName("VoraussetzungenKommentarTextBox") as TextBox),
+                ("Lernziele", FindName("LernzieleTextBox") as TextBox, FindName("LernzieleKommentarTextBox") as TextBox),
+                ("Lehrinhalte", FindName("LehrinhalteTextBox") as TextBox, FindName("LehrinhalteKommentarTextBox") as TextBox),
+                ("Literatur", FindName("LiteraturTextBox") as TextBox, FindName("LiteraturKommentarTextBox") as TextBox)
+            };
+
+            UIElement ersterTreffer = null;
+            int trefferAnzahl = 0;
+
+            foreach (var (feldName, dataControl, commentControl) in searchableFields)
+            {
+                bool istTreffer = false;
+                Control trefferControl = null;
+
+                // Prüfe Feldname
+                if (feldName.ToLower().Contains(suchbegriff))
+                {
+                    istTreffer = true;
+                    trefferControl = dataControl ?? commentControl;
+                }
+                // Prüfe Daten-Inhalt (links - editierbar)
+                else if (dataControl is TextBox dataTextBox && !string.IsNullOrEmpty(dataTextBox.Text))
+                {
+                    if (dataTextBox.Text.ToLower().Contains(suchbegriff))
+                    {
+                        istTreffer = true;
+                        trefferControl = dataTextBox;
+                    }
+                }
+                else if (dataControl is ListBox dataListBox)
+                {
+                    foreach (var item in dataListBox.SelectedItems)
+                    {
+                        if (item is ListBoxItem lbi && lbi.Content.ToString().ToLower().Contains(suchbegriff))
+                        {
+                            istTreffer = true;
+                            trefferControl = dataListBox;
+                            break;
+                        }
+                    }
+                }
+
+                // Prüfe Kommentar-Inhalt (rechts - read-only)
+                if (!istTreffer && commentControl is TextBox commentTextBox && !string.IsNullOrEmpty(commentTextBox.Text))
+                {
+                    if (commentTextBox.Text.ToLower().Contains(suchbegriff))
+                    {
+                        istTreffer = true;
+                        trefferControl = commentTextBox;
+                    }
+                }
+
+                if (istTreffer && trefferControl != null)
+                {
+                    // Hervorheben mit gelber Markierung
+                    if (trefferControl.Background is SolidColorBrush currentBrush)
+                    {
+                        // Speichere original Farbe für späteres Zurücksetzen
+                        // Highlight: Gelb transparent über bestehender Farbe
+                        trefferControl.Background = new SolidColorBrush(Color.FromArgb(150, 255, 255, 0)); // Gelb transparent
+                    }
+                    else
+                    {
+                        trefferControl.Background = new SolidColorBrush(Color.FromArgb(100, 255, 255, 0)); // Gelb transparent
+                    }
+                    
+                    trefferAnzahl++;
+
+                    if (ersterTreffer == null)
+                        ersterTreffer = trefferControl;
+                }
+            }
+
+            // Zum ersten Treffer scrollen
+            if (ersterTreffer != null)
+            {
+                // Cast zu FrameworkElement für BringIntoView
+                if (ersterTreffer is FrameworkElement element)
+                {
+                    element.BringIntoView();
+                    System.Diagnostics.Debug.WriteLine($"EditWithCommentsView Suche '{suchbegriff}': {trefferAnzahl} Treffer");
+                }
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine($"EditWithCommentsView Suche '{suchbegriff}': Keine Treffer");
+            }
+        }
+
+        /// <summary>
+        /// Setzt alle Hintergrundfarben auf Standard zurück
+        /// </summary>
+        private void ResetHighlights()
+        {
+            // Alle editierbaren TextBoxen (weiß)
+            var editableTextBoxNames = new[] {
+                "TitelTextBox", "StudiengangTextBox", "EctsTextBox", "WorkloadPraesenzTextBox",
+                "WorkloadSelbststudiumTextBox", "VerantwortlicherTextBox", "VoraussetzungenTextBox",
+                "LernzieleTextBox", "LehrinhalteTextBox", "LiteraturTextBox"
+            };
+
+            // Alle Kommentar-TextBoxen (hellgelb wenn mit Kommentar, hellgrau wenn leer)
+            var commentTextBoxNames = new[] {
+                "TitelKommentarTextBox", "ModultypKommentarTextBox", "StudiengangKommentarTextBox",
+                "SemesterKommentarTextBox", "PruefungsformKommentarTextBox", "TurnusKommentarTextBox",
+                "EctsKommentarTextBox", "WorkloadPraesenzKommentarTextBox", "WorkloadSelbststudiumKommentarTextBox",
+                "VerantwortlicherKommentarTextBox", "VoraussetzungenKommentarTextBox", "LernzieleKommentarTextBox",
+                "LehrinhalteKommentarTextBox", "LiteraturKommentarTextBox"
+            };
+
+            // Alle ListBoxen (weiß, da editierbar)
+            var listBoxNames = new[] {
+                "ModultypListBox", "SemesterListBox", "PruefungsformListBox", "TurnusListBox"
+            };
+
+            // Editierbare Felder zurücksetzen (weiß)
+            foreach (var name in editableTextBoxNames)
+            {
+                var textBox = FindName(name) as TextBox;
+                if (textBox != null)
+                    textBox.Background = Brushes.White;
+            }
+
+            // Kommentarfelder zurücksetzen (je nach Inhalt)
+            foreach (var name in commentTextBoxNames)
+            {
+                var textBox = FindName(name) as TextBox;
+                if (textBox != null)
+                {
+                    // Wenn Kommentar vorhanden: Hellgelb, sonst Hellgrau
+                    if (!string.IsNullOrEmpty(textBox.Text))
+                    {
+                        textBox.Background = new SolidColorBrush(Color.FromRgb(255, 255, 224)); // Hellgelb
+                    }
+                    else
+                    {
+                        textBox.Background = new SolidColorBrush(Color.FromRgb(245, 245, 245)); // Hellgrau
+                    }
+                }
+            }
+
+            // ListBoxen zurücksetzen (weiß, da editierbar)
+            foreach (var name in listBoxNames)
+            {
+                var listBox = FindName(name) as ListBox;
+                if (listBox != null)
+                    listBox.Background = Brushes.White;
             }
         }
     }

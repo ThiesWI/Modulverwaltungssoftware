@@ -39,6 +39,9 @@ namespace Modulverwaltungssoftware
             
             // Module beim Laden der Seite aktualisieren
             this.Loaded += StartPage_Loaded;
+            
+            // ✨ SUCHFUNKTION: TextChanged Event für SearchBox
+            SearchBox.TextChanged += SearchBox_TextChanged;
         }
 
         // Wird aufgerufen wenn die Seite geladen wird
@@ -46,6 +49,9 @@ namespace Modulverwaltungssoftware
         {
             // Module bei jedem Laden neu laden (auch nach Navigation zurück)
             LoadModulePreviews();
+            
+            // ✨ "Neues Modul" Button nur für Admin & Dozent aktivieren
+            UpdateNeuesModulButton();
         }
 
         private void LoadModulePreviews()
@@ -53,41 +59,53 @@ namespace Modulverwaltungssoftware
             // Collection leeren (wichtig bei erneutem Laden!)
             ModulePreviews.Clear();
 
-            // Alle Module abrufen (nicht Versionen!)
-            var alleModule = ModulRepository.getAllModule();
+            // ✅ ROLLENBASIERTE SICHTBARKEIT: Verwende GetModuleForUser() statt getAllModule()
+            var alleModule = ModulRepository.GetModuleForUser();
 
             // Temporäre Liste für Sortierung
             var tempList = new List<ModulePreview>();
 
-            foreach (var modul in alleModule)
+            using (var db = new Services.DatabaseContext())
             {
-                // Neueste Version anhand der höchsten Versionsnummer holen
-                var neuesteVersion = ModulRepository.getModulVersion(modul.ModulID);
-
-                if (neuesteVersion != null)
+                foreach (var modul in alleModule)
                 {
-                    // Versionsnummer formatieren
-                    string versionDisplay = FormatVersionsnummer(neuesteVersion.Versionsnummer);
-                    
-                    tempList.Add(new ModulePreview
+                    // ✅ FIX: Neueste ODER letzte Version holen (nicht nur höchste Nummer)
+                    var neuesteVersion = db.ModulVersion
+                        .Where(v => v.ModulId == modul.ModulID)
+                        .OrderByDescending(v => v.LetzteAenderung)
+                        .ThenByDescending(v => v.Versionsnummer)
+                        .FirstOrDefault();
+
+                    if (neuesteVersion != null)
                     {
-                        Title = modul.ModulnameDE,  // MODULNAME
-                        Studiengang = neuesteVersion.Modul.Studiengang,
-                        Version = $"{versionDisplay} ({neuesteVersion.ModulStatus})",
-                        ContentPreview = GenerateContentPreview(neuesteVersion),
-                        ModulId = modul.ModulID.ToString()
-                    });
+                        // Versionsnummer formatieren
+                        string versionDisplay = FormatVersionsnummer(neuesteVersion.Versionsnummer);
+                        
+                        tempList.Add(new ModulePreview
+                        {
+                            Title = modul.ModulnameDE,  // MODULNAME
+                            Studiengang = modul.Studiengang,  // ✅ FIX: Von Modul, nicht ModulVersion
+                            Version = $"{versionDisplay} ({neuesteVersion.ModulStatus})",
+                            ContentPreview = GenerateContentPreview(neuesteVersion),
+                            ModulId = modul.ModulID.ToString()
+                        });
+                    }
                 }
             }
 
-            // Alphabetisch nach Titel sortieren
-            var sortedModules = tempList.OrderBy(m => m.Title).ToList();
+            // ✅ ALPHABETISCH SORTIEREN (Case-Insensitive)
+            var sortedModules = tempList
+                .OrderBy(m => m.Title, StringComparer.OrdinalIgnoreCase)
+                .ToList();
 
             // Sortierte Module zur ObservableCollection hinzufügen
             foreach (var module in sortedModules)
             {
                 ModulePreviews.Add(module);
+                System.Diagnostics.Debug.WriteLine($"  → Modul: {module.Title}, Version: {module.Version}");
             }
+
+            System.Diagnostics.Debug.WriteLine($"StartPage: {sortedModules.Count} Module geladen (alphabetisch sortiert)");
         }
 
         // Hilfsmethode: Konvertiere interne Versionsnummer zu Anzeige-Format (10 → "1.0")
@@ -123,6 +141,67 @@ namespace Modulverwaltungssoftware
             this.NavigationService?.Navigate(new EditingView(createNew: true));
         }
 
+        /// <summary>
+        /// Aktiviert den "Neues Modul" Button nur für Admin und Dozent
+        /// </summary>
+        private void UpdateNeuesModulButton()
+        {
+            var neuesModulButton = FindName("NeuesModulButton") as Button;
+            if (neuesModulButton == null)
+            {
+                // Suche im Visual Tree (falls nicht direkt per Namen gefunden)
+                neuesModulButton = FindButtonInVisualTree("Neues Modul");
+            }
+
+            if (neuesModulButton != null)
+            {
+                string rolle = Benutzer.CurrentUser?.RollenName ?? "Gast";
+                bool darfErstellen = rolle == "Admin" || rolle == "Dozent";
+                
+                neuesModulButton.IsEnabled = darfErstellen;
+                
+                // Tooltip setzen für deaktivierte Buttons
+                if (!darfErstellen)
+                {
+                    neuesModulButton.ToolTip = "Nur Administratoren und Dozenten dürfen neue Module erstellen.";
+                }
+                else
+                {
+                    neuesModulButton.ToolTip = "Neues Modul erstellen";
+                }
+                
+                System.Diagnostics.Debug.WriteLine($"'Neues Modul' Button: Rolle={rolle}, Enabled={darfErstellen}");
+            }
+        }
+
+        /// <summary>
+        /// Findet einen Button anhand seines Content-Texts im Visual Tree
+        /// </summary>
+        private Button FindButtonInVisualTree(string buttonContent)
+        {
+            return FindVisualChildren<Button>(this)
+                .FirstOrDefault(b => b.Content?.ToString() == buttonContent);
+        }
+
+        /// <summary>
+        /// Durchsucht den Visual Tree nach Elementen eines bestimmten Typs
+        /// </summary>
+        private static IEnumerable<T> FindVisualChildren<T>(DependencyObject depObj) where T : DependencyObject
+        {
+            if (depObj == null) yield break;
+
+            for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(depObj); i++)
+            {
+                var child = System.Windows.Media.VisualTreeHelper.GetChild(depObj, i);
+                
+                if (child is T tChild)
+                    yield return tChild;
+
+                foreach (var childOfChild in FindVisualChildren<T>(child))
+                    yield return childOfChild;
+            }
+        }
+
         private void OeffnenButton_Click(object sender, RoutedEventArgs e)
         {
             // Logik für den "Neues Modul" Button hier einfügen
@@ -132,6 +211,65 @@ namespace Modulverwaltungssoftware
         private void SearchBox_GiveFeedback(object sender, GiveFeedbackEventArgs e)
         {
 
+        }
+
+        /// <summary>
+        /// Filtert die Modul-Liste basierend auf dem Suchbegriff in der SearchBox
+        /// </summary>
+        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            string suchbegriff = SearchBox.Text?.Trim();
+
+            if (string.IsNullOrEmpty(suchbegriff))
+            {
+                // Leer → Alle Module anzeigen
+                LoadModulePreviews();
+                return;
+            }
+
+            // Suche durchführen
+            var repository = new ModulRepository();
+            var gefundeneModule = repository.sucheModule(suchbegriff);
+
+            if (gefundeneModule == null || gefundeneModule.Count == 0)
+            {
+                // Keine Treffer → Liste leeren
+                ModulePreviews.Clear();
+                System.Diagnostics.Debug.WriteLine($"Suche '{suchbegriff}': Keine Treffer");
+                return;
+            }
+
+            // Gefundene Module anzeigen
+            ModulePreviews.Clear();
+            var tempList = new List<ModulePreview>();
+
+            foreach (var modul in gefundeneModule)
+            {
+                var neuesteVersion = ModulRepository.getModulVersion(modul.ModulID);
+
+                if (neuesteVersion != null)
+                {
+                    string versionDisplay = FormatVersionsnummer(neuesteVersion.Versionsnummer);
+
+                    tempList.Add(new ModulePreview
+                    {
+                        Title = modul.ModulnameDE,
+                        Studiengang = neuesteVersion.Modul.Studiengang,
+                        Version = $"{versionDisplay} ({neuesteVersion.ModulStatus})",
+                        ContentPreview = GenerateContentPreview(neuesteVersion),
+                        ModulId = modul.ModulID.ToString()
+                    });
+                }
+            }
+
+            // Sortieren und hinzufügen
+            var sortedModules = tempList.OrderBy(m => m.Title).ToList();
+            foreach (var module in sortedModules)
+            {
+                ModulePreviews.Add(module);
+            }
+
+            System.Diagnostics.Debug.WriteLine($"Suche '{suchbegriff}': {gefundeneModule.Count} Treffer");
         }
 
         private void ModulePreview_Click(object sender, RoutedEventArgs e)

@@ -41,12 +41,13 @@ namespace Modulverwaltungssoftware
         [Required]
         [StringLength(100)]
         public string Pruefungsform { get; set; }
-        public List<string> Literatur { get; set; }
         public string Ersteller { get; set; }
         [NotMapped]
         public List<string> Lernergebnisse { get; set; }
         [NotMapped]
         public List<string> Inhaltsgliederung { get; set; }
+        [NotMapped]
+        public List<string> Literatur { get; set; }
         [Required]
         [StringLength(4000)]
         public string LernergebnisseDb
@@ -97,10 +98,35 @@ namespace Modulverwaltungssoftware
             }
         }
 
+        [StringLength(4000)]
+        public string LiteraturDb
+        {
+            get => JsonConvert.SerializeObject(Literatur);
+            set
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    Literatur = new List<string>();
+                }
+                else
+                {
+                    try
+                    {
+                        Literatur = JsonConvert.DeserializeObject<List<string>>(value);
+                    }
+                    catch
+                    {
+                        Literatur = new List<string> { value };
+                    }
+                }
+            }
+        }
+
         public ModulVersion()
         {
             Lernergebnisse = new List<string>();
             Inhaltsgliederung = new List<string>();
+            Literatur = new List<string>();
         }
         public static void setStatus(int versionID, int modulID, Status neuerStatus) //Setzt den Status der Modulversion
         {

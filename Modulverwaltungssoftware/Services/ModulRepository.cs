@@ -166,21 +166,15 @@ namespace Modulverwaltungssoftware
                     {
                         string meldung = $"Feld '{error.PropertyName}': {error.ErrorMessage}";
                         fehlermeldungen.Add(meldung);
-                        // Optional: Logging hier (Console.WriteLine(meldung));
                     }
                 }
 
-                // Wirf eine neue, saubere Exception mit allen Details, damit das Frontend sie anzeigen kann
                 throw new InvalidOperationException($"Validierung fehlgeschlagen: {string.Join(", ", fehlermeldungen)}", valEx);
             }
-            // 2. Gleichzeitigkeitsfehler (Optimistic Concurrency)
-            // Tritt auf, wenn zwei User gleichzeitig speichern wollen.
             catch (DbUpdateConcurrencyException conEx)
             {
-                // Reload der Werte oder Fehlermeldung
                 throw new InvalidOperationException("Der Datensatz wurde zwischenzeitlich von einem anderen Benutzer geändert. Bitte laden Sie die Seite neu.", conEx);
             }
-            // 3. Datenbank-Update-Fehler (z.B. Foreign Key Verletzung, Unique Constraint)
             catch (DbUpdateException dbEx)
             {
                 var innerMessage = dbEx.InnerException?.InnerException?.Message ?? dbEx.Message;
@@ -192,14 +186,74 @@ namespace Modulverwaltungssoftware
 
                 throw new Exception($"Datenbankfehler beim Speichern: {innerMessage}", dbEx);
             }
-            // 4. Allgemeine Fehler (NullReference, Logikfehler etc.)
             catch (Exception ex)
             {
-                // Hier solltest du idealerweise Loggen (in eine Datei oder DB)
-                // Logger.LogError(ex);
-
                 throw new Exception("Ein unerwarteter Fehler ist aufgetreten.", ex);
             }
         } // alle gültigen Module abrufen
+        
+        /// <summary>
+        /// Gibt Module zurück die für den aktuellen Benutzer sichtbar sind (basierend auf Status und Rolle)
+        /// </summary>
+        public static List<Modul> GetModuleForUser()
+        {
+            try
+            {
+                using (var db = new Services.DatabaseContext())
+                {
+                    string currentUser = Benutzer.CurrentUser?.Name;
+                    string rolle = Benutzer.CurrentUser?.RollenName ?? "Gast";
+                    
+                    // Admin, Koordination und Gremium sehen ALLE Module
+                    if (rolle == "Admin" || rolle == "Koordination" || rolle == "Gremium")
+                    {
+                        return db.Modul
+                            .Include("ModulVersionen")
+                            .Where(m => m.GueltigAb != null && m.GueltigAb < DateTime.Now)
+                            .OrderBy(m => m.ModulnameDE)
+                            .ToList();
+                    }
+                    
+                    // Dozent: Eigene Module (alle Stati) + Freigegebene Module anderer
+                    if (rolle == "Dozent")
+                    {
+                        var modulIds = db.ModulVersion
+                            .Where(v => 
+                                // Eigene Module (alle Stati)
+                                v.Ersteller == currentUser ||
+                                // ODER: Freigegebene Module
+                                v.ModulStatus == ModulVersion.Status.Freigegeben)
+                            .Select(v => v.ModulId)
+                            .Distinct()
+                            .ToList();
+                        
+                        return db.Modul
+                            .Include("ModulVersionen")
+                            .Where(m => modulIds.Contains(m.ModulID) && 
+                                       m.GueltigAb != null && m.GueltigAb < DateTime.Now)
+                            .OrderBy(m => m.ModulnameDE)
+                            .ToList();
+                    }
+                    
+                    // Gast: NUR freigegebene Module
+                    var freigegebeneModulIds = db.ModulVersion
+                        .Where(v => v.ModulStatus == ModulVersion.Status.Freigegeben)
+                        .Select(v => v.ModulId)
+                        .Distinct()
+                        .ToList();
+                    
+                    return db.Modul
+                        .Include("ModulVersionen")
+                        .Where(m => freigegebeneModulIds.Contains(m.ModulID) && 
+                                   m.GueltigAb != null && m.GueltigAb < DateTime.Now)
+                        .OrderBy(m => m.ModulnameDE)
+                        .ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Fehler beim Laden der Module: {ex.Message}", ex);
+            }
+        }
     }
 }
