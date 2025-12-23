@@ -49,7 +49,7 @@ namespace Modulverwaltungssoftware.Services
                         {
                             Name = "Gremium",
                             Email = "gremium@hochschule.de",
-                            Passwort = "dozent123",
+                            Passwort = "gremium123",
                             RollenName = "Gremium",
                         };
                         var admin = new Benutzer

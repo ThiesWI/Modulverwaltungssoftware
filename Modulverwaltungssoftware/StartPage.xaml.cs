@@ -123,12 +123,6 @@ namespace Modulverwaltungssoftware
             this.NavigationService?.Navigate(new EditingView(createNew: true));
         }
 
-        private void OeffnenButton_Click(object sender, RoutedEventArgs e)
-        {
-            // Logik für den "Neues Modul" Button hier einfügen
-            MessageBox.Show("Oeffnen Button wurde geklickt!");
-        }
-
         private void SearchBox_GiveFeedback(object sender, GiveFeedbackEventArgs e)
         {
 
