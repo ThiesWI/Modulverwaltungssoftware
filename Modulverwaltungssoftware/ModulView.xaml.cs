@@ -1,4 +1,4 @@
-Ôªøusing PDF_Test;
+using PDF_Test;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,14 +23,37 @@ namespace Modulverwaltungssoftware
 
         private string _currentModulId;  // Aktuelles Modul
         private string _currentVersion;  // Aktuelle Version
+        private bool _isModuleLoaded = false;  // Flag um zu tracken ob ein Modul geladen wurde
+        private ModulVersion _loadedModulVersion = null;  // ? Zwischenspeicher f¸r geladene ModulVersion
 
         public ModulView()
         {
             InitializeComponent();
             this.DataContext = this;
             
-            // ‚ú® SUCHFUNKTION: TextChanged Event f√ºr SearchBox
+            // ? SUCHFUNKTION: TextChanged Event f¸r SearchBox
             SearchBox.TextChanged += SearchBox_TextChanged;
+            
+            // ? BUTTON-STEUERUNG: Buttons setzen nach dem Laden der Page
+            this.Loaded += ModulView_Loaded;
+        }
+
+        private void ModulView_Loaded(object sender, RoutedEventArgs e)
+        {
+            // ? STRATEGIE: Wenn Modul geladen wurde, Button-States basierend auf Daten setzen
+            // Ansonsten: Initial alle Buttons deaktivieren
+            if (_loadedModulVersion != null)
+            {
+                // Modul wurde im Konstruktor geladen ? Buttons basierend auf Rolle + Status setzen
+                UpdateButtonStates(_loadedModulVersion);
+                System.Diagnostics.Debug.WriteLine("? Loaded-Event: UpdateButtonStates() mit geladenen Daten aufgerufen");
+            }
+            else
+            {
+                // Keine Modul-Daten ? Buttons initial deaktivieren
+                UpdateButtonStatesInitial();
+                System.Diagnostics.Debug.WriteLine("? Loaded-Event: UpdateButtonStatesInitial() aufgerufen");
+            }
         }
 
         // Konstruktor mit ModulID (von StartPage/MainWindow)
@@ -40,7 +63,7 @@ namespace Modulverwaltungssoftware
             var versionen = ModulRepository.getAllModulVersionen(modulId);
             if (versionen == null || versionen.Count == 0) return;
 
-            // Versionen-Dropdown f√ºllen (mit "K" f√ºr kommentierte Versionen)
+            // Versionen-Dropdown f¸llen (mit "K" f¸r kommentierte Versionen)
             var versionDisplay = versionen.Select(v =>
             {
                 string displayVersion = FormatVersionsnummer(v.Versionsnummer);
@@ -49,7 +72,7 @@ namespace Modulverwaltungssoftware
             UpdateVersions(versionDisplay);
             
             // DEBUG: Versionsnummern-Ausgabe
-            System.Diagnostics.Debug.WriteLine($"Versionen f√ºr Modul {modulId}:");
+            System.Diagnostics.Debug.WriteLine($"Versionen f¸r Modul {modulId}:");
             foreach (var v in versionen)
             {
                 System.Diagnostics.Debug.WriteLine($"  - Versionsnummer DB: {v.Versionsnummer}, Anzeige: {FormatVersionsnummer(v.Versionsnummer)}");
@@ -73,7 +96,7 @@ namespace Modulverwaltungssoftware
 
         private void LoadModuleVersion(string versionNummer)
         {
-            // ? Problem 3 Fix: Spezifische Version laden statt nur neueste!
+            // Problem 3 Fix: Spezifische Version laden statt nur neueste!
             int modulId = int.Parse(_currentModulId);
             int versionsnummerInt = ParseVersionsnummer(versionNummer);
             
@@ -87,21 +110,22 @@ namespace Modulverwaltungssoftware
                     return;
 
                 _currentVersion = versionNummer; // Aktuell geladene Version merken (z.B. "1.0")
+                _loadedModulVersion = data;  // ? Daten zwischenspeichern
 
-                // ? Problem 2 Fix: Version-Feld zeigt "K" bei kommentierten Versionen
+                // Problem 2 Fix: Version-Feld zeigt "K" bei kommentierten Versionen
                 bool hasComments = data.hatKommentar;
                 string versionDisplay = hasComments ? $"{versionNummer}K" : versionNummer;
 
-                // Textfelder bef√ºllen
+                // Textfelder bef¸llen
                 TitelTextBox.Text = data.Modul.ModulnameDE;
-                VersionTextBox.Text = versionDisplay; // ? Mit "K" bei Kommentaren!
+                VersionTextBox.Text = versionDisplay;
                 StudiengangTextBox.Text = data.Modul.Studiengang;
                 EctsTextBox.Text = data.EctsPunkte.ToString();
                 WorkloadPraesenzTextBox.Text = data.WorkloadPraesenz.ToString();
                 WorkloadSelbststudiumTextBox.Text = data.WorkloadSelbststudium.ToString();
                 VerantwortlicherTextBox.Text = data.Ersteller;
 
-                // Listen zu Strings zusammenf√ºgen (z.B. durch Zeilenumbruch)
+                // Listen zu Strings zusammenf¸gen
                 VoraussetzungenTextBox.Text = data.Modul.Voraussetzungen != null
                     ? string.Join(Environment.NewLine, data.Modul.Voraussetzungen)
                     : string.Empty;
@@ -115,25 +139,38 @@ namespace Modulverwaltungssoftware
                     ? string.Join(Environment.NewLine, data.Literatur)
                     : string.Empty;
 
-                // ListBoxen korrekt bef√ºllen - Enum-Werte zu UI-Strings konvertieren
-                // WICHTIG: Nur EINE Auswahl m√∂glich (da DB nur einen Wert speichert)
+                // ListBoxen korrekt bef¸llen
                 SelectListBoxItems(ModultypListBox, new List<string> { ConvertModultypEnumToUIString(data.Modul.Modultyp) });
                 SelectListBoxItems(SemesterListBox, new List<string> { data.Modul.EmpfohlenesSemester.ToString() });
-                SelectListBoxItems(PruefungsformListBox, new List<string> { data.Pruefungsform });  // Ist bereits String!
+                SelectListBoxItems(PruefungsformListBox, new List<string> { data.Pruefungsform });
                 SelectListBoxItems(TurnusListBox, new List<string> { ConvertTurnusEnumToUIString(data.Modul.Turnus) });
                 
                 // DEBUG: Ausgabe zur Kontrolle
                 System.Diagnostics.Debug.WriteLine($"Lade Modul {data.Modul.ModulnameDE}:");
                 System.Diagnostics.Debug.WriteLine($"  Modultyp: {data.Modul.Modultyp} -> UI: {ConvertModultypEnumToUIString(data.Modul.Modultyp)}");
                 System.Diagnostics.Debug.WriteLine($"  Turnus: {data.Modul.Turnus} -> UI: {ConvertTurnusEnumToUIString(data.Modul.Turnus)}");
-                System.Diagnostics.Debug.WriteLine($"  Pr√ºfungsform: {data.Pruefungsform}");
+                System.Diagnostics.Debug.WriteLine($"  Pr¸fungsform: {data.Pruefungsform}");
+                System.Diagnostics.Debug.WriteLine($"  Status: {data.ModulStatus}");
                 
-                // ‚ú® STATUS-BADGE aktualisieren
+                // STATUS-BADGE aktualisieren
                 UpdateStatusBadge(data.ModulStatus);
                 
-                // ‚ú® BUTTON-STEUERUNG basierend auf Rolle und Status
-                UpdateButtonStates(data);
-            }  // ‚úÖ Schlie√üende Klammer f√ºr using-Block!
+                // ? BUTTON-STEUERUNG: Wenn Page bereits geladen ist (z.B. nach Einreichen), sofort Buttons updaten
+                // Ansonsten wird UpdateButtonStates() im Loaded-Event aufgerufen
+                if (_isModuleLoaded)
+                {
+                    // Page ist bereits geladen ? Buttons sofort updaten (z.B. nach Status‰nderung)
+                    UpdateButtonStates(data);
+                    System.Diagnostics.Debug.WriteLine("? LoadModuleVersion: UpdateButtonStates() direkt aufgerufen (Page bereits geladen)");
+                }
+                else
+                {
+                    // Page wird gerade geladen ? Buttons werden im Loaded-Event gesetzt
+                    System.Diagnostics.Debug.WriteLine("?? LoadModuleVersion: UpdateButtonStates() wird im Loaded-Event aufgerufen");
+                }
+            }
+
+            _isModuleLoaded = true;  // Modul wurde erfolgreich geladen
         }
 
         // Methode so anpassen, dass sie auch null akzeptiert und flexibles Matching verwendet
@@ -148,7 +185,7 @@ namespace Modulverwaltungssoftware
                 if (item is ListBoxItem lbi)
                 {
                     string itemText = lbi.Content.ToString();
-                    // Flexibles Matching: Pr√ºfe ob einer der zu selektierenden Strings Teil des Items ist
+                    // Flexibles Matching: Pr¸fe ob einer der zu selektierenden Strings Teil des Items ist
                     foreach (var toSelect in itemsToSelect)
                     {
                         if (!string.IsNullOrEmpty(toSelect) && 
@@ -180,7 +217,7 @@ namespace Modulverwaltungssoftware
             string gewaehlterModultyp = details.Modul.Modultyp.ToString(); // Enum-Wert
             string turnus = details.Modul.Turnus.ToString();
 
-            // Direkt an die Methode √ºbergeben (sofern ErstellePDF den Enum-Typ erwartet)
+            // Direkt an die Methode ¸bergeben (sofern ErstellePDF den Enum-Typ erwartet)
             PDFService.ErstellePDF(details);
 
             MessageBox.Show($"Modulversion {version} wurde im Download-Ordner hinterlegt.",
@@ -191,7 +228,7 @@ namespace Modulverwaltungssoftware
         {
             if (string.IsNullOrEmpty(_currentVersion) || string.IsNullOrEmpty(_currentModulId))
             {
-                MessageBox.Show("Bitte w√§hlen Sie zuerst eine Version aus.", "Keine Version", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Bitte w‰hlen Sie zuerst eine Version aus.", "Keine Version", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -262,7 +299,7 @@ namespace Modulverwaltungssoftware
                     commentData.SubmittedBy = kommentare.First().Ersteller ?? "Unbekannt";
                 }
 
-                // ? EditWithCommentsView √∂ffnen (auch wenn Liste leer - basierend auf hatKommentar!)
+                // ? EditWithCommentsView ˆffnen (auch wenn Liste leer - basierend auf hatKommentar!)
                 this.NavigationService?.Navigate(
                     new EditWithCommentsView(_currentModulId, _currentVersion, moduleData, commentData)
                 );
@@ -276,11 +313,11 @@ namespace Modulverwaltungssoftware
             }
         }
 
-        private void ModulversionL√∂schen_Click(object sender, RoutedEventArgs e)
+        private void ModulversionLˆschen_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(_currentVersion))
             {
-                MessageBox.Show("Bitte w√§hlen Sie zuerst eine Version aus.", "Keine Version", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Bitte w‰hlen Sie zuerst eine Version aus.", "Keine Version", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -292,38 +329,38 @@ namespace Modulverwaltungssoftware
 
                 using (var db = new Services.DatabaseContext())
                 {
-                    // Anzahl der Versionen f√ºr dieses Modul z√§hlen
+                    // Anzahl der Versionen f¸r dieses Modul z‰hlen
                     var anzahlVersionen = db.ModulVersion.Count(v => v.ModulId == modulId);
 
                     if (anzahlVersionen <= 1)
                     {
-                        // Letzte Version ? Ganzes Modul l√∂schen
+                        // Letzte Version ? Ganzes Modul lˆschen
                         var result = MessageBox.Show(
-                            $"Dies ist die letzte Version des Moduls.\n\nM√∂chten Sie das gesamte Modul endg√ºltig aus der Datenbank l√∂schen?",
-                            "Modul endg√ºltig l√∂schen?",
+                            $"Dies ist die letzte Version des Moduls.\n\nMˆchten Sie das gesamte Modul endg¸ltig aus der Datenbank lˆschen?",
+                            "Modul endg¸ltig lˆschen?",
                             MessageBoxButton.YesNo,
                             MessageBoxImage.Warning);
 
                         if (result != MessageBoxResult.Yes)
                             return;
 
-                        // Modul mit allen zugeh√∂rigen Daten l√∂schen
+                        // Modul mit allen zugehˆrigen Daten lˆschen
                         var modul = db.Modul.Include("ModulVersionen").FirstOrDefault(m => m.ModulID == modulId);
                         if (modul != null)
                         {
-                            // Erst alle Kommentare zu allen Versionen l√∂schen
+                            // Erst alle Kommentare zu allen Versionen lˆschen
                             var kommentare = db.Kommentar.Where(k => k.GehoertZuModulID == modulId).ToList();
                             db.Kommentar.RemoveRange(kommentare);
 
-                            // Dann alle Versionen l√∂schen
+                            // Dann alle Versionen lˆschen
                             db.ModulVersion.RemoveRange(modul.ModulVersionen);
 
-                            // Schlie√ülich das Modul selbst
+                            // Schlieﬂlich das Modul selbst
                             db.Modul.Remove(modul);
                             db.SaveChanges();
 
-                            MessageBox.Show($"Das Modul wurde vollst√§ndig gel√∂scht.",
-                                "Modul gel√∂scht", MessageBoxButton.OK, MessageBoxImage.Information);
+                            MessageBox.Show($"Das Modul wurde vollst‰ndig gelˆscht.",
+                                "Modul gelˆscht", MessageBoxButton.OK, MessageBoxImage.Information);
 
                             // Zur Startseite navigieren
                             this.NavigationService?.Navigate(new StartPage());
@@ -331,10 +368,10 @@ namespace Modulverwaltungssoftware
                     }
                     else
                     {
-                        // Mehrere Versionen vorhanden ? Nur die ausgew√§hlte Version l√∂schen
+                        // Mehrere Versionen vorhanden ? Nur die ausgew‰hlte Version lˆschen
                         var result = MessageBox.Show(
-                            $"M√∂chten Sie die Version {_currentVersion} wirklich endg√ºltig l√∂schen?",
-                            "Version l√∂schen?",
+                            $"Mˆchten Sie die Version {_currentVersion} wirklich endg¸ltig lˆschen?",
+                            "Version lˆschen?",
                             MessageBoxButton.YesNo,
                             MessageBoxImage.Question);
 
@@ -344,16 +381,16 @@ namespace Modulverwaltungssoftware
                         var version = db.ModulVersion.FirstOrDefault(v => v.ModulId == modulId && v.Versionsnummer == versionsnummer);
                         if (version != null)
                         {
-                            // Erst alle Kommentare zu dieser Version l√∂schen
+                            // Erst alle Kommentare zu dieser Version lˆschen
                             var kommentare = db.Kommentar.Where(k => k.GehoertZuModulVersionID == version.ModulVersionID).ToList();
                             db.Kommentar.RemoveRange(kommentare);
 
-                            // Dann die Version l√∂schen
+                            // Dann die Version lˆschen
                             db.ModulVersion.Remove(version);
                             db.SaveChanges();
 
-                            MessageBox.Show($"Version {_currentVersion} wurde gel√∂scht.",
-                                "Version gel√∂scht", MessageBoxButton.OK, MessageBoxImage.Information);
+                            MessageBox.Show($"Version {_currentVersion} wurde gelˆscht.",
+                                "Version gelˆscht", MessageBoxButton.OK, MessageBoxImage.Information);
 
                             // ? Problem 3 Fix: Versions-Dropdown aktualisieren!
                             var verbleibendeVersionen = db.ModulVersion
@@ -380,7 +417,7 @@ namespace Modulverwaltungssoftware
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Fehler beim L√∂schen: {ex.Message}", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Fehler beim Lˆschen: {ex.Message}", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -411,11 +448,11 @@ namespace Modulverwaltungssoftware
             switch (turnus)
             {
                 case Modul.TurnusEnum.JedesSemester:
-                    return "Halbj√§hrlich (Jedes Semester)";
+                    return "Halbj‰hrlich (Jedes Semester)";
                 case Modul.TurnusEnum.NurWintersemester:
-                    return "J√§hrlich (WiSe)";
+                    return "J‰hrlich (WiSe)";
                 case Modul.TurnusEnum.NurSommersemester:
-                    return "J√§hrlich (SoSe)";
+                    return "J‰hrlich (SoSe)";
                 default:
                     return turnus.ToString();
             }
@@ -443,7 +480,7 @@ namespace Modulverwaltungssoftware
                     statusBadge.Background = new SolidColorBrush(Color.FromRgb(189, 189, 189)); // Grau
                     statusIcon.Foreground = new SolidColorBrush(Colors.White);
                     statusText.Foreground = new SolidColorBrush(Colors.White);
-                    statusIcon.Text = "‚úé"; // Stift-Symbol
+                    statusIcon.Text = "?"; // Stift-Symbol
                     statusText.Text = "Entwurf";
                     break;
 
@@ -451,15 +488,15 @@ namespace Modulverwaltungssoftware
                     statusBadge.Background = new SolidColorBrush(Color.FromRgb(255, 152, 0)); // Orange
                     statusIcon.Foreground = new SolidColorBrush(Colors.White);
                     statusText.Foreground = new SolidColorBrush(Colors.White);
-                    statusIcon.Text = "‚è≥"; // Sanduhr
-                    statusText.Text = "In Pr√ºfung";
+                    statusIcon.Text = "?"; // Sanduhr
+                    statusText.Text = "In Pr¸fung";
                     break;
 
                 case ModulVersion.Status.InPruefungGremium:
                     statusBadge.Background = new SolidColorBrush(Color.FromRgb(255, 193, 7)); // Gelb/Gold
-                    statusIcon.Foreground = new SolidColorBrush(Color.FromRgb(66, 66, 66));
-                    statusText.Foreground = new SolidColorBrush(Color.FromRgb(66, 66, 66));
-                    statusIcon.Text = "‚öñ"; // Waage-Symbol
+                    statusIcon.Foreground = new SolidColorBrush(Colors.Black);
+                    statusText.Foreground = new SolidColorBrush(Colors.Black);
+                    statusIcon.Text = "?"; // Waage-Symbol
                     statusText.Text = "Gremium";
                     break;
 
@@ -467,15 +504,15 @@ namespace Modulverwaltungssoftware
                     statusBadge.Background = new SolidColorBrush(Color.FromRgb(244, 67, 54)); // Rot
                     statusIcon.Foreground = new SolidColorBrush(Colors.White);
                     statusText.Foreground = new SolidColorBrush(Colors.White);
-                    statusIcon.Text = "‚ö†"; // Warnung
-                    statusText.Text = "√Ñnderung";
+                    statusIcon.Text = "?"; // Warnung
+                    statusText.Text = "ƒnderung";
                     break;
 
                 case ModulVersion.Status.Freigegeben:
-                    statusBadge.Background = new SolidColorBrush(Color.FromRgb(76, 175, 80)); // Gr√ºn
+                    statusBadge.Background = new SolidColorBrush(Color.FromRgb(76, 175, 80)); // Gr¸n
                     statusIcon.Foreground = new SolidColorBrush(Colors.White);
                     statusText.Foreground = new SolidColorBrush(Colors.White);
-                    statusIcon.Text = "‚úì"; // Haken
+                    statusIcon.Text = "?"; // Haken
                     statusText.Text = "Freigegeben";
                     break;
 
@@ -483,7 +520,7 @@ namespace Modulverwaltungssoftware
                     statusBadge.Background = new SolidColorBrush(Color.FromRgb(158, 158, 158)); // Dunkelgrau
                     statusIcon.Foreground = new SolidColorBrush(Colors.White);
                     statusText.Foreground = new SolidColorBrush(Colors.White);
-                    statusIcon.Text = "üì¶"; // Archiv-Box
+                    statusIcon.Text = "??"; // Archiv-Box
                     statusText.Text = "Archiviert";
                     break;
 
@@ -496,7 +533,7 @@ namespace Modulverwaltungssoftware
         }
 
         /// <summary>
-        /// Aktualisiert die Button-Zust√§nde (Enabled/Disabled) basierend auf Benutzerrolle und Modul-Status
+        /// Aktualisiert die Button-Zust‰nde (Enabled/Disabled) basierend auf Benutzerrolle und Modul-Status
         /// </summary>
         private void UpdateButtonStates(ModulVersion data)
         {
@@ -508,20 +545,24 @@ namespace Modulverwaltungssoftware
             bool isGremium = rolle == "Gremium";
             bool isDozent = rolle == "Dozent";
             bool isGast = rolle == "Gast";
-            bool isErsteller = data.Ersteller == currentUser;
+            
+            // ? ROBUSTERE ERSTELLER-PR‹FUNG (case-insensitive + Null-Check)
+            bool isErsteller = !string.IsNullOrEmpty(data.Ersteller) && 
+                               !string.IsNullOrEmpty(currentUser) &&
+                               data.Ersteller.Equals(currentUser, StringComparison.OrdinalIgnoreCase);
             
             var status = data.ModulStatus;
 
             // Finde alle Buttons (mit Null-Check)
             var exportButton = FindButtonInVisualTree("Exportieren");
             var bearbeitenButton = FindButtonInVisualTree("Bearbeiten");
-            var loeschenButton = FindButtonInVisualTree("L√∂schen");
+            var loeschenButton = FindButtonInVisualTree("Lˆschen");
             var kommentierenButton = FindButtonInVisualTree("Kommentieren");
             var einreichenButton = FindButtonInVisualTree("Einreichen");
 
-            System.Diagnostics.Debug.WriteLine($"UpdateButtonStates: Rolle={rolle}, Status={status}, Ersteller={data.Ersteller}, CurrentUser={currentUser}");
+            System.Diagnostics.Debug.WriteLine($"UpdateButtonStates: Rolle={rolle}, Status={status}, Ersteller={data.Ersteller}, CurrentUser={currentUser}, isErsteller={isErsteller}");
 
-            // ‚úÖ GAST: IMMER ALLE BUTTONS DEAKTIVIEREN (au√üer Exportieren)
+            // ? GAST: IMMER ALLE BUTTONS DEAKTIVIEREN (auﬂer Exportieren)
             if (isGast)
             {
                 if (exportButton != null) exportButton.IsEnabled = true;
@@ -529,45 +570,84 @@ namespace Modulverwaltungssoftware
                 if (loeschenButton != null) { loeschenButton.IsEnabled = false; loeschenButton.ToolTip = "Keine Berechtigung"; }
                 if (kommentierenButton != null) { kommentierenButton.IsEnabled = false; kommentierenButton.ToolTip = "Keine Berechtigung"; }
                 if (einreichenButton != null) { einreichenButton.IsEnabled = false; einreichenButton.ToolTip = "Keine Berechtigung"; }
-                System.Diagnostics.Debug.WriteLine("GAST: Alle Buttons deaktiviert (au√üer Exportieren)");
+                System.Diagnostics.Debug.WriteLine("GAST: Alle Buttons deaktiviert (auﬂer Exportieren)");
                 return;
             }
 
-            // ‚úÖ DOZENT: KOMMENTIEREN IMMER DEAKTIVIERT
+            // ? DOZENT: KOMMENTIEREN IMMER DEAKTIVIERT
             if (isDozent && kommentierenButton != null)
             {
                 kommentierenButton.IsEnabled = false;
-                kommentierenButton.ToolTip = "Dozenten d√ºrfen nicht kommentieren";
+                kommentierenButton.ToolTip = "Dozenten d¸rfen nicht kommentieren";
             }
 
-            // ‚úÖ KOORDINATION: BEARBEITEN & L√ñSCHEN IMMER DEAKTIVIERT
+            // ? KOORDINATION: BEARBEITEN & L÷SCHEN IMMER DEAKTIVIERT
             if (isKoordination)
             {
                 if (bearbeitenButton != null) { bearbeitenButton.IsEnabled = false; bearbeitenButton.ToolTip = "Koordination darf nicht bearbeiten"; }
-                if (loeschenButton != null) { loeschenButton.IsEnabled = false; loeschenButton.ToolTip = "Koordination darf nicht l√∂schen"; }
+                if (loeschenButton != null) { loeschenButton.IsEnabled = false; loeschenButton.ToolTip = "Koordination darf nicht lˆschen"; }
             }
 
-            // ‚úÖ GREMIUM: BEARBEITEN & L√ñSCHEN IMMER DEAKTIVIERT
+            // ? GREMIUM: BEARBEITEN & L÷SCHEN IMMER DEAKTIVIERT
             if (isGremium)
             {
                 if (bearbeitenButton != null) { bearbeitenButton.IsEnabled = false; bearbeitenButton.ToolTip = "Gremium darf nicht bearbeiten"; }
-                if (loeschenButton != null) { loeschenButton.IsEnabled = false; loeschenButton.ToolTip = "Gremium darf nicht l√∂schen"; }
+                if (loeschenButton != null) { loeschenButton.IsEnabled = false; loeschenButton.ToolTip = "Gremium darf nicht lˆschen"; }
             }
 
             // EXPORTIEREN: Immer aktiv
             if (exportButton != null) exportButton.IsEnabled = true;
 
-            // STATUS-ABH√ÑNGIGE LOGIK
+            // STATUS-ABHƒNGIGE LOGIK
             switch (status)
             {
                 case ModulVersion.Status.Entwurf:
                 case ModulVersion.Status.Aenderungsbedarf:
-                    if (bearbeitenButton != null && !isKoordination && !isGremium)
-                        bearbeitenButton.IsEnabled = isErsteller || isAdmin;
-                    if (loeschenButton != null && !isKoordination && !isGremium)
-                        loeschenButton.IsEnabled = isErsteller || isAdmin;
+                    // ? BEARBEITEN: Dozent/Admin, wenn Ersteller ODER Admin
+                    if (bearbeitenButton != null)
+                    {
+                        if (isKoordination || isGremium)
+                        {
+                            // Bereits durch Rollen-Check deaktiviert
+                            bearbeitenButton.IsEnabled = false;
+                        }
+                        else
+                        {
+                            bearbeitenButton.IsEnabled = isErsteller || isAdmin;
+                            if (!bearbeitenButton.IsEnabled)
+                                bearbeitenButton.ToolTip = "Nur der Ersteller oder Admin kˆnnen eigene Module im Entwurf bearbeiten";
+                            
+                            System.Diagnostics.Debug.WriteLine($"ENTWURF: Bearbeiten={bearbeitenButton.IsEnabled} (isErsteller={isErsteller}, isAdmin={isAdmin})");
+                        }
+                    }
+                    
+                    // ? L÷SCHEN: Dozent/Admin, wenn Ersteller ODER Admin
+                    if (loeschenButton != null)
+                    {
+                        if (isKoordination || isGremium)
+                        {
+                            // Bereits durch Rollen-Check deaktiviert
+                            loeschenButton.IsEnabled = false;
+                        }
+                        else
+                        {
+                            loeschenButton.IsEnabled = isErsteller || isAdmin;
+                            if (!loeschenButton.IsEnabled)
+                                loeschenButton.ToolTip = "Nur der Ersteller oder Admin kˆnnen eigene Module im Entwurf lˆschen";
+                        }
+                    }
+                    
+                    // ? EINREICHEN: Dozent/Admin, wenn Ersteller ODER Admin
                     if (einreichenButton != null)
+                    {
                         einreichenButton.IsEnabled = isErsteller || isAdmin;
+                        if (!einreichenButton.IsEnabled)
+                            einreichenButton.ToolTip = "Nur der Ersteller oder Admin kˆnnen Module einreichen";
+                        
+                        System.Diagnostics.Debug.WriteLine($"ENTWURF: Einreichen={einreichenButton.IsEnabled} (isErsteller={isErsteller}, isAdmin={isAdmin})");
+                    }
+                    
+                    // ? KOMMENTIEREN: Im Entwurf deaktiviert
                     if (kommentierenButton != null && !isDozent)
                         kommentierenButton.IsEnabled = false;
                     break;
@@ -591,18 +671,18 @@ namespace Modulverwaltungssoftware
                     break;
 
                 case ModulVersion.Status.Freigegeben:
-                    // ‚úÖ FREIGEGEBEN: NUR ADMIN darf ALLES, alle anderen nichts
+                    // ? FREIGEGEBEN: NUR ADMIN darf ALLES, alle anderen nichts
                     if (bearbeitenButton != null)
                     {
                         bearbeitenButton.IsEnabled = isAdmin;
                         if (!isAdmin)
-                            bearbeitenButton.ToolTip = "Freigegebene Module k√∂nnen nur vom Admin bearbeitet werden";
+                            bearbeitenButton.ToolTip = "Freigegebene Module kˆnnen nur vom Admin bearbeitet werden";
                     }
                     if (loeschenButton != null)
                     {
                         loeschenButton.IsEnabled = isAdmin;
                         if (!isAdmin)
-                            loeschenButton.ToolTip = "Freigegebene Module k√∂nnen nur vom Admin gel√∂scht werden";
+                            loeschenButton.ToolTip = "Freigegebene Module kˆnnen nur vom Admin gelˆscht werden";
                     }
                     if (einreichenButton != null)
                     {
@@ -613,9 +693,9 @@ namespace Modulverwaltungssoftware
                     {
                         kommentierenButton.IsEnabled = isAdmin;
                         if (!isAdmin)
-                            kommentierenButton.ToolTip = "Freigegebene Module k√∂nnen nur vom Admin kommentiert werden";
+                            kommentierenButton.ToolTip = "Freigegebene Module kˆnnen nur vom Admin kommentiert werden";
                     }
-                    System.Diagnostics.Debug.WriteLine($"FREIGEGEBEN: Bearbeiten={isAdmin}, L√∂schen={isAdmin}, Einreichen=false, Kommentieren={isAdmin}");
+                    System.Diagnostics.Debug.WriteLine($"FREIGEGEBEN: Bearbeiten={isAdmin}, Lˆschen={isAdmin}, Einreichen=false, Kommentieren={isAdmin}");
                     break;
 
                 case ModulVersion.Status.Archiviert:
@@ -637,7 +717,176 @@ namespace Modulverwaltungssoftware
                     break;
             }
 
-            System.Diagnostics.Debug.WriteLine($"  Bearbeiten: {bearbeitenButton?.IsEnabled ?? false}, L√∂schen: {loeschenButton?.IsEnabled ?? false}, Kommentieren: {kommentierenButton?.IsEnabled ?? false}, Einreichen: {einreichenButton?.IsEnabled ?? false}");
+            System.Diagnostics.Debug.WriteLine($"  Bearbeiten: {bearbeitenButton?.IsEnabled ?? false}, Lˆschen: {loeschenButton?.IsEnabled ?? false}, Kommentieren: {kommentierenButton?.IsEnabled ?? false}, Einreichen: {einreichenButton?.IsEnabled ?? false}");
+        }
+
+        /// <summary>
+        /// Deaktiviert Buttons initial f¸r alle User-Rollen (wird beim Page-Load aufgerufen)
+        /// </summary>
+        private void UpdateButtonStatesInitial()
+        {
+            string rolle = Benutzer.CurrentUser?.RollenName ?? "Gast";
+            bool isAdmin = rolle == "Admin";
+            bool isKoordination = rolle == "Koordination";
+            bool isGremium = rolle == "Gremium";
+            bool isDozent = rolle == "Dozent";
+            bool isGast = rolle == "Gast";
+
+            // Finde alle Buttons
+            var exportButton = FindButtonInVisualTree("Exportieren");
+            var bearbeitenButton = FindButtonInVisualTree("Bearbeiten");
+            var loeschenButton = FindButtonInVisualTree("Lˆschen");
+            var kommentierenButton = FindButtonInVisualTree("Kommentieren");
+            var einreichenButton = FindButtonInVisualTree("Einreichen");
+
+            System.Diagnostics.Debug.WriteLine($"UpdateButtonStatesInitial: Rolle={rolle}");
+
+            // EXPORTIEREN: F¸r alle Rollen immer aktiv
+            if (exportButton != null) exportButton.IsEnabled = true;
+
+            // ? GAST: ALLE BUTTONS DEAKTIVIEREN (auﬂer Exportieren)
+            if (isGast)
+            {
+                if (bearbeitenButton != null) 
+                { 
+                    bearbeitenButton.IsEnabled = false; 
+                    bearbeitenButton.ToolTip = "Keine Berechtigung"; 
+                }
+                if (loeschenButton != null) 
+                { 
+                    loeschenButton.IsEnabled = false; 
+                    loeschenButton.ToolTip = "Keine Berechtigung"; 
+                }
+                if (kommentierenButton != null) 
+                { 
+                    kommentierenButton.IsEnabled = false; 
+                    kommentierenButton.ToolTip = "Keine Berechtigung"; 
+                }
+                if (einreichenButton != null) 
+                { 
+                    einreichenButton.IsEnabled = false; 
+                    einreichenButton.ToolTip = "Keine Berechtigung"; 
+                }
+                System.Diagnostics.Debug.WriteLine("GAST: Alle Buttons initial deaktiviert (auﬂer Exportieren)");
+                return;
+            }
+
+            // ? KOORDINATION: BEARBEITEN & L÷SCHEN IMMER DEAKTIVIERT
+            if (isKoordination)
+            {
+                if (bearbeitenButton != null) 
+                { 
+                    bearbeitenButton.IsEnabled = false; 
+                    bearbeitenButton.ToolTip = "Koordination darf nicht bearbeiten"; 
+                }
+                if (loeschenButton != null) 
+                { 
+                    loeschenButton.IsEnabled = false; 
+                    loeschenButton.ToolTip = "Koordination darf nicht lˆschen"; 
+                }
+                // Kommentieren & Einreichen: Werden erst aktiv wenn Modul geladen ist
+                if (kommentierenButton != null) 
+                { 
+                    kommentierenButton.IsEnabled = false; 
+                    kommentierenButton.ToolTip = "Bitte w‰hlen Sie zuerst ein Modul aus"; 
+                }
+                if (einreichenButton != null) 
+                { 
+                    einreichenButton.IsEnabled = false; 
+                    einreichenButton.ToolTip = "Bitte w‰hlen Sie zuerst ein Modul aus"; 
+                }
+                System.Diagnostics.Debug.WriteLine("KOORDINATION: Bearbeiten & Lˆschen deaktiviert");
+                return;
+            }
+
+            // ? GREMIUM: BEARBEITEN & L÷SCHEN IMMER DEAKTIVIERT
+            if (isGremium)
+            {
+                if (bearbeitenButton != null) 
+                { 
+                    bearbeitenButton.IsEnabled = false; 
+                    bearbeitenButton.ToolTip = "Gremium darf nicht bearbeiten"; 
+                }
+                if (loeschenButton != null) 
+                { 
+                    loeschenButton.IsEnabled = false; 
+                    loeschenButton.ToolTip = "Gremium darf nicht lˆschen"; 
+                }
+                // Kommentieren & Einreichen: Werden erst aktiv wenn Modul geladen ist
+                if (kommentierenButton != null) 
+                { 
+                    kommentierenButton.IsEnabled = false; 
+                    kommentierenButton.ToolTip = "Bitte w‰hlen Sie zuerst ein Modul aus"; 
+                }
+                if (einreichenButton != null) 
+                { 
+                    einreichenButton.IsEnabled = false; 
+                    einreichenButton.ToolTip = "Bitte w‰hlen Sie zuerst ein Modul aus"; 
+                }
+                System.Diagnostics.Debug.WriteLine("GREMIUM: Bearbeiten & Lˆschen deaktiviert");
+                return;
+            }
+
+            // ? DOZENT: KOMMENTIEREN IMMER DEAKTIVIERT
+            if (isDozent)
+            {
+                if (kommentierenButton != null) 
+                { 
+                    kommentierenButton.IsEnabled = false; 
+                    kommentierenButton.ToolTip = "Dozenten d¸rfen nicht kommentieren"; 
+                }
+                // Bearbeiten, Lˆschen & Einreichen: Werden erst aktiv wenn Modul geladen ist
+                if (bearbeitenButton != null) 
+                { 
+                    bearbeitenButton.IsEnabled = false; 
+                    bearbeitenButton.ToolTip = "Bitte w‰hlen Sie zuerst ein Modul aus"; 
+                }
+                if (loeschenButton != null) 
+                { 
+                    loeschenButton.IsEnabled = false; 
+                    loeschenButton.ToolTip = "Bitte w‰hlen Sie zuerst ein Modul aus"; 
+                }
+                if (einreichenButton != null) 
+                { 
+                    einreichenButton.IsEnabled = false; 
+                    einreichenButton.ToolTip = "Bitte w‰hlen Sie zuerst ein Modul aus"; 
+                }
+                System.Diagnostics.Debug.WriteLine("DOZENT: Kommentieren deaktiviert, Rest initial deaktiviert");
+                return;
+            }
+
+            // ? ADMIN: Alle Buttons initial deaktiviert bis Modul geladen ist
+            if (isAdmin)
+            {
+                if (bearbeitenButton != null) 
+                { 
+                    bearbeitenButton.IsEnabled = false; 
+                    bearbeitenButton.ToolTip = "Bitte w‰hlen Sie zuerst ein Modul aus"; 
+                }
+                if (loeschenButton != null) 
+                { 
+                    loeschenButton.IsEnabled = false; 
+                    loeschenButton.ToolTip = "Bitte w‰hlen Sie zuerst ein Modul aus"; 
+                }
+                if (kommentierenButton != null) 
+                { 
+                    kommentierenButton.IsEnabled = false; 
+                    kommentierenButton.ToolTip = "Bitte w‰hlen Sie zuerst ein Modul aus"; 
+                }
+                if (einreichenButton != null) 
+                { 
+                    einreichenButton.IsEnabled = false; 
+                    einreichenButton.ToolTip = "Bitte w‰hlen Sie zuerst ein Modul aus"; 
+                }
+                System.Diagnostics.Debug.WriteLine("ADMIN: Alle Buttons initial deaktiviert bis Modul geladen");
+                return;
+            }
+
+            // Default: Alle Buttons deaktivieren
+            if (bearbeitenButton != null) bearbeitenButton.IsEnabled = false;
+            if (loeschenButton != null) loeschenButton.IsEnabled = false;
+            if (kommentierenButton != null) kommentierenButton.IsEnabled = false;
+            if (einreichenButton != null) einreichenButton.IsEnabled = false;
         }
 
         /// <summary>
@@ -672,7 +921,7 @@ namespace Modulverwaltungssoftware
         {
             if (string.IsNullOrEmpty(_currentVersion) || string.IsNullOrEmpty(_currentModulId))
             {
-                MessageBox.Show("Bitte w√§hlen Sie zuerst eine Version aus.", "Keine Version", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Bitte w‰hlen Sie zuerst eine Version aus.", "Keine Version", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -685,7 +934,7 @@ namespace Modulverwaltungssoftware
                 return;
             }
 
-            // Daten in ModuleData-Format konvertieren (f√ºr CommentView)
+            // Daten in ModuleData-Format konvertieren (f¸r CommentView)
             var commentData = new CommentView.ModuleData
             {
                 Titel = dbVersion.Modul.ModulnameDE,
@@ -720,7 +969,7 @@ namespace Modulverwaltungssoftware
         {
             if (string.IsNullOrEmpty(_currentVersion) || string.IsNullOrEmpty(_currentModulId))
             {
-                MessageBox.Show("Bitte w√§hlen Sie zuerst eine Version aus.", "Keine Version", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Bitte w‰hlen Sie zuerst eine Version aus.", "Keine Version", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -746,18 +995,18 @@ namespace Modulverwaltungssoftware
                     string currentUser = Benutzer.CurrentUser?.Name ?? "Unbekannt";
                     var aktuellerStatus = version.ModulStatus;
 
-                    // ‚ú® STATUS-WORKFLOW IMPLEMENTIERUNG
+                    // ? STATUS-WORKFLOW IMPLEMENTIERUNG
                     switch (rolle)
                     {
                         case "Admin":
-                            // ‚úÖ ADMIN: KANN ALLES (Status√ºberg√§nGE wie Koordination/Gremium/Dozent)
+                            // ? ADMIN: KANN ALLES (Status¸berg‰nGE wie Koordination/Gremium/Dozent)
                             if (aktuellerStatus == ModulVersion.Status.Entwurf || 
                                 aktuellerStatus == ModulVersion.Status.Aenderungsbedarf)
                             {
-                                // Entwurf ‚Üí InPruefungKoordination
+                                // Entwurf ? InPruefungKoordination
                                 var result = MessageBox.Show(
-                                    $"M√∂chten Sie das Modul '{version.Modul.ModulnameDE}' zur Koordination einreichen?",
-                                    "Einreichung best√§tigen",
+                                    $"Mˆchten Sie das Modul '{version.Modul.ModulnameDE}' zur Koordination einreichen?",
+                                    "Einreichung best‰tigen",
                                     MessageBoxButton.YesNo,
                                     MessageBoxImage.Question);
 
@@ -770,12 +1019,12 @@ namespace Modulverwaltungssoftware
 
                                 BenachrichtigungsService.SendeBenachrichtigung(
                                     "Koordination",
-                                    $"{currentUser} hat das Modul '{version.Modul.ModulnameDE}' (Version {FormatVersionsnummer(version.Versionsnummer)}) zur Pr√ºfung eingereicht.",
+                                    $"{currentUser} hat das Modul '{version.Modul.ModulnameDE}' (Version {FormatVersionsnummer(version.Versionsnummer)}) zur Pr¸fung eingereicht.",
                                     version.ModulVersionID
                                 );
 
                                 MessageBox.Show(
-                                    $"Das Modul '{version.Modul.ModulnameDE}' wurde erfolgreich eingereicht.\n\nStatus: In Pr√ºfung (Koordination)",
+                                    $"Das Modul '{version.Modul.ModulnameDE}' wurde erfolgreich eingereicht.\n\nStatus: In Pr¸fung (Koordination)",
                                     "Einreichung erfolgreich",
                                     MessageBoxButton.OK,
                                     MessageBoxImage.Information);
@@ -784,10 +1033,10 @@ namespace Modulverwaltungssoftware
                             }
                             else if (aktuellerStatus == ModulVersion.Status.InPruefungKoordination)
                             {
-                                // InPruefungKoordination ‚Üí InPruefungGremium
+                                // InPruefungKoordination ? InPruefungGremium
                                 var result = MessageBox.Show(
-                                    $"M√∂chten Sie das Modul '{version.Modul.ModulnameDE}' an das Gremium weiterleiten?",
-                                    "Weiterleitung best√§tigen",
+                                    $"Mˆchten Sie das Modul '{version.Modul.ModulnameDE}' an das Gremium weiterleiten?",
+                                    "Weiterleitung best‰tigen",
                                     MessageBoxButton.YesNo,
                                     MessageBoxImage.Question);
 
@@ -805,7 +1054,7 @@ namespace Modulverwaltungssoftware
                                 );
 
                                 MessageBox.Show(
-                                    $"Das Modul '{version.Modul.ModulnameDE}' wurde erfolgreich an das Gremium weitergeleitet.\n\nStatus: In Pr√ºfung (Gremium)",
+                                    $"Das Modul '{version.Modul.ModulnameDE}' wurde erfolgreich an das Gremium weitergeleitet.\n\nStatus: In Pr¸fung (Gremium)",
                                     "Weiterleitung erfolgreich",
                                     MessageBoxButton.OK,
                                     MessageBoxImage.Information);
@@ -814,10 +1063,10 @@ namespace Modulverwaltungssoftware
                             }
                             else if (aktuellerStatus == ModulVersion.Status.InPruefungGremium)
                             {
-                                // InPruefungGremium ‚Üí Freigegeben
+                                // InPruefungGremium ? Freigegeben
                                 var result = MessageBox.Show(
-                                    $"M√∂chten Sie das Modul '{version.Modul.ModulnameDE}' freigeben?",
-                                    "Freigabe best√§tigen",
+                                    $"Mˆchten Sie das Modul '{version.Modul.ModulnameDE}' freigeben?",
+                                    "Freigabe best‰tigen",
                                     MessageBoxButton.YesNo,
                                     MessageBoxImage.Question);
 
@@ -830,7 +1079,7 @@ namespace Modulverwaltungssoftware
 
                                 BenachrichtigungsService.SendeBenachrichtigung(
                                     version.Ersteller,
-                                    $"Gl√ºckwunsch! Ihr Modul '{version.Modul.ModulnameDE}' (Version {FormatVersionsnummer(version.Versionsnummer)}) wurde vom Admin freigegeben.",
+                                    $"Gl¸ckwunsch! Ihr Modul '{version.Modul.ModulnameDE}' (Version {FormatVersionsnummer(version.Versionsnummer)}) wurde vom Admin freigegeben.",
                                     version.ModulVersionID
                                 );
 
@@ -853,21 +1102,21 @@ namespace Modulverwaltungssoftware
                             break;
 
                         case "Dozent":
-                            // Dozent: Entwurf ‚Üí InPruefungKoordination
+                            // Dozent: Entwurf ? InPruefungKoordination
                             if (aktuellerStatus == ModulVersion.Status.Entwurf || 
                                 aktuellerStatus == ModulVersion.Status.Aenderungsbedarf)
                             {
                                 var result = MessageBox.Show(
-                                    $"M√∂chten Sie das Modul '{version.Modul.ModulnameDE}' wirklich zur Koordination einreichen?\n\n" +
-                                    $"Das Modul wird zur Pr√ºfung weitergeleitet und Sie k√∂nnen es nicht mehr bearbeiten, bis es freigegeben oder kommentiert wird.",
-                                    "Einreichung best√§tigen",
+                                    $"Mˆchten Sie das Modul '{version.Modul.ModulnameDE}' wirklich zur Koordination einreichen?\n\n" +
+                                    $"Das Modul wird zur Pr¸fung weitergeleitet und Sie kˆnnen es nicht mehr bearbeiten, bis es freigegeben oder kommentiert wird.",
+                                    "Einreichung best‰tigen",
                                     MessageBoxButton.YesNo,
                                     MessageBoxImage.Question);
 
                                 if (result != MessageBoxResult.Yes)
                                     return;
 
-                                // Status √§ndern
+                                // Status ‰ndern
                                 version.ModulStatus = ModulVersion.Status.InPruefungKoordination;
                                 version.LetzteAenderung = DateTime.Now;
                                 db.SaveChanges();
@@ -875,13 +1124,13 @@ namespace Modulverwaltungssoftware
                                 // Benachrichtigung an Koordination
                                 BenachrichtigungsService.SendeBenachrichtigung(
                                     "Koordination",
-                                    $"{currentUser} hat das Modul '{version.Modul.ModulnameDE}' (Version {FormatVersionsnummer(version.Versionsnummer)}) zur Pr√ºfung eingereicht.",
+                                    $"{currentUser} hat das Modul '{version.Modul.ModulnameDE}' (Version {FormatVersionsnummer(version.Versionsnummer)}) zur Pr¸fung eingereicht.",
                                     version.ModulVersionID
                                 );
 
                                 MessageBox.Show(
                                     $"Das Modul '{version.Modul.ModulnameDE}' wurde erfolgreich eingereicht und an die Koordination weitergegeben.\n\n" +
-                                    $"Status: In Pr√ºfung (Koordination)",
+                                    $"Status: In Pr¸fung (Koordination)",
                                     "Einreichung erfolgreich",
                                     MessageBoxButton.OK,
                                     MessageBoxImage.Information);
@@ -892,28 +1141,28 @@ namespace Modulverwaltungssoftware
                             else
                             {
                                 MessageBox.Show(
-                                    "Nur Module mit Status 'Entwurf' oder '√Ñnderungsbedarf' k√∂nnen eingereicht werden.",
-                                    "Ung√ºltiger Status",
+                                    "Nur Module mit Status 'Entwurf' oder 'ƒnderungsbedarf' kˆnnen eingereicht werden.",
+                                    "Ung¸ltiger Status",
                                     MessageBoxButton.OK,
                                     MessageBoxImage.Warning);
                             }
                             break;
 
                         case "Koordination":
-                            // Koordination: InPruefungKoordination ‚Üí InPruefungGremium
+                            // Koordination: InPruefungKoordination ? InPruefungGremium
                             if (aktuellerStatus == ModulVersion.Status.InPruefungKoordination)
                             {
                                 var result = MessageBox.Show(
-                                    $"M√∂chten Sie das Modul '{version.Modul.ModulnameDE}' wirklich an das Gremium weiterleiten?\n\n" +
+                                    $"Mˆchten Sie das Modul '{version.Modul.ModulnameDE}' wirklich an das Gremium weiterleiten?\n\n" +
                                     $"Das Modul wird zur finalen Genehmigung an das Gremium weitergeleitet.",
-                                    "Weiterleitung best√§tigen",
+                                    "Weiterleitung best‰tigen",
                                     MessageBoxButton.YesNo,
                                     MessageBoxImage.Question);
 
                                 if (result != MessageBoxResult.Yes)
                                     return;
 
-                                // Status √§ndern
+                                // Status ‰ndern
                                 version.ModulStatus = ModulVersion.Status.InPruefungGremium;
                                 version.LetzteAenderung = DateTime.Now;
                                 db.SaveChanges();
@@ -927,7 +1176,7 @@ namespace Modulverwaltungssoftware
 
                                 MessageBox.Show(
                                     $"Das Modul '{version.Modul.ModulnameDE}' wurde erfolgreich an das Gremium weitergeleitet.\n\n" +
-                                    $"Status: In Pr√ºfung (Gremium)",
+                                    $"Status: In Pr¸fung (Gremium)",
                                     "Weiterleitung erfolgreich",
                                     MessageBoxButton.OK,
                                     MessageBoxImage.Information);
@@ -938,28 +1187,28 @@ namespace Modulverwaltungssoftware
                             else
                             {
                                 MessageBox.Show(
-                                    "Nur Module mit Status 'In Pr√ºfung (Koordination)' k√∂nnen ans Gremium weitergeleitet werden.",
-                                    "Ung√ºltiger Status",
+                                    "Nur Module mit Status 'In Pr¸fung (Koordination)' kˆnnen ans Gremium weitergeleitet werden.",
+                                    "Ung¸ltiger Status",
                                     MessageBoxButton.OK,
                                     MessageBoxImage.Warning);
                             }
                             break;
 
                         case "Gremium":
-                            // Gremium: InPruefungGremium ‚Üí Freigegeben
+                            // Gremium: InPruefungGremium ? Freigegeben
                             if (aktuellerStatus == ModulVersion.Status.InPruefungGremium)
                             {
                                 var result = MessageBox.Show(
-                                    $"M√∂chten Sie das Modul '{version.Modul.ModulnameDE}' wirklich freigeben?\n\n" +
-                                    $"Das Modul wird offiziell ver√∂ffentlicht und kann von allen Benutzern eingesehen werden.",
-                                    "Freigabe best√§tigen",
+                                    $"Mˆchten Sie das Modul '{version.Modul.ModulnameDE}' wirklich freigeben?\n\n" +
+                                    $"Das Modul wird offiziell verˆffentlicht und kann von allen Benutzern eingesehen werden.",
+                                    "Freigabe best‰tigen",
                                     MessageBoxButton.YesNo,
                                     MessageBoxImage.Question);
 
                                 if (result != MessageBoxResult.Yes)
                                     return;
 
-                                // Status √§ndern
+                                // Status ‰ndern
                                 version.ModulStatus = ModulVersion.Status.Freigegeben;
                                 version.LetzteAenderung = DateTime.Now;
                                 db.SaveChanges();
@@ -967,12 +1216,12 @@ namespace Modulverwaltungssoftware
                                 // Benachrichtigung an Ersteller
                                 BenachrichtigungsService.SendeBenachrichtigung(
                                     version.Ersteller,
-                                    $"Gl√ºckwunsch! Ihr Modul '{version.Modul.ModulnameDE}' (Version {FormatVersionsnummer(version.Versionsnummer)}) wurde vom Gremium freigegeben und ist jetzt offiziell ver√∂ffentlicht.",
+                                    $"Gl¸ckwunsch! Ihr Modul '{version.Modul.ModulnameDE}' (Version {FormatVersionsnummer(version.Versionsnummer)}) wurde vom Gremium freigegeben und ist jetzt offiziell verˆffentlicht.",
                                     version.ModulVersionID
                                 );
 
                                 MessageBox.Show(
-                                    $"Das Modul '{version.Modul.ModulnameDE}' wurde erfolgreich freigegeben und ist jetzt offiziell ver√∂ffentlicht.\n\n" +
+                                    $"Das Modul '{version.Modul.ModulnameDE}' wurde erfolgreich freigegeben und ist jetzt offiziell verˆffentlicht.\n\n" +
                                     $"Status: Freigegeben",
                                     "Freigabe erfolgreich",
                                     MessageBoxButton.OK,
@@ -984,8 +1233,8 @@ namespace Modulverwaltungssoftware
                             else
                             {
                                 MessageBox.Show(
-                                    "Nur Module mit Status 'In Pr√ºfung (Gremium)' k√∂nnen freigegeben werden.",
-                                    "Ung√ºltiger Status",
+                                    "Nur Module mit Status 'In Pr¸fung (Gremium)' kˆnnen freigegeben werden.",
+                                    "Ung¸ltiger Status",
                                     MessageBoxButton.OK,
                                     MessageBoxImage.Warning);
                             }
@@ -1014,7 +1263,7 @@ namespace Modulverwaltungssoftware
             {
                 selectedVersion = s;
             }
-            MessageBox.Show(selectedVersion != null ? $"Version {selectedVersion} gew√§hlt" : "Version gew√§hlt", "Version", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(selectedVersion != null ? $"Version {selectedVersion} gew‰hlt" : "Version gew‰hlt", "Version", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void ToggleVersionsPopup(object sender, RoutedEventArgs e)
@@ -1059,7 +1308,7 @@ namespace Modulverwaltungssoftware
         {
             string suchbegriff = SearchBox.Text?.Trim().ToLower();
 
-            // Alle Hintergrundfarben zur√ºcksetzen
+            // Alle Hintergrundfarben zur¸cksetzen
             ResetHighlights();
 
             if (string.IsNullOrEmpty(suchbegriff))
@@ -1073,10 +1322,10 @@ namespace Modulverwaltungssoftware
                 ("Modultyp", ModultypListBox),
                 ("Studiengang", StudiengangTextBox),
                 ("Semester", SemesterListBox),
-                ("Pr√ºfungsform", PruefungsformListBox),
+                ("Pr¸fungsform", PruefungsformListBox),
                 ("Turnus", TurnusListBox),
                 ("ECTS", EctsTextBox),
-                ("Workload Pr√§senz", WorkloadPraesenzTextBox),
+                ("Workload Pr‰senz", WorkloadPraesenzTextBox),
                 ("Workload Selbststudium", WorkloadSelbststudiumTextBox),
                 ("Verantwortlicher", VerantwortlicherTextBox),
                 ("Voraussetzungen", VoraussetzungenTextBox),
@@ -1092,12 +1341,12 @@ namespace Modulverwaltungssoftware
             {
                 bool istTreffer = false;
 
-                // Pr√ºfe Feldname
+                // Pr¸fe Feldname
                 if (feldName.ToLower().Contains(suchbegriff))
                 {
                     istTreffer = true;
                 }
-                // Pr√ºfe Inhalt
+                // Pr¸fe Inhalt
                 else if (control is TextBox textBox && !string.IsNullOrEmpty(textBox.Text))
                 {
                     if (textBox.Text.ToLower().Contains(suchbegriff))
@@ -1129,7 +1378,7 @@ namespace Modulverwaltungssoftware
             // Zum ersten Treffer scrollen
             if (ersterTreffer != null && ContentScrollViewer != null)
             {
-                // Cast zu FrameworkElement f√ºr BringIntoView
+                // Cast zu FrameworkElement f¸r BringIntoView
                 if (ersterTreffer is FrameworkElement element)
                 {
                     element.BringIntoView();
@@ -1143,7 +1392,7 @@ namespace Modulverwaltungssoftware
         }
 
         /// <summary>
-        /// Setzt alle Hintergrundfarben auf Standard zur√ºck
+        /// Setzt alle Hintergrundfarben auf Standard zur¸ck
         /// </summary>
         private void ResetHighlights()
         {

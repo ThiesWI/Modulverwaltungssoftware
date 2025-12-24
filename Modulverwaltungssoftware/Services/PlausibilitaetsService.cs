@@ -6,18 +6,30 @@ namespace Modulverwaltungssoftware
     {
         public static string pruefeWorkloadStandard(int stunden, int ects)
         {
-            if (stunden / ects >= 28 && stunden / ects <= 32)
+            // Verhindere Division durch 0
+            if (ects <= 0)
             {
-                return "Der Workload entspricht nicht dem Standard von 30 Stunden pro ECTS.";
+                return "ECTS-Punkte müssen größer als 0 sein.";
             }
-            else if (stunden / 30 >= 2.5 && stunden / 30 <= 15)
+            
+            double stundenProEcts = (double)stunden / ects;
+            
+            // ✅ KORRIGIERT: 28-32 Stunden pro ECTS IST der Standard (entspricht dem 30h-Standard)
+            if (stundenProEcts >= 28 && stundenProEcts <= 32)
             {
-                return "Der Workload entspricht dem Standard.";
+                return "Der Workload entspricht dem Standard."; // ✅ KORRIGIERT
             }
-            else if (stunden / 30 >= 15 && stunden / 30 <= 30)
+            // Plausibilitätsprüfung: 75-450 Stunden Gesamtworkload (2.5-15 ECTS)
+            else if (stunden >= 75 && stunden <= 450)
+            {
+                return "Der Workload liegt im akzeptablen Bereich.";
+            }
+            // Warnung bei sehr hohem Workload (450-900 Stunden = 15-30 ECTS)
+            else if (stunden >= 450 && stunden <= 900)
             {
                 return "Ungewöhnlich hoher Workload. Bitte stellen Sie sicher, dass dies beabsichtigt ist.";
             }
+            // Fehler bei unrealistischem Workload
             else
             {
                 return "Der Workload liegt außerhalb des üblichen Bereichs. Bitte prüfen Sie, ob ein Eingabefehler vorliegt.";
