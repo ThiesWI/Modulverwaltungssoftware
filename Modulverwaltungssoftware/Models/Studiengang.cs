@@ -33,12 +33,12 @@ namespace Modulverwaltungssoftware
                 return query.ToList();
             }
         } // Alle Module abrufen, die mindestens eine aktive Version haben.
-        public void addModul(Modul modul)
+        public static int addModul(Modul modul)
         {
             if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == false) 
             { 
                 MessageBox.Show("Der aktuelle Benutzer hat keine Berechtigung zum Anlegen von Modulen."); 
-                return;
+                return -1;
             }
             try
             {
@@ -54,9 +54,10 @@ namespace Modulverwaltungssoftware
                     }
                     db.Modul.Add(modul);
                     db.SaveChanges();
+                    return modul.ModulID;
                 }
             }
-            catch (Exception ex) { throw; }
+            catch (Exception ex) { MessageBox.Show(ex.Message); return -1; }
             } // Modul erstellen
         public void removeModul(int modulID)
         {

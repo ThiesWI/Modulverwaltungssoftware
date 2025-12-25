@@ -33,6 +33,29 @@ namespace Modulverwaltungssoftware
                 return null;
             }
         } // aktuellste ModulVersion für Modul aus DB abrufen
+        public static ModulVersion getModulVersion(int modulID, int versionsnummer)
+        {
+            try
+            {
+                using (var db = new Services.DatabaseContext())
+                {
+                    // Neueste Version laden (unabhängig vom Status)
+                    var version = db.ModulVersion
+                        .Include("Modul")
+                        .Include("Kommentar")
+                        .Where(v => v.ModulId == modulID && v.Versionsnummer == versionsnummer)
+                        .OrderByDescending(v => v.Versionsnummer)
+                        .FirstOrDefault();
+
+                    return version;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten"); ;
+                return null;
+            }
+        } // aktuellste ModulVersion für Modul aus DB abrufen
         public static List<ModulVersion> getAllModulVersionen(int modulID)
         {
             try
@@ -74,7 +97,7 @@ namespace Modulverwaltungssoftware
                 MessageBox.Show("ModulVersion darf nicht null sein.");
                 return;
             }
-            else if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == false && Benutzer.CurrentUser.AktuelleRolle.DarfFreigeben) { MessageBox.Show("Nur Benutzer mit Bearbeitungs- oder Freigaberechten können speichern."); return; }
+            else if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == false && Benutzer.CurrentUser.AktuelleRolle.DarfFreigeben == false) { MessageBox.Show("Nur Benutzer mit Bearbeitungs- oder Freigaberechten können speichern."); return; }
             try
                 {
                     if (version.ModulStatus == ModulVersion.Status.Entwurf || version.ModulStatus == ModulVersion.Status.Aenderungsbedarf)
@@ -91,7 +114,8 @@ namespace Modulverwaltungssoftware
                         }
                         version.Versionsnummer = neueVersionID;
                     ModulVersion.setDaten(version);
-                    }
+                    MessageBox.Show($"Neue Version mit Nummer {neueVersionID} wurde erstellt und gespeichert.");
+                }
                     else MessageBox.Show("Speichern im Status 'InPruefung' nicht erlaubt.");
                 }
             catch (Exception ex)

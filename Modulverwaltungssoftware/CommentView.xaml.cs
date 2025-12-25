@@ -173,24 +173,23 @@ namespace Modulverwaltungssoftware
                     return;
 
                 // Kommentare speichern
-                SaveCommentsToDatabase(feldKommentare);
+                Kommentar.SaveCommentsToDatabase(feldKommentare, int.Parse(_modulId));
 
                 // ✨ STATUS AUF ÄNDERUNGSBEDARF SETZEN
-                using (var db = new Services.DatabaseContext())
-                {
-                    var modulVersion = db.ModulVersion
-                        .Include("Modul")
-                        .FirstOrDefault(v => v.ModulId == modulId);
+
+                    var modulVersion = ModulRepository.getModulVersion(modulId, versionsnummer: int.Parse(_version));
 
                     if (modulVersion != null)
                     {
                         var alterStatus = modulVersion.ModulStatus;
-                        modulVersion.ModulStatus = ModulVersion.Status.Aenderungsbedarf;
-                        modulVersion.LetzteAenderung = DateTime.Now;
-                        db.SaveChanges();
+                        ModulVersion.setStatus(
+                            modulVersion.Versionsnummer,
+                            modulVersion.ModulId,
+                            ModulVersion.Status.Aenderungsbedarf
+                        );
 
-                        // Benachrichtigung an Ersteller
-                        BenachrichtigungsService.SendeBenachrichtigung(
+                    // Benachrichtigung an Ersteller
+                    BenachrichtigungsService.SendeBenachrichtigung(
                             modulVersion.Ersteller,
                             $"{currentUser} ({rolle}) hat Ihr Modul '{modulVersion.Modul.ModulnameDE}' kommentiert. " +
                             $"Bitte überarbeiten Sie das Modul entsprechend der Kommentare. " +
@@ -200,7 +199,7 @@ namespace Modulverwaltungssoftware
 
                         System.Diagnostics.Debug.WriteLine($"Status geändert: {alterStatus} → Änderungsbedarf (durch {rolle})");
                     }
-                }
+                
 
                 // Erfolgs-Meldung
                 MessageBox.Show(bestaetigungsText,
@@ -254,30 +253,6 @@ namespace Modulverwaltungssoftware
             AddKommentarIfNotEmpty(feldKommentare, "Literatur", LiteraturKommentarTextBox.Text);
 
             return feldKommentare;
-        }
-
-        private void SaveCommentsToDatabase(List<Kommentar.FeldKommentar> feldKommentare)
-        {
-            int modulId = int.Parse(_modulId);
-            
-            using (var db = new Services.DatabaseContext())
-            {
-                var modulVersion = db.ModulVersion
-                    .FirstOrDefault(v => v.ModulId == modulId);
-                
-                if (modulVersion == null)
-                    throw new InvalidOperationException("Modulversion nicht gefunden.");
-
-                string currentUser = Benutzer.CurrentUser?.Name ?? "Unbekannt";  // ✅ FIX: Aktueller User!
-                
-                // Neue Version mit Kommentaren erstellen
-                int neueVersionID = Kommentar.addFeldKommentareMitNeuerVersion(
-                    modulId, 
-                    modulVersion.ModulVersionID, 
-                    feldKommentare, 
-                    currentUser  // ← Statt fest codiert!
-                );
-            }
         }
 
         private void NavigateToModulView()

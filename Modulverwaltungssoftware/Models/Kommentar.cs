@@ -191,6 +191,28 @@ namespace Modulverwaltungssoftware
                     .ToList();
             }
         }
+        public static void SaveCommentsToDatabase(List<Kommentar.FeldKommentar> feldKommentare, int modulId)
+        {
+
+            using (var db = new Services.DatabaseContext())
+            {
+                var modulVersion = db.ModulVersion
+                    .FirstOrDefault(v => v.ModulId == modulId);
+
+                if (modulVersion == null)
+                    throw new InvalidOperationException("Modulversion nicht gefunden.");
+
+                string currentUser = Benutzer.CurrentUser?.Name ?? "Unbekannt";  // ✅ FIX: Aktueller User!
+
+                // Neue Version mit Kommentaren erstellen
+                int neueVersionID = Kommentar.addFeldKommentareMitNeuerVersion(
+                    modulId,
+                    modulVersion.ModulVersionID,
+                    feldKommentare,
+                    currentUser  // ← Statt fest codiert!
+                );
+            }
+        }
 
         // Hilfsklasse für feldspezifische Kommentare
         public class FeldKommentar

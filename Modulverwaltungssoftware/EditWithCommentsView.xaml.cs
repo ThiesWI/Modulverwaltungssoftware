@@ -242,10 +242,61 @@ namespace Modulverwaltungssoftware
             try
             {
                 int modulId = int.Parse(_modulId);
-                
+                ModulVersion tempModulVersion = new ModulVersion
+                {
+                    ModulId = modulId,
+                    Versionsnummer = ParseVersionsnummer(_versionNummer),
+                    EctsPunkte = ects,
+                    WorkloadPraesenz = workloadPraesenz,
+                    WorkloadSelbststudium = workloadSelbststudium
+                };
+                var pruefungsformen = GetSelectedListBoxItems(PruefungsformListBox);
+                if (pruefungsformen.Count > 0)
+                    tempModulVersion.Pruefungsform = pruefungsformen[0];
+                else
+                    tempModulVersion.Pruefungsform = "Klausur";
+
+                // Lernziele (versionsspezifisch)
+                if (!string.IsNullOrWhiteSpace(LernzieleTextBox.Text))
+                {
+                    tempModulVersion.Lernergebnisse = LernzieleTextBox.Text
+                        .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
+                        .ToList();
+                }
+                else
+                {
+                    tempModulVersion.Lernergebnisse = new List<string>();
+                }
+
+                // Lehrinhalte (versionsspezifisch)
+                if (!string.IsNullOrWhiteSpace(LehrinhalteTextBox.Text))
+                {
+                    tempModulVersion.Inhaltsgliederung = LehrinhalteTextBox.Text
+                        .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
+                        .ToList();
+                }
+                else
+                {
+                    tempModulVersion.Inhaltsgliederung = new List<string>();
+                }
+
+                // Literatur (versionsspezifisch)
+                if (!string.IsNullOrWhiteSpace(LiteraturTextBox.Text))
+                {
+                    tempModulVersion.Literatur = LiteraturTextBox.Text
+                        .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
+                        .ToList();
+                }
+                else
+                {
+                    tempModulVersion.Literatur = new List<string>();
+                }
                 // Kommentierte Version bearbeiten → Neue Version erstellen
-                ErstelleNeueVersionMitAenderungen(modulId, ects, workloadPraesenz, workloadSelbststudium);
-                
+                ModulRepository.Speichere(tempModulVersion);
+                ModulVersion neueVersion = ModulRepository.getModulVersion(modulId);
+
+                ModulVersion.setStatus(neueVersion.Versionsnummer, modulId, ModulVersion.Status.Entwurf);
+
                 MessageBox.Show($"Änderungen wurden als neue Version gespeichert.\nDie kommentierte Version bleibt erhalten.", 
                     "Gespeichert", MessageBoxButton.OK, MessageBoxImage.Information);
 
@@ -266,98 +317,6 @@ namespace Modulverwaltungssoftware
                 return (int)(dec * 10);
             return 10;
         }
-
-        private void ErstelleNeueVersionMitAenderungen(int modulId, int ects, int workloadPraesenz, int workloadSelbststudium)
-        {
-            using (var db = new Services.DatabaseContext())
-            {
-                // Kommentierte Version laden
-                int aktuelleVersionsnummer = ParseVersionsnummer(_versionNummer);
-                
-                var alteVersion = db.ModulVersion
-                    .Include("Modul")
-                    .FirstOrDefault(v => v.ModulId == modulId && v.Versionsnummer == aktuelleVersionsnummer);
-
-                if (alteVersion == null)
-                    throw new InvalidOperationException("Modulversion nicht gefunden.");
-
-                // ✅ Problem 4 Fix: Höchste Versionsnummer für dieses Modul finden
-                var hoechsteVersionsnummer = db.ModulVersion
-                    .Where(v => v.ModulId == modulId)
-                    .Max(v => (int?)v.Versionsnummer) ?? 10;
-                
-                int neueVersionsnummer = hoechsteVersionsnummer + 1;
-                
-                // ✅ Problem 3 Fix: Prüfen ob Version bereits existiert
-                if (db.ModulVersion.Any(v => v.ModulId == modulId && v.Versionsnummer == neueVersionsnummer))
-                    throw new InvalidOperationException($"Version {neueVersionsnummer / 10.0:0.0} existiert bereits!");
-
-                // Neue Version erstellen (NUR versionsspezifische Daten!)
-                var neueVersion = new ModulVersion
-                {
-                    ModulId = alteVersion.ModulId,
-                    Versionsnummer = neueVersionsnummer,
-                    GueltigAbSemester = "Entwurf",
-                    ModulStatus = ModulVersion.Status.Entwurf,
-                    LetzteAenderung = DateTime.Now,
-                    WorkloadPraesenz = workloadPraesenz,
-                    WorkloadSelbststudium = workloadSelbststudium,
-                    EctsPunkte = ects,
-                    Ersteller = Benutzer.CurrentUser?.Name ?? "Unbekannt",  // ← Problem 4: Aktueller User!
-                    hatKommentar = false
-                };
-
-                // Prüfungsform (versionsspezifisch)
-                var pruefungsformen = GetSelectedListBoxItems(PruefungsformListBox);
-                if (pruefungsformen.Count > 0)
-                    neueVersion.Pruefungsform = pruefungsformen[0];
-                else
-                    neueVersion.Pruefungsform = "Klausur";
-
-                // Lernziele (versionsspezifisch)
-                if (!string.IsNullOrWhiteSpace(LernzieleTextBox.Text))
-                {
-                    neueVersion.Lernergebnisse = LernzieleTextBox.Text
-                        .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
-                        .ToList();
-                }
-                else
-                {
-                    neueVersion.Lernergebnisse = new List<string>();
-                }
-
-                // Lehrinhalte (versionsspezifisch)
-                if (!string.IsNullOrWhiteSpace(LehrinhalteTextBox.Text))
-                {
-                    neueVersion.Inhaltsgliederung = LehrinhalteTextBox.Text
-                        .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
-                        .ToList();
-                }
-                else
-                {
-                    neueVersion.Inhaltsgliederung = new List<string>();
-                }
-
-                // Literatur (versionsspezifisch)
-                if (!string.IsNullOrWhiteSpace(LiteraturTextBox.Text))
-                {
-                    neueVersion.Literatur = LiteraturTextBox.Text
-                        .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
-                        .ToList();
-                }
-                else
-                {
-                    neueVersion.Literatur = new List<string>();
-                }
-
-                // Kommentare entfernen: hatKommentar auf false setzen
-                // (Die neue Version ist NICHT kommentiert, nur die alte hat Kommentare!)
-                
-                db.ModulVersion.Add(neueVersion);
-                db.SaveChanges();
-            }
-        }
-
         private List<string> GetSelectedListBoxItems(ListBox listBox)
         {
             var selected = new List<string>();

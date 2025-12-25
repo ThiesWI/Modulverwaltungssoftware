@@ -26,10 +26,10 @@ namespace Modulverwaltungssoftware
         public virtual Modul Modul { get; set; }
         [Required]
         [StringLength(25)]
-        public string GueltigAbSemester { get; set; }
+        public string GueltigAbSemester { get; set; } = "SoSe 9999";
         public enum Status { Entwurf = 0, InPruefungKoordination = 1, InPruefungGremium = 2, Aenderungsbedarf = 3, Freigegeben = 4, Archiviert = 5 }
         [Required]
-        public Status ModulStatus { get; set; }
+        public Status ModulStatus { get; set; } = Status.Entwurf;
         [Required]
         public DateTime LetzteAenderung { get; set; } = DateTime.Now;
         [Required]
@@ -40,7 +40,7 @@ namespace Modulverwaltungssoftware
         public int EctsPunkte { get; set; }
         [Required]
         [StringLength(100)]
-        public string Pruefungsform { get; set; }
+        public string Pruefungsform { get; set; } = "Klausur";
         public string Ersteller { get; set; }
         [NotMapped]
         public List<string> Lernergebnisse { get; set; }
