@@ -56,6 +56,16 @@ namespace Modulverwaltungssoftware
         }
         public static string pruefeForm(ModulVersion v)
         {
+            // ✅ NULL-CHECK: Verhindere NullReferenceException
+            if (v == null)
+            {
+                return "Fehler: ModulVersion ist null.";
+            }
+            if (v.Modul == null)
+            {
+                return "Fehler: Modul-Objekt fehlt. Die Plausibilitätsprüfung kann nicht durchgeführt werden.";
+            }
+            
             string modultyp = v.Modul.Modultyp.ToString();
             int semester = v.Modul.EmpfohlenesSemester;
             string pruefungsform = v.Pruefungsform;
@@ -92,7 +102,10 @@ namespace Modulverwaltungssoftware
             {
                 semesterTest = false;
             }
-            if (pruefungsform == "PL" || pruefungsform == "SP" || pruefungsform == "SL")
+            
+            // ✅ FIX: Prüfungsform-Validierung anpassen - nicht nur PL/SP/SL
+            // Akzeptiere JEDE Prüfungsform, solange sie nicht leer ist
+            if (!string.IsNullOrWhiteSpace(pruefungsform))
             {
                 pruefungsformTest = true;
             }
@@ -100,6 +113,7 @@ namespace Modulverwaltungssoftware
             {
                 pruefungsformTest = false;
             }
+            
             if (turnus == "JedesSemester" || turnus == "NurWintersemester" || turnus == "NurSommersemester")
             {
                 turnusTest = true;

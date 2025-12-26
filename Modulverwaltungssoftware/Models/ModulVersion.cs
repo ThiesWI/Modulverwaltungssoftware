@@ -176,32 +176,38 @@ namespace Modulverwaltungssoftware
                         MessageBox.Show($"ModulVersion mit ID {version.Versionsnummer} und/oder ModulID {version.ModulId} nicht gefunden.");
                         return;
                     }
-                    if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == true)
-                    {
-                        if (modulVersion.ModulStatus != Status.Entwurf && modulVersion.ModulStatus != Status.Aenderungsbedarf)
-                        {
-                            MessageBox.Show("Nur Module mit dem Status Entwurf oder Aenderungsbedarf können bearbeitet werden.");
-                        }
-                        modulVersion.GueltigAbSemester = version.GueltigAbSemester;
-                        modulVersion.WorkloadPraesenz = version.WorkloadPraesenz;
-                        modulVersion.WorkloadSelbststudium = version.WorkloadSelbststudium;
-                        modulVersion.EctsPunkte = version.EctsPunkte;
-                        modulVersion.Pruefungsform = version.Pruefungsform;
-                        modulVersion.Literatur = version.Literatur;
-                        modulVersion.Lernergebnisse = version.Lernergebnisse;
-                        modulVersion.Inhaltsgliederung = version.Inhaltsgliederung;
-                        modulVersion.LetzteAenderung = DateTime.Now;
-                    }
-                    else
+                    
+                    // ✅ FIX: Berechtigungsprüfung VOR dem Aktualisieren
+                    if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == false)
                     {
                         MessageBox.Show("Der aktuelle Benutzer hat nicht die erforderlichen Rechte, um diese Aktion durchzuführen.");
+                        return;  // ✅ WICHTIG: Hier abbrechen!
                     }
-                    db.SaveChanges();
+                    
+                    // ✅ Status-Prüfung
+                    if (modulVersion.ModulStatus != Status.Entwurf && modulVersion.ModulStatus != Status.Aenderungsbedarf)
+                    {
+                        MessageBox.Show("Nur Module mit dem Status Entwurf oder Aenderungsbedarf können bearbeitet werden.");
+                        return;  // ✅ WICHTIG: Hier abbrechen!
+                    }
+                    
+                    // ✅ Daten aktualisieren (nur wenn Berechtigung vorhanden)
+                    modulVersion.GueltigAbSemester = version.GueltigAbSemester;
+                    modulVersion.WorkloadPraesenz = version.WorkloadPraesenz;
+                    modulVersion.WorkloadSelbststudium = version.WorkloadSelbststudium;
+                    modulVersion.EctsPunkte = version.EctsPunkte;
+                    modulVersion.Pruefungsform = version.Pruefungsform;
+                    modulVersion.Literatur = version.Literatur;
+                    modulVersion.Lernergebnisse = version.Lernergebnisse;
+                    modulVersion.Inhaltsgliederung = version.Inhaltsgliederung;
+                    modulVersion.LetzteAenderung = DateTime.Now;
+                    
+                    db.SaveChanges();  // ✅ NUR hier speichern, wenn alles OK ist
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten"); ;
+                MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten");
                 return;
             }
         }
