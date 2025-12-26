@@ -653,21 +653,38 @@ namespace Modulverwaltungssoftware
                     break;
 
                 case ModulVersion.Status.InPruefungKoordination:
-                    if (einreichenButton != null)
-                        einreichenButton.IsEnabled = isKoordination || isAdmin;
-                    if (kommentierenButton != null && !isDozent)
-                        kommentierenButton.IsEnabled = isKoordination || isAdmin;
-                    if (loeschenButton != null && !isKoordination && !isGremium)
-                        loeschenButton.IsEnabled = isAdmin;
-                    break;
-
                 case ModulVersion.Status.InPruefungGremium:
-                    if (einreichenButton != null)
-                        einreichenButton.IsEnabled = isGremium || isAdmin;
-                    if (kommentierenButton != null && !isDozent)
-                        kommentierenButton.IsEnabled = isGremium || isAdmin;
-                    if (loeschenButton != null && !isKoordination && !isGremium)
-                        loeschenButton.IsEnabled = isAdmin;
+                    // ? IN PRÜFUNG: Nur Admin darf bearbeiten, alle anderen nicht
+                    if (bearbeitenButton != null)
+                    {
+                        bearbeitenButton.IsEnabled = isAdmin;
+                        if (!isAdmin)
+                            bearbeitenButton.ToolTip = "Während der Prüfung kann das Modul nur vom Admin bearbeitet werden";
+                    }
+                    if (loeschenButton != null)
+                    {
+                        loeschenButton.IsEnabled = isAdmin;  // Nur Admin darf löschen
+                        if (!isAdmin)
+                            loeschenButton.ToolTip = "Während der Prüfung kann das Modul nur vom Admin gelöscht werden";
+                    }
+                    
+                    // Koordination/Gremium dürfen einreichen & kommentieren (je nach Status)
+                    if (status == ModulVersion.Status.InPruefungKoordination)
+                    {
+                        if (einreichenButton != null)
+                            einreichenButton.IsEnabled = isKoordination || isAdmin;
+                        if (kommentierenButton != null && !isDozent)
+                            kommentierenButton.IsEnabled = isKoordination || isAdmin;
+                    }
+                    else if (status == ModulVersion.Status.InPruefungGremium)
+                    {
+                        if (einreichenButton != null)
+                            einreichenButton.IsEnabled = isGremium || isAdmin;
+                        if (kommentierenButton != null && !isDozent)
+                            kommentierenButton.IsEnabled = isGremium || isAdmin;
+                    }
+                    
+                    System.Diagnostics.Debug.WriteLine($"IN_PRÜFUNG: Bearbeiten={isAdmin}, Löschen={isAdmin}, Kommentieren={kommentierenButton?.IsEnabled}, Einreichen={einreichenButton?.IsEnabled}");
                     break;
 
                 case ModulVersion.Status.Freigegeben:

@@ -51,6 +51,11 @@ namespace Modulverwaltungssoftware
             InitializeComponent();
             _contentScrollViewer = FindName("ContentScrollViewer") as ScrollViewer;
             _isEditMode = false; // Standard: Neues Modul
+            
+            // ✨ LIVE-VALIDIERUNG: TextChanged-Events registrieren
+            EctsTextBox.TextChanged += ValidierePlausibilitaet;
+            WorkloadPraesenzTextBox.TextChanged += ValidierePlausibilitaet;
+            WorkloadSelbststudiumTextBox.TextChanged += ValidierePlausibilitaet;
         }
 
         // Konstruktor für NEUES Modul (aus StartPage)
@@ -518,6 +523,107 @@ namespace Modulverwaltungssoftware
                     return false;
             }
             return true;
+        }
+
+        /// <summary>
+        /// ✨ LIVE-PLAUSIBILITÄTSPRÜFUNG: Validiert ECTS/Workload während der Eingabe
+        /// </summary>
+        private void ValidierePlausibilitaet(object sender, TextChangedEventArgs e)
+        {
+            // Werte auslesen
+            if (!int.TryParse(EctsTextBox.Text, out int ects))
+                ects = 0;
+            if (!int.TryParse(WorkloadPraesenzTextBox.Text, out int workloadPraesenz))
+                workloadPraesenz = 0;
+            if (!int.TryParse(WorkloadSelbststudiumTextBox.Text, out int workloadSelbststudium))
+                workloadSelbststudium = 0;
+
+            int workloadGesamt = workloadPraesenz + workloadSelbststudium;
+
+            // Standardzustand (keine Eingabe)
+            if (ects == 0 || workloadGesamt == 0)
+            {
+                SetPlausibilitaetsFeedback(
+                    "ℹ️",
+                    "Geben Sie ECTS und Workload ein, um die Plausibilitätsprüfung zu starten.",
+                    "",
+                    "#F0F0F0", // Grau
+                    "#CCCCCC",
+                    "#666666"
+                );
+                return;
+            }
+
+            // Plausibilitätsprüfung durchführen
+            string ergebnis = PlausibilitaetsService.pruefeWorkloadStandard(workloadGesamt, ects);
+            double stundenProEcts = ects > 0 ? (double)workloadGesamt / ects : 0;
+            double berechneteEcts = workloadGesamt / 30.0;
+
+            // Details-Text erstellen
+            string details = $"📊 Workload Gesamt: {workloadGesamt}h | ECTS: {ects} | Stunden/ECTS: {stundenProEcts:0.##}h\n" +
+                           $"💡 Empfehlung: Für {workloadGesamt}h sind ca. {berechneteEcts:0.#} ECTS üblich (30h/ECTS-Standard)";
+
+            // Visuelles Feedback basierend auf Ergebnis
+            if (ergebnis == "Der Workload entspricht dem Standard.")
+            {
+                SetPlausibilitaetsFeedback(
+                    "✅",
+                    ergebnis,
+                    details,
+                    "#E8F5E9", // Hellgrün
+                    "#4CAF50", // Grün
+                    "#2E7D32"  // Dunkelgrün
+                );
+            }
+            else if (ergebnis == "Der Workload liegt im akzeptablen Bereich.")
+            {
+                SetPlausibilitaetsFeedback(
+                    "⚠️",
+                    ergebnis,
+                    details,
+                    "#FFF3E0", // Hellorange
+                    "#FF9800", // Orange
+                    "#E65100"  // Dunkelorange
+                );
+            }
+            else
+            {
+                SetPlausibilitaetsFeedback(
+                    "❌",
+                    ergebnis,
+                    details,
+                    "#FFEBEE", // Hellrot
+                    "#F44336", // Rot
+                    "#C62828"  // Dunkelrot
+                );
+            }
+        }
+
+        /// <summary>
+        /// Hilfsmethode: Setzt das visuelle Feedback für die Plausibilitätsprüfung
+        /// </summary>
+        private void SetPlausibilitaetsFeedback(string icon, string meldung, string details, 
+                                                 string backgroundColor, string borderColor, string textColor)
+        {
+            PlausibilitaetsIcon.Text = icon;
+            PlausibilitaetsLabel.Text = meldung;
+            PlausibilitaetsLabel.Foreground = new System.Windows.Media.SolidColorBrush(
+                (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(textColor));
+
+            if (!string.IsNullOrEmpty(details))
+            {
+                PlausibilitaetsDetails.Text = details;
+                PlausibilitaetsDetails.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                PlausibilitaetsDetails.Visibility = Visibility.Collapsed;
+            }
+
+            PlausibilitaetsBorder.Background = new System.Windows.Media.SolidColorBrush(
+                (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(backgroundColor));
+            PlausibilitaetsBorder.BorderBrush = new System.Windows.Media.SolidColorBrush(
+                (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(borderColor));
         }
     }
 }
