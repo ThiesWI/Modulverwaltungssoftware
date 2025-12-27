@@ -177,7 +177,10 @@ namespace Modulverwaltungssoftware
 
                 // ✨ STATUS AUF ÄNDERUNGSBEDARF SETZEN
 
-                    var modulVersion = ModulRepository.getModulVersion(modulId, versionsnummer: int.Parse(_version));
+                    var modulVersion = ModulRepository.getModulVersion(
+                        modulId,
+                        versionsnummer: ParseVersionsnummer(_version)
+                    );
 
                     if (modulVersion != null)
                     {
@@ -442,6 +445,14 @@ namespace Modulverwaltungssoftware
                 if (listBox != null)
                     listBox.Background = new SolidColorBrush(Color.FromRgb(245, 245, 245)); // #F5F5F5
             }
+        }
+
+        private int ParseVersionsnummer(string version)
+        {
+            if (decimal.TryParse(version, System.Globalization.NumberStyles.Any,
+                System.Globalization.CultureInfo.InvariantCulture, out decimal dec))
+                return (int)(dec * 10);
+            return 10;
         }
     }
 }

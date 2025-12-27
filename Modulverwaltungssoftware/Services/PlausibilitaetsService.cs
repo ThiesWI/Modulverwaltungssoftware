@@ -92,14 +92,14 @@ namespace Modulverwaltungssoftware
             {
                 semesterTest = false;
             }
-            if (pruefungsform == "PL" || pruefungsform == "SP" || pruefungsform == "SL")
+
+            // Akzeptiere alle Prüfungsformen, die in der EditingView angeboten werden
+            var gueltigePruefungsformen = new List<string>
             {
-                pruefungsformTest = true;
-            }
-            else
-            {
-                pruefungsformTest = false;
-            }
+                "PL", "SP", "SL", "Klausur", "Mündliche Prüfung", "Projektarbeit", "Hausarbeit", "Präsentation", "Portfolio", "Referat"
+            };
+            pruefungsformTest = !string.IsNullOrWhiteSpace(pruefungsform) && gueltigePruefungsformen.Contains(pruefungsform);
+
             if (turnus == "JedesSemester" || turnus == "NurWintersemester" || turnus == "NurSommersemester")
             {
                 turnusTest = true;

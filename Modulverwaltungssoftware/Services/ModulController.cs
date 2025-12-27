@@ -19,11 +19,31 @@ namespace Modulverwaltungssoftware
                 using (var db = new Services.DatabaseContext())
                 {
                     var alteVersion = db.ModulVersion
-                        .LastOrDefault(v => v.ModulId == modulID);
+                        .Where(v => v.ModulId == modulID)
+                        .OrderByDescending(v => v.Versionsnummer)
+                        .FirstOrDefault();
 
                     if (alteVersion == null)
                     {
-                        return 0;
+                        var erstelleVersion = new ModulVersion
+                        {
+                            ModulId = modulID,
+                            Versionsnummer = 1,
+                            GueltigAbSemester = "Entwurf",
+                            ModulStatus = ModulVersion.Status.Entwurf,
+                            LetzteAenderung = DateTime.Now,
+                            WorkloadPraesenz = 0,
+                            WorkloadSelbststudium = 0,
+                            EctsPunkte = 0,
+                            Pruefungsform = "",
+                            Literatur = new List<string>(),
+                            Ersteller = Benutzer.CurrentUser.Name,
+                            Lernergebnisse = new List<string>(),
+                            Inhaltsgliederung = new List<string>()
+                        };
+                        db.ModulVersion.Add(erstelleVersion);
+                        db.SaveChanges();
+                        return 1;
                     }
                     neueVersionsnummer = alteVersion.Versionsnummer + 1;
                     var neueVersion = new ModulVersion
@@ -31,7 +51,6 @@ namespace Modulverwaltungssoftware
                         ModulId = alteVersion.ModulId,
                         Versionsnummer = neueVersionsnummer,
                         GueltigAbSemester = "Entwurf",
-                        Modul = alteVersion.Modul,
                         ModulStatus = ModulVersion.Status.Entwurf,
                         LetzteAenderung = DateTime.Now,
                         WorkloadPraesenz = alteVersion.WorkloadPraesenz,
@@ -57,6 +76,71 @@ namespace Modulverwaltungssoftware
             MessageBox.Show($"Fehler beim Erstellen der neuen Modulversion: {ex.Message}");
             return 0;
         }
+        } // Neue Modulversion erstellen, basierend auf der letzten Version
+        public static int create(int modulID, ModulVersion version)
+        {
+            if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == false) { MessageBox.Show("Fehlende Berechtigungen zum Erstellen."); return 0; }
+            try
+            {
+                using (var db = new Services.DatabaseContext())
+                {
+                    var alteVersion = db.ModulVersion
+                        .Where(v => v.ModulId == modulID)
+                        .OrderByDescending(v => v.Versionsnummer)
+                        .FirstOrDefault();
+
+                    if (alteVersion == null)
+                    {
+                        var erstelleVersion = new ModulVersion
+                        {
+                            ModulId = modulID,
+                            Versionsnummer = version.Versionsnummer,
+                            GueltigAbSemester = "Entwurf",
+                            ModulStatus = ModulVersion.Status.Entwurf,
+                            LetzteAenderung = DateTime.Now,
+                            WorkloadPraesenz = version.WorkloadPraesenz,
+                            WorkloadSelbststudium = version.WorkloadSelbststudium,
+                            EctsPunkte = version.EctsPunkte,
+                            Pruefungsform = version.Pruefungsform,
+                            Literatur = version.Literatur,
+                            Ersteller = version.Ersteller,
+                            Lernergebnisse = version.Lernergebnisse,
+                            Inhaltsgliederung = version.Inhaltsgliederung
+                        };
+                        db.ModulVersion.Add(erstelleVersion);
+                        db.SaveChanges();
+                        return version.Versionsnummer;
+                    }
+                    int neueVersionsnummer = alteVersion.Versionsnummer + 1;
+                    var neueVersion = new ModulVersion
+                    {
+                        ModulId = version.ModulId,
+                        Versionsnummer = neueVersionsnummer,
+                        GueltigAbSemester = "Entwurf",
+                        ModulStatus = ModulVersion.Status.Entwurf,
+                        LetzteAenderung = DateTime.Now,
+                        WorkloadPraesenz = version.WorkloadPraesenz,
+                        WorkloadSelbststudium = version.WorkloadSelbststudium,
+                        EctsPunkte = version.EctsPunkte,
+                        Pruefungsform = version.Pruefungsform,
+                        Literatur = version.Literatur,
+                        Ersteller = version.Ersteller,
+                        Lernergebnisse = version.Lernergebnisse,
+                        Inhaltsgliederung = version.Inhaltsgliederung,
+                    };
+
+                    db.ModulVersion.Add(neueVersion);
+                    db.SaveChanges();
+
+                    // Erfolgsmeldung nur im Frontend!
+                    return neueVersionsnummer;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Fehler beim Erstellen der neuen Modulversion: {ex.Message}");
+                return 0;
+            }
         } // Neue Modulversion erstellen, basierend auf der letzten Version
     }
 }

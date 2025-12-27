@@ -13,7 +13,7 @@ namespace Modulverwaltungssoftware
         {
             try
             {
-                if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten)
+                if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == false && Benutzer.CurrentUser.RollenName != "Admin")
                 {
                     MessageBox.Show("Der aktuelle Benutzer hat nicht die erforderlichen Rechte, um die Genehmigung zu starten.");
                 }
@@ -29,19 +29,18 @@ namespace Modulverwaltungssoftware
                 return;
             }
         } // Modul zur Prüfung einreichen für Dozent und Admin
-        public static void lehneAb(int versionsnummer, int modulID, string kommentarText)
+        public static void lehneAb(int versionsnummer, int modulID)
         {
             try
             {
-                if (Benutzer.CurrentUser.AktuelleRolle.DarfFreigeben == false)
+                if (Benutzer.CurrentUser.AktuelleRolle.DarfFreigeben == false && Benutzer.CurrentUser.RollenName != "Admin")
                 {
                     MessageBox.Show("Der aktuelle Benutzer hat nicht die erforderlichen Rechte, um die Genehmigung zu starten.");
                 }
                 else
                 {
                     ModulVersion.setStatus(versionsnummer, modulID, ModulVersion.Status.Aenderungsbedarf);
-                    BenachrichtigungsService.SendeBenachrichtigung ("Dozent", $"{Benutzer.CurrentUser.Name} hat Version {versionsnummer} für Modul {modulID} abgelehnt. Kommentar: {kommentarText}", versionsnummer);
-                    Kommentar.addKommentar(modulID, versionsnummer, kommentarText);
+                    BenachrichtigungsService.SendeBenachrichtigung ("Dozent", $"{Benutzer.CurrentUser.Name} hat Version {versionsnummer} für Modul {modulID} abgelehnt.", versionsnummer);
                 }
             }
             catch (Exception ex)
@@ -70,7 +69,7 @@ namespace Modulverwaltungssoftware
                 return;
             }
         } // Modul-Entwurf an Gremium weiterleiten (Koordination + Admin)
-        public static void lehneFinalAb(int versionsnummer, int modulID, string kommentarText)
+        public static void lehneFinalAb(int versionsnummer, int modulID)
         {
             try
             {
@@ -81,8 +80,7 @@ namespace Modulverwaltungssoftware
                 else
                 {
                     ModulVersion.setStatus(versionsnummer, modulID, ModulVersion.Status.Aenderungsbedarf);
-                    BenachrichtigungsService.SendeBenachrichtigung("Dozent", $"{Benutzer.CurrentUser.Name} hat Version {versionsnummer} für Modul {modulID} final abgelehnt. Kommentar: {kommentarText}", versionsnummer);
-                    Kommentar.addKommentar(modulID, versionsnummer, kommentarText);
+                    BenachrichtigungsService.SendeBenachrichtigung("Dozent", $"{Benutzer.CurrentUser.Name} hat Version {versionsnummer} für Modul {modulID} final abgelehnt.", versionsnummer);
                 }
             }
             catch (Exception ex)

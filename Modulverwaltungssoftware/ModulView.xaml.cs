@@ -1030,15 +1030,7 @@ namespace Modulverwaltungssoftware
                                 if (result != MessageBoxResult.Yes)
                                     return;
 
-                                version.ModulStatus = ModulVersion.Status.InPruefungKoordination;
-                                version.LetzteAenderung = DateTime.Now;
-                                db.SaveChanges();
-
-                                BenachrichtigungsService.SendeBenachrichtigung(
-                                    "Koordination",
-                                    $"{currentUser} hat das Modul '{version.Modul.ModulnameDE}' (Version {FormatVersionsnummer(version.Versionsnummer)}) zur Prüfung eingereicht.",
-                                    version.ModulVersionID
-                                );
+                                WorkflowController.starteGenehmigung(version.Versionsnummer, version.ModulId);
 
                                 MessageBox.Show(
                                     $"Das Modul '{version.Modul.ModulnameDE}' wurde erfolgreich eingereicht.\n\nStatus: In Prüfung (Koordination)",
@@ -1060,15 +1052,7 @@ namespace Modulverwaltungssoftware
                                 if (result != MessageBoxResult.Yes)
                                     return;
 
-                                version.ModulStatus = ModulVersion.Status.InPruefungGremium;
-                                version.LetzteAenderung = DateTime.Now;
-                                db.SaveChanges();
-
-                                BenachrichtigungsService.SendeBenachrichtigung(
-                                    "Gremium",
-                                    $"{currentUser} (Admin) hat das Modul '{version.Modul.ModulnameDE}' (Version {FormatVersionsnummer(version.Versionsnummer)}) zur finalen Genehmigung weitergeleitet.",
-                                    version.ModulVersionID
-                                );
+                                WorkflowController.leiteWeiter(version.Versionsnummer, version.ModulId);
 
                                 MessageBox.Show(
                                     $"Das Modul '{version.Modul.ModulnameDE}' wurde erfolgreich an das Gremium weitergeleitet.\n\nStatus: In Prüfung (Gremium)",
@@ -1090,15 +1074,7 @@ namespace Modulverwaltungssoftware
                                 if (result != MessageBoxResult.Yes)
                                     return;
 
-                                version.ModulStatus = ModulVersion.Status.Freigegeben;
-                                version.LetzteAenderung = DateTime.Now;
-                                db.SaveChanges();
-
-                                BenachrichtigungsService.SendeBenachrichtigung(
-                                    version.Ersteller,
-                                    $"Glückwunsch! Ihr Modul '{version.Modul.ModulnameDE}' (Version {FormatVersionsnummer(version.Versionsnummer)}) wurde vom Admin freigegeben.",
-                                    version.ModulVersionID
-                                );
+                                WorkflowController.schliesseGenehmigungAb(version.Versionsnummer, version.ModulId);
 
                                 MessageBox.Show(
                                     $"Das Modul '{version.Modul.ModulnameDE}' wurde erfolgreich freigegeben.\n\nStatus: Freigegeben",
@@ -1134,16 +1110,7 @@ namespace Modulverwaltungssoftware
                                     return;
 
                                 // Status ändern
-                                version.ModulStatus = ModulVersion.Status.InPruefungKoordination;
-                                version.LetzteAenderung = DateTime.Now;
-                                db.SaveChanges();
-
-                                // Benachrichtigung an Koordination
-                                BenachrichtigungsService.SendeBenachrichtigung(
-                                    "Koordination",
-                                    $"{currentUser} hat das Modul '{version.Modul.ModulnameDE}' (Version {FormatVersionsnummer(version.Versionsnummer)}) zur Prüfung eingereicht.",
-                                    version.ModulVersionID
-                                );
+                                WorkflowController.starteGenehmigung(version.Versionsnummer, version.ModulId);
 
                                 MessageBox.Show(
                                     $"Das Modul '{version.Modul.ModulnameDE}' wurde erfolgreich eingereicht und an die Koordination weitergegeben.\n\n" +
@@ -1180,16 +1147,7 @@ namespace Modulverwaltungssoftware
                                     return;
 
                                 // Status ändern
-                                version.ModulStatus = ModulVersion.Status.InPruefungGremium;
-                                version.LetzteAenderung = DateTime.Now;
-                                db.SaveChanges();
-
-                                // Benachrichtigung an Gremium
-                                BenachrichtigungsService.SendeBenachrichtigung(
-                                    "Gremium",
-                                    $"{currentUser} (Koordination) hat das Modul '{version.Modul.ModulnameDE}' (Version {FormatVersionsnummer(version.Versionsnummer)}) zur finalen Genehmigung weitergeleitet.",
-                                    version.ModulVersionID
-                                );
+                                WorkflowController.leiteWeiter(version.Versionsnummer, version.ModulId);
 
                                 MessageBox.Show(
                                     $"Das Modul '{version.Modul.ModulnameDE}' wurde erfolgreich an das Gremium weitergeleitet.\n\n" +
@@ -1226,16 +1184,7 @@ namespace Modulverwaltungssoftware
                                     return;
 
                                 // Status ändern
-                                version.ModulStatus = ModulVersion.Status.Freigegeben;
-                                version.LetzteAenderung = DateTime.Now;
-                                db.SaveChanges();
-
-                                // Benachrichtigung an Ersteller
-                                BenachrichtigungsService.SendeBenachrichtigung(
-                                    version.Ersteller,
-                                    $"Glückwunsch! Ihr Modul '{version.Modul.ModulnameDE}' (Version {FormatVersionsnummer(version.Versionsnummer)}) wurde vom Gremium freigegeben und ist jetzt offiziell veröffentlicht.",
-                                    version.ModulVersionID
-                                );
+                                WorkflowController.schliesseGenehmigungAb(version.Versionsnummer, version.ModulId);
 
                                 MessageBox.Show(
                                     $"Das Modul '{version.Modul.ModulnameDE}' wurde erfolgreich freigegeben und ist jetzt offiziell veröffentlicht.\n\n" +

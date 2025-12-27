@@ -69,13 +69,8 @@ namespace Modulverwaltungssoftware
                         .OrderByDescending(v => v.Versionsnummer)
                         .ToList();
 
-                    if (versionen == null || versionen.Count == 0)
-                    {
-                        MessageBox.Show($"Keine Version für Modul mit ID {modulID} gefunden.");
-                        return null;
-                    }
-                    else
-                        return versionen;
+                    // Gib IMMER eine Liste zurück, auch wenn sie leer ist
+                    return versionen;
                 }
             }
             catch (Exception ex)
@@ -84,7 +79,7 @@ namespace Modulverwaltungssoftware
                 return null;
             }
         } // alle Versionen von Modul abrufen
-        public static void Speichere (ModulVersion version) // Entwurf speichern für Dozent
+        public static void Speichere(ModulVersion version)
         {
             string fehlermeldung = PlausibilitaetsService.pruefeForm(version);
             if (fehlermeldung != "Keine Fehler gefunden.")
@@ -97,30 +92,132 @@ namespace Modulverwaltungssoftware
                 MessageBox.Show("ModulVersion darf nicht null sein.");
                 return;
             }
-            else if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == false && Benutzer.CurrentUser.AktuelleRolle.DarfFreigeben == false) { MessageBox.Show("Nur Benutzer mit Bearbeitungs- oder Freigaberechten können speichern."); return; }
+            else if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == false && Benutzer.CurrentUser.AktuelleRolle.DarfFreigeben == false)
+            {
+                MessageBox.Show("Nur Benutzer mit Bearbeitungs- oder Freigaberechten können speichern.");
+                return;
+            }
             try
+            {
+                    using (var db = new Services.DatabaseContext())
                 {
-                    if (version.ModulStatus == ModulVersion.Status.Entwurf || version.ModulStatus == ModulVersion.Status.Aenderungsbedarf)
+                    // Prüfe, ob das Modul existiert
+                    var modul = db.Modul.FirstOrDefault(m => m.ModulID == version.ModulId);
+
+                    // 1. Modul existiert nicht: Modul anlegen und initiale Version speichern
+                    if (modul == null)
                     {
-                        ModulVersion.setDaten(version);
-                    }
-                    else if (version.ModulStatus == ModulVersion.Status.Archiviert || version.ModulStatus == ModulVersion.Status.Freigegeben)
-                    {
-                        int neueVersionID = ModulController.create((int)version.ModulId);
-                        if (neueVersionID == 0)
+                        if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == false)
                         {
-                            MessageBox.Show("Fehler beim Erstellen einer neuen Version.");
+                            MessageBox.Show("Der aktuelle Benutzer hat keine Berechtigung zum Anlegen von Modulen.");
                             return;
                         }
-                        version.Versionsnummer = neueVersionID;
-                    ModulVersion.setDaten(version);
-                    MessageBox.Show($"Neue Version mit Nummer {neueVersionID} wurde erstellt und gespeichert.");
+                        if (version.Modul.GueltigAb == default)
+                        {
+                            version.Modul.GueltigAb = DateTime.Now;
+                        }
+                        db.Modul.Add(version.Modul);
+                        db.SaveChanges();
+
+                        var neueVersion = new ModulVersion
+                        {
+                            ModulId = version.Modul.ModulID,
+                            Versionsnummer = 1,
+                            GueltigAbSemester = "Entwurf",
+                            ModulStatus = ModulVersion.Status.Entwurf,
+                            LetzteAenderung = DateTime.Now,
+                            WorkloadPraesenz = version.WorkloadPraesenz,
+                            WorkloadSelbststudium = version.WorkloadSelbststudium,
+                            EctsPunkte = version.EctsPunkte,
+                            Pruefungsform = version.Pruefungsform,
+                            Literatur = version.Literatur,
+                            Ersteller = version.Ersteller,
+                            Lernergebnisse = version.Lernergebnisse,
+                            Inhaltsgliederung = version.Inhaltsgliederung
+                        };
+                        db.ModulVersion.Add(neueVersion);
+                        db.SaveChanges();
+                        return;
+                    }
+
+                    // 2. Modul existiert, Version im Entwurf/Aenderungsbedarf: Update bestehende Version
+                    if (version.ModulStatus == ModulVersion.Status.Entwurf || version.ModulStatus == ModulVersion.Status.Aenderungsbedarf)
+                    {
+                        var modulVersion = db.ModulVersion.FirstOrDefault(mv => mv.ModulId == version.ModulId && mv.Versionsnummer == version.Versionsnummer);
+                        if (modulVersion == null)
+                        {
+                            // Neue Version anlegen
+                            var neueVersion = new ModulVersion
+                            {
+                                ModulId = version.ModulId,
+                                Versionsnummer = version.Versionsnummer,
+                                GueltigAbSemester = version.GueltigAbSemester,
+                                ModulStatus = version.ModulStatus,
+                                LetzteAenderung = DateTime.Now,
+                                WorkloadPraesenz = version.WorkloadPraesenz,
+                                WorkloadSelbststudium = version.WorkloadSelbststudium,
+                                EctsPunkte = version.EctsPunkte,
+                                Pruefungsform = version.Pruefungsform,
+                                Literatur = version.Literatur,
+                                Ersteller = version.Ersteller,
+                                Lernergebnisse = version.Lernergebnisse,
+                                Inhaltsgliederung = version.Inhaltsgliederung,
+                                hatKommentar = version.hatKommentar
+                            };
+                            db.ModulVersion.Add(neueVersion);
+                        }
+                        else
+                        {
+                            // Bestehende Version aktualisieren
+                            modulVersion.GueltigAbSemester = version.GueltigAbSemester;
+                            modulVersion.ModulStatus = version.ModulStatus;
+                            modulVersion.LetzteAenderung = DateTime.Now;
+                            modulVersion.WorkloadPraesenz = version.WorkloadPraesenz;
+                            modulVersion.WorkloadSelbststudium = version.WorkloadSelbststudium;
+                            modulVersion.EctsPunkte = version.EctsPunkte;
+                            modulVersion.Pruefungsform = version.Pruefungsform;
+                            modulVersion.Literatur = version.Literatur;
+                            modulVersion.Ersteller = version.Ersteller;
+                            modulVersion.Lernergebnisse = version.Lernergebnisse;
+                            modulVersion.Inhaltsgliederung = version.Inhaltsgliederung;
+                            modulVersion.hatKommentar = version.hatKommentar;
+                        }
+                        db.SaveChanges();
+                        return;
+                    }
+
+                    // 3. Modul existiert, Version ist freigegeben/archiviert/sonst: Neue Version anlegen
+                    int hoechsteVersionsnummer = db.ModulVersion
+                        .Where(v => v.ModulId == version.ModulId)
+                        .Select(v => v.Versionsnummer)
+                        .DefaultIfEmpty(0)
+                        .Max();
+
+                    int neueVersionsnummer = hoechsteVersionsnummer + 1;
+
+                    var neueModulVersion = new ModulVersion
+                    {
+                        ModulId = version.ModulId,
+                        Versionsnummer = neueVersionsnummer,
+                        GueltigAbSemester = "Entwurf",
+                        ModulStatus = ModulVersion.Status.Entwurf,
+                        LetzteAenderung = DateTime.Now,
+                        WorkloadPraesenz = version.WorkloadPraesenz,
+                        WorkloadSelbststudium = version.WorkloadSelbststudium,
+                        EctsPunkte = version.EctsPunkte,
+                        Pruefungsform = version.Pruefungsform,
+                        Literatur = version.Literatur,
+                        Ersteller = version.Ersteller,
+                        Lernergebnisse = version.Lernergebnisse,
+                        Inhaltsgliederung = version.Inhaltsgliederung
+                    };
+                    db.ModulVersion.Add(neueModulVersion);
+                    db.SaveChanges();
                 }
-                    else MessageBox.Show("Speichern im Status 'InPruefung' nicht erlaubt.");
-                }
+            }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten"); ;
+                MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten");
                 return;
             }
         }
@@ -234,6 +331,37 @@ namespace Modulverwaltungssoftware
             {
                 MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten"); ;
                 return null;
+            }
+        }
+        public static int addModul(Modul modul)
+        {
+            if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == false) 
+            { 
+                MessageBox.Show("Der aktuelle Benutzer hat keine Berechtigung zum Anlegen von Modulen."); 
+                return -1;
+            }
+            try
+            {
+                using (var db = new Services.DatabaseContext())
+                {
+                    if (modul == null)
+                    {
+                        MessageBox.Show($"Modul hat keinen Inhalt: {nameof(modul)}");
+                        return -1;
+                    }
+                    if (modul.GueltigAb == default)
+                    {
+                        modul.GueltigAb = DateTime.Now;
+                    }
+                    db.Modul.Add(modul);
+                    db.SaveChanges();
+                    return modul.ModulID;
+                }
+            }
+            catch (Exception ex) 
+            { 
+                MessageBox.Show(ex.Message); 
+                return -1; 
             }
         }
     }

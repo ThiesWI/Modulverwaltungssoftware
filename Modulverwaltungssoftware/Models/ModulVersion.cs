@@ -132,7 +132,7 @@ namespace Modulverwaltungssoftware
         {
             try
             {
-                if (Benutzer.CurrentUser.AktuelleRolle.DarfStatusAendern == false)
+                if (Benutzer.CurrentUser.AktuelleRolle.DarfStatusAendern == false && Benutzer.CurrentUser.RollenName != "Admin")
                 {
                     MessageBox.Show("Der aktuelle Benutzer hat nicht die erforderlichen Rechte, um diese Aktion durchzuführen.");
                     return;
@@ -173,14 +173,41 @@ namespace Modulverwaltungssoftware
                     var modulVersion = db.ModulVersion.FirstOrDefault(mv => mv.Versionsnummer == version.Versionsnummer && mv.ModulId == version.ModulId);
                     if (modulVersion == null)
                     {
-                        MessageBox.Show($"ModulVersion mit ID {version.Versionsnummer} und/oder ModulID {version.ModulId} nicht gefunden.");
+                        // NEU: Alle Parameter direkt übernehmen!
+                        if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == true)
+                        {
+                            modulVersion = new ModulVersion
+                            {
+                                ModulId = version.ModulId,
+                                Versionsnummer = version.Versionsnummer,
+                                GueltigAbSemester = version.GueltigAbSemester,
+                                WorkloadPraesenz = version.WorkloadPraesenz,
+                                WorkloadSelbststudium = version.WorkloadSelbststudium,
+                                EctsPunkte = version.EctsPunkte,
+                                Pruefungsform = version.Pruefungsform,
+                                Literatur = version.Literatur,
+                                Lernergebnisse = version.Lernergebnisse,
+                                Inhaltsgliederung = version.Inhaltsgliederung,
+                                LetzteAenderung = DateTime.Now,
+                                ModulStatus = version.ModulStatus,
+                                Ersteller = version.Ersteller,
+                                hatKommentar = version.hatKommentar
+                            };
+                            db.ModulVersion.Add(modulVersion);
+                            db.SaveChanges();
+                        }
+                        else
+                        {
+                            MessageBox.Show("Der aktuelle Benutzer hat nicht die erforderlichen Rechte, um diese Aktion durchzuführen.");
+                        }
                         return;
                     }
                     if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == true)
                     {
                         if (modulVersion.ModulStatus != Status.Entwurf && modulVersion.ModulStatus != Status.Aenderungsbedarf)
                         {
-                            MessageBox.Show("Nur Module mit dem Status Entwurf oder Aenderungsbedarf können bearbeitet werden.");
+                            ModulController.create(modulVersion.ModulId, modulVersion);
+                            return;
                         }
                         modulVersion.GueltigAbSemester = version.GueltigAbSemester;
                         modulVersion.WorkloadPraesenz = version.WorkloadPraesenz;
@@ -201,7 +228,7 @@ namespace Modulverwaltungssoftware
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten"); ;
+                MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten");
                 return;
             }
         }

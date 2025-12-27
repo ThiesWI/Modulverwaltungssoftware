@@ -51,7 +51,7 @@ namespace Modulverwaltungssoftware
             InitializeComponent();
             _contentScrollViewer = FindName("ContentScrollViewer") as ScrollViewer;
             _isEditMode = false; // Standard: Neues Modul
-            
+
             // ✨ LIVE-VALIDIERUNG: TextChanged-Events registrieren
             EctsTextBox.TextChanged += ValidierePlausibilitaet;
             WorkloadPraesenzTextBox.TextChanged += ValidierePlausibilitaet;
@@ -204,22 +204,62 @@ namespace Modulverwaltungssoftware
                     {
                         ModulnameDE = TitelTextBox.Text,
                         Studiengang = StudiengangTextBox.Text,
-                        Modultyp = Modul.ModultypEnum.Grundlagen, // Default
+                        Modultyp = ModultypListBox.SelectedItem is ListBoxItem typLbi && typLbi.Content.ToString().Contains("Wahlpflicht")
+        ? Modul.ModultypEnum.Wahlpflicht
+        : Modul.ModultypEnum.Grundlagen,
+                        Turnus = TurnusListBox.SelectedItem is ListBoxItem turnusLbi
+        ? (turnusLbi.Content.ToString().Contains("WiSe") || turnusLbi.Content.ToString().Contains("Wintersemester")
+            ? Modul.TurnusEnum.NurWintersemester
+            : (turnusLbi.Content.ToString().Contains("SoSe") || turnusLbi.Content.ToString().Contains("Sommersemester")
+                ? Modul.TurnusEnum.NurSommersemester
+                : Modul.TurnusEnum.JedesSemester))
+        : Modul.TurnusEnum.JedesSemester,
+                        EmpfohlenesSemester = SemesterListBox.SelectedItem is ListBoxItem semLbi && int.TryParse(semLbi.Content.ToString(), out int sem)
+        ? sem
+        : 1,
+                        Voraussetzungen = !string.IsNullOrWhiteSpace(VoraussetzungenTextBox.Text)
+        ? VoraussetzungenTextBox.Text.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).ToList()
+        : new List<string>()
                     };
 
-                    int neueModulId = Studiengang.addModul(tempModul);
+                    int neueModulId = ModulRepository.addModul(tempModul);
 
-                    // ✅ Prüfung ob Plausibilitätsprüfung fehlgeschlagen ist
                     if (neueModulId == -1)
                     {
-                        // Fehlermeldung wurde bereits in ErstelleNeuesModul() angezeigt
-                        return; // Nicht speichern, nicht navigieren
+                        // Fehlermeldung wurde bereits angezeigt
+                        return;
                     }
+
+                    // Jetzt: Initiale ModulVersion mit allen Nutzereingaben anlegen!
+                    var neueVersion = new ModulVersion
+                    {
+                        ModulId = neueModulId,
+                        Versionsnummer = 10, // 1.0
+                        GueltigAbSemester = "Entwurf",
+                        Modul = tempModul,
+                        ModulStatus = ModulVersion.Status.Entwurf,
+                        LetzteAenderung = DateTime.Now,
+                        WorkloadPraesenz = int.Parse(WorkloadPraesenzTextBox.Text),
+                        WorkloadSelbststudium = int.Parse(WorkloadSelbststudiumTextBox.Text),
+                        EctsPunkte = int.Parse(EctsTextBox.Text),
+                        Pruefungsform = PruefungsformListBox.SelectedItem is ListBoxItem lbi ? lbi.Content.ToString() : "Klausur",
+                        Literatur = !string.IsNullOrWhiteSpace(LiteraturTextBox.Text)
+                            ? LiteraturTextBox.Text.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).ToList()
+                            : new List<string>(),
+                        Lernergebnisse = !string.IsNullOrWhiteSpace(LernzieleTextBox.Text)
+                            ? LernzieleTextBox.Text.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).ToList()
+                            : new List<string>(),
+                        Inhaltsgliederung = !string.IsNullOrWhiteSpace(LehrinhalteTextBox.Text)
+                            ? LehrinhalteTextBox.Text.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).ToList()
+                            : new List<string>(),
+                        Ersteller = VerantwortlicherTextBox.Text,
+                        hatKommentar = false
+                    };
+                    ModulRepository.Speichere(neueVersion);
 
                     MessageBox.Show($"Neues Modul '{TitelTextBox.Text}' wurde erfolgreich erstellt.",
                         "Gespeichert", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                    // Zur ModulView mit dem neuen Modul navigieren
                     this.NavigationService?.Navigate(new ModulView(neueModulId));
                 }
                 catch (Exception ex)
@@ -314,6 +354,7 @@ namespace Modulverwaltungssoftware
             // sind GLOBAL für alle Versionen und können nicht versioniert werden.
             // Diese Felder sollten in der UI als "read-only" markiert werden oder
             // Änderungen sollten mit einer Warnung versehen werden.
+            neueVersion.Modul = v.Modul;
             ModulRepository.Speichere(neueVersion);
             return;
         }
@@ -465,7 +506,8 @@ namespace Modulverwaltungssoftware
             {
                 dbVersion.Literatur = new List<string>();
             }
-
+            dbVersion.Modul = WorkflowController.getModulDetails(modulId);
+            dbVersion.ModulStatus = ModulVersion.Status.Entwurf;
             dbVersion.LetzteAenderung = DateTime.Now;
             System.Diagnostics.Debug.WriteLine("Speichere Änderungen in Datenbank...");
             ModulRepository.Speichere(dbVersion);
@@ -602,7 +644,7 @@ namespace Modulverwaltungssoftware
         /// <summary>
         /// Hilfsmethode: Setzt das visuelle Feedback für die Plausibilitätsprüfung
         /// </summary>
-        private void SetPlausibilitaetsFeedback(string icon, string meldung, string details, 
+        private void SetPlausibilitaetsFeedback(string icon, string meldung, string details,
                                                  string backgroundColor, string borderColor, string textColor)
         {
             PlausibilitaetsIcon.Text = icon;

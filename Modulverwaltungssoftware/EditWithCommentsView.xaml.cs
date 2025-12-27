@@ -245,6 +245,7 @@ namespace Modulverwaltungssoftware
                 ModulVersion tempModulVersion = new ModulVersion
                 {
                     ModulId = modulId,
+                    Modul = WorkflowController.getModulDetails(modulId),
                     Versionsnummer = ParseVersionsnummer(_versionNummer),
                     EctsPunkte = ects,
                     WorkloadPraesenz = workloadPraesenz,

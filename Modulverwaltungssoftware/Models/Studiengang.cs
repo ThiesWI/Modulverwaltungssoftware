@@ -35,9 +35,9 @@ namespace Modulverwaltungssoftware
         } // Alle Module abrufen, die mindestens eine aktive Version haben.
         public static int addModul(Modul modul)
         {
-            if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == false) 
-            { 
-                MessageBox.Show("Der aktuelle Benutzer hat keine Berechtigung zum Anlegen von Modulen."); 
+            if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == false)
+            {
+                MessageBox.Show("Der aktuelle Benutzer hat keine Berechtigung zum Anlegen von Modulen.");
                 return -1;
             }
             try
@@ -47,6 +47,7 @@ namespace Modulverwaltungssoftware
                     if (modul == null)
                     {
                         MessageBox.Show($"Modul hat keinen Inhalt: {nameof(modul)}");
+                        return -1;
                     }
                     if (modul.GueltigAb == default)
                     {
@@ -57,7 +58,11 @@ namespace Modulverwaltungssoftware
                     return modul.ModulID;
                 }
             }
-            catch (Exception ex) { MessageBox.Show(ex.Message); return -1; }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return -1;
+            }
             } // Modul erstellen
         public void removeModul(int modulID)
         {
