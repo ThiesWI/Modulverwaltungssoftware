@@ -176,28 +176,41 @@ namespace Modulverwaltungssoftware
         // Methode so anpassen, dass sie auch null akzeptiert und flexibles Matching verwendet
         private void SelectListBoxItems(ListBox listBox, List<string> itemsToSelect)
         {
-            listBox.SelectedItems.Clear();
             if (itemsToSelect == null || itemsToSelect.Count == 0)
+            {
+                listBox.SelectedItem = null;
                 return;
+            }
+            
+            // Nur das erste Item auswählen (Single-Selection-Modus)
+            string firstItemToSelect = itemsToSelect[0].Trim();
             
             foreach (var item in listBox.Items)
             {
                 if (item is ListBoxItem lbi)
                 {
-                    string itemText = lbi.Content.ToString();
-                    // Flexibles Matching: Prüfe ob einer der zu selektierenden Strings Teil des Items ist
-                    foreach (var toSelect in itemsToSelect)
+                    string itemText = lbi.Content.ToString().Trim();
+                    
+                    // Exakte Übereinstimmung bevorzugen
+                    if (string.Equals(itemText, firstItemToSelect, StringComparison.OrdinalIgnoreCase))
                     {
-                        if (!string.IsNullOrEmpty(toSelect) && 
-                            (itemText.Contains(toSelect) || toSelect.Contains(itemText)))
-                        {
-                            listBox.SelectedItems.Add(lbi);
-                            System.Diagnostics.Debug.WriteLine($"  ListBox '{listBox.Name}': Selektiere '{itemText}' (Match: '{toSelect}')");
-                            break; // Nur einmal pro Item selektieren
-                        }
+                        listBox.SelectedItem = lbi;
+                        System.Diagnostics.Debug.WriteLine($"  ListBox '{listBox.Name}': Selektiere '{itemText}' (Exaktes Match: '{firstItemToSelect}')");
+                        return;
+                    }
+                    
+                    // Fallback: Teil-Übereinstimmung
+                    if (itemText.Contains(firstItemToSelect) || firstItemToSelect.Contains(itemText))
+                    {
+                        listBox.SelectedItem = lbi;
+                        System.Diagnostics.Debug.WriteLine($"  ListBox '{listBox.Name}': Selektiere '{itemText}' (Teil-Match: '{firstItemToSelect}')");
+                        return;
                     }
                 }
             }
+            
+            System.Diagnostics.Debug.WriteLine($"?? Kein Match für '{firstItemToSelect}' in {listBox.Name} gefunden");
+            listBox.SelectedItem = null;
         }
 
         private void UpdateVersions(System.Collections.Generic.IEnumerable<string> versions)
@@ -245,11 +258,11 @@ namespace Modulverwaltungssoftware
             var moduleData = new ModuleDataRepository.ModuleData
             {
                 Titel = dbVersion.Modul.ModulnameDE,
-                Modultypen = new List<string> { dbVersion.Modul.Modultyp.ToString() },
+                Modultypen = new List<string> { ConvertModultypEnumToUIString(dbVersion.Modul.Modultyp) },  // ? FIX: UI-String statt Enum
                 Studiengang = dbVersion.Modul.Studiengang,
                 Semester = new List<string> { dbVersion.Modul.EmpfohlenesSemester.ToString() },
                 Pruefungsformen = new List<string> { dbVersion.Pruefungsform },
-                Turnus = new List<string> { dbVersion.Modul.Turnus.ToString() },
+                Turnus = new List<string> { ConvertTurnusEnumToUIString(dbVersion.Modul.Turnus) },  // ? FIX: UI-String statt Enum
                 Ects = dbVersion.EctsPunkte,
                 WorkloadPraesenz = dbVersion.WorkloadPraesenz,
                 WorkloadSelbststudium = dbVersion.WorkloadSelbststudium,
@@ -955,11 +968,11 @@ namespace Modulverwaltungssoftware
             var commentData = new CommentView.ModuleData
             {
                 Titel = dbVersion.Modul.ModulnameDE,
-                Modultypen = new List<string> { dbVersion.Modul.Modultyp.ToString() },
+                Modultypen = new List<string> { ConvertModultypEnumToUIString(dbVersion.Modul.Modultyp) },  // ? FIX: UI-String statt Enum
                 Studiengang = dbVersion.Modul.Studiengang,
                 Semester = new List<string> { dbVersion.Modul.EmpfohlenesSemester.ToString() },
                 Pruefungsformen = new List<string> { dbVersion.Pruefungsform },
-                Turnus = new List<string> { dbVersion.Modul.Turnus.ToString() },
+                Turnus = new List<string> { ConvertTurnusEnumToUIString(dbVersion.Modul.Turnus) },  // ? FIX: UI-String statt Enum
                 Ects = dbVersion.EctsPunkte,
                 WorkloadPraesenz = dbVersion.WorkloadPraesenz,
                 WorkloadSelbststudium = dbVersion.WorkloadSelbststudium,

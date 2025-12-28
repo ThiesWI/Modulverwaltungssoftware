@@ -127,20 +127,39 @@ namespace Modulverwaltungssoftware
 
         private void SelectListBoxItems(ListBox listBox, List<string> itemsToSelect)
         {
-            if (itemsToSelect == null) return;
-            listBox.SelectedItems.Clear();
+            if (itemsToSelect == null || itemsToSelect.Count == 0)
+            {
+                listBox.SelectedItem = null;
+                return;
+            }
+            
+            // Nur das erste Item auswählen (Single-Selection-Modus)
+            string firstItemToSelect = itemsToSelect[0].Trim();
+            
             foreach (var item in listBox.Items)
             {
                 if (item is ListBoxItem lbi)
                 {
-                    string itemText = lbi.Content.ToString();
-                    // Prüfe ob einer der zu selektierenden Strings mit dem Item übereinstimmt
-                    if (itemsToSelect.Any(s => itemText.Contains(s) || s.Contains(itemText)))
+                    string itemText = lbi.Content.ToString().Trim();
+                    
+                    // Exakte Übereinstimmung bevorzugen
+                    if (string.Equals(itemText, firstItemToSelect, StringComparison.OrdinalIgnoreCase))
                     {
-                        listBox.SelectedItems.Add(lbi);
+                        listBox.SelectedItem = lbi;
+                        return;
+                    }
+                    
+                    // Fallback: Teil-Übereinstimmung
+                    if (itemText.Contains(firstItemToSelect) || firstItemToSelect.Contains(itemText))
+                    {
+                        listBox.SelectedItem = lbi;
+                        return;
                     }
                 }
             }
+            
+            System.Diagnostics.Debug.WriteLine($"⚠️ Kein Match für '{firstItemToSelect}' in {listBox.Name} gefunden");
+            listBox.SelectedItem = null;
         }
 
         private void EntwurfSpeichern_Click(object sender, RoutedEventArgs e)
@@ -282,6 +301,15 @@ namespace Modulverwaltungssoftware
             return selected;
         }
 
+        private string GetSelectedListBoxItem(ListBox listBox)
+        {
+            if (listBox.SelectedItem is ListBoxItem lbi)
+            {
+                return lbi.Content.ToString();
+            }
+            return null;
+        }
+
         private void ErstelleNeueVersionMitAenderungen(int modulId, int ects, int workloadPraesenz, int workloadSelbststudium)
         {
             // SPEZIFISCHE kommentierte Version laden (nicht die erste!)
@@ -301,7 +329,7 @@ namespace Modulverwaltungssoftware
                 WorkloadPraesenz = workloadPraesenz,
                 WorkloadSelbststudium = workloadSelbststudium,
                 EctsPunkte = ects,
-                Ersteller = Benutzer.CurrentUser?.Name ?? "Unbekannt",  // ← Problem 4: Aktueller User!
+                Ersteller = Benutzer.CurrentUser?.Name ?? "Unbekannt",
                 hatKommentar = false
             };
             // Modul-Objekt aus dem aktuellen Kontext holen
@@ -357,9 +385,9 @@ namespace Modulverwaltungssoftware
 
 
             // Prüfungsform (versionsspezifisch)
-            var pruefungsformen = GetSelectedListBoxItems(PruefungsformListBox);
-            if (pruefungsformen.Count > 0)
-                neueVersion.Pruefungsform = pruefungsformen[0];
+            string pruefungsform = GetSelectedListBoxItem(PruefungsformListBox);
+            if (!string.IsNullOrEmpty(pruefungsform))
+                neueVersion.Pruefungsform = pruefungsform;
             else
                 neueVersion.Pruefungsform = "Klausur";
 
@@ -454,45 +482,43 @@ namespace Modulverwaltungssoftware
             dbVersion.Modul.ModulnameDE = TitelTextBox.Text;
             dbVersion.Modul.Studiengang = StudiengangTextBox.Text;
 
-            // Modultyp - NIMM NUR DIE ERSTE AUSWAHL!
-            var modultypen = GetSelectedListBoxItems(ModultypListBox);
-            if (modultypen.Count > 0)
+            // Modultyp - EINZELAUSWAHL
+            string modultyp = GetSelectedListBoxItem(ModultypListBox);
+            if (!string.IsNullOrEmpty(modultyp))
             {
-                string ersteAuswahl = modultypen[0];
-                if (ersteAuswahl.Contains("Wahlpflicht"))
+                if (modultyp.Contains("Wahlpflicht"))
                     dbVersion.Modul.Modultyp = Modul.ModultypEnum.Wahlpflicht;
-                else if (ersteAuswahl.Contains("Grundlagen") || ersteAuswahl.Contains("Pflichtmodul"))
+                else if (modultyp.Contains("Grundlagen") || modultyp.Contains("Pflichtmodul"))
                     dbVersion.Modul.Modultyp = Modul.ModultypEnum.Grundlagen;
 
-                System.Diagnostics.Debug.WriteLine($"Speichere Modultyp: '{ersteAuswahl}' -> {dbVersion.Modul.Modultyp}");
+                System.Diagnostics.Debug.WriteLine($"Speichere Modultyp: '{modultyp}' -> {dbVersion.Modul.Modultyp}");
             }
 
-            // Turnus - NIMM NUR DIE ERSTE AUSWAHL!
-            var turnusList = GetSelectedListBoxItems(TurnusListBox);
-            if (turnusList.Count > 0)
+            // Turnus - EINZELAUSWAHL
+            string turnus = GetSelectedListBoxItem(TurnusListBox);
+            if (!string.IsNullOrEmpty(turnus))
             {
-                string ersteAuswahl = turnusList[0];
-                if (ersteAuswahl.Contains("WiSe") || ersteAuswahl.Contains("Wintersemester"))
+                if (turnus.Contains("WiSe") || turnus.Contains("Wintersemester"))
                     dbVersion.Modul.Turnus = Modul.TurnusEnum.NurWintersemester;
-                else if (ersteAuswahl.Contains("SoSe") || ersteAuswahl.Contains("Sommersemester"))
+                else if (turnus.Contains("SoSe") || turnus.Contains("Sommersemester"))
                     dbVersion.Modul.Turnus = Modul.TurnusEnum.NurSommersemester;
-                else if (ersteAuswahl.Contains("Jedes Semester") || ersteAuswahl.Contains("Halbjährlich"))
+                else if (turnus.Contains("Jedes Semester") || turnus.Contains("Halbjährlich"))
                     dbVersion.Modul.Turnus = Modul.TurnusEnum.JedesSemester;
 
-                System.Diagnostics.Debug.WriteLine($"Speichere Turnus: '{ersteAuswahl}' -> {dbVersion.Modul.Turnus}");
+                System.Diagnostics.Debug.WriteLine($"Speichere Turnus: '{turnus}' -> {dbVersion.Modul.Turnus}");
             }
 
-            // Prüfungsform - NIMM NUR DIE ERSTE AUSWAHL!
-            var pruefungsformen = GetSelectedListBoxItems(PruefungsformListBox);
-            if (pruefungsformen.Count > 0)
+            // Prüfungsform - EINZELAUSWAHL
+            string pruefungsform = GetSelectedListBoxItem(PruefungsformListBox);
+            if (!string.IsNullOrEmpty(pruefungsform))
             {
-                dbVersion.Pruefungsform = pruefungsformen[0];
-                System.Diagnostics.Debug.WriteLine($"Speichere Prüfungsform: '{pruefungsformen[0]}'");
+                dbVersion.Pruefungsform = pruefungsform;
+                System.Diagnostics.Debug.WriteLine($"Speichere Prüfungsform: '{pruefungsform}'");
             }
 
-            // Semester - NIMM NUR DIE ERSTE AUSWAHL!
-            var semester = GetSelectedListBoxItems(SemesterListBox);
-            if (semester.Count > 0 && int.TryParse(semester[0], out int sem))
+            // Semester - EINZELAUSWAHL
+            string semester = GetSelectedListBoxItem(SemesterListBox);
+            if (!string.IsNullOrEmpty(semester) && int.TryParse(semester, out int sem))
             {
                 dbVersion.Modul.EmpfohlenesSemester = sem;
                 System.Diagnostics.Debug.WriteLine($"Speichere Semester: {sem}");
@@ -618,6 +644,31 @@ namespace Modulverwaltungssoftware
             return true;
         }
 
+        /// <summary>
+        /// ✨ EINZELAUSWAHL-LOGIK: Ermöglicht das Abwählen durch erneutes Klicken
+        /// </summary>
+        private void ListBox_SingleSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (sender is ListBox listBox)
+            {
+                // Wenn ein bereits ausgewähltes Item erneut geklickt wird, abwählen
+                if (e.AddedItems.Count > 0 && e.RemovedItems.Count > 0)
+                {
+                    // Prüfe ob das neu hinzugefügte Item das gleiche ist wie das entfernte
+                    // (bedeutet: User hat auf das bereits ausgewählte Item geklickt)
+                    var added = e.AddedItems[0];
+                    var removed = e.RemovedItems[0];
+                    
+                    if (added == removed)
+                    {
+                        // Abwählen durch erneutes Setzen auf null
+                        listBox.SelectedItem = null;
+                    }
+                }
+                
+                System.Diagnostics.Debug.WriteLine($"ListBox '{listBox.Name}': SelectedItem = {listBox.SelectedItem?.ToString() ?? "null"}");
+            }
+        }
         /// <summary>
         /// ✨ LIVE-PLAUSIBILITÄTSPRÜFUNG: Validiert ECTS/Workload während der Eingabe
         /// </summary>

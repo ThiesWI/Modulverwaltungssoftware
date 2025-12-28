@@ -67,7 +67,7 @@
                   <StackPanel Margin="0,0,0,10">
                       <TextBlock Text="Modultyp:" Style="{StaticResource CommentFieldLabelStyle}"/>
                       <TextBlock Text="Typ des Moduls" Style="{StaticResource CommentFieldDescriptionStyle}"/>
-                      <ListBox x:Name="ModultypListBox" SelectionMode="Multiple" Width="440">
+                      <ListBox x:Name="ModultypListBox" SelectionMode="Single" Width="440" SelectionChanged="ListBox_SingleSelectionChanged">
                           <ListBoxItem Content="Pflichtmodul"/>
                           <ListBoxItem Content="Wahlpflichtmodul"/>
                           <ListBoxItem Content="Wahlmodul (Freies Wahlfach)"/>
@@ -85,7 +85,7 @@
                   <StackPanel Margin="0,0,0,10">
                       <TextBlock Text="Semester:" Style="{StaticResource CommentFieldLabelStyle}"/>
                       <TextBlock Text="Empfohlenes Semester" Style="{StaticResource CommentFieldDescriptionStyle}"/>
-                      <ListBox x:Name="SemesterListBox" SelectionMode="Multiple" Width="440">
+                      <ListBox x:Name="SemesterListBox" SelectionMode="Single" Width="440" SelectionChanged="ListBox_SingleSelectionChanged">
                           <ListBoxItem Content="1"/>
                           <ListBoxItem Content="2"/>
                           <ListBoxItem Content="3"/>
@@ -100,7 +100,7 @@
                   <StackPanel Margin="0,0,0,10">
                       <TextBlock Text="Prüfungsform:" Style="{StaticResource CommentFieldLabelStyle}"/>
                       <TextBlock Text="Art der Prüfung" Style="{StaticResource CommentFieldDescriptionStyle}"/>
-                      <ListBox x:Name="PruefungsformListBox" SelectionMode="Multiple" Width="440">
+                      <ListBox x:Name="PruefungsformListBox" SelectionMode="Single" Width="440" SelectionChanged="ListBox_SingleSelectionChanged">
                           <ListBoxItem Content="Klausur"/>
                           <ListBoxItem Content="Mündliche Prüfung"/>
                           <ListBoxItem Content="Hausarbeit (Seminararbeit)"/>
@@ -115,7 +115,7 @@
                   <StackPanel Margin="0,0,0,10">
                       <TextBlock Text="Turnus:" Style="{StaticResource CommentFieldLabelStyle}"/>
                       <TextBlock Text="Angebotsrhythmus" Style="{StaticResource CommentFieldDescriptionStyle}"/>
-                      <ListBox x:Name="TurnusListBox" SelectionMode="Multiple" Width="440">
+                      <ListBox x:Name="TurnusListBox" SelectionMode="Single" Width="440" SelectionChanged="ListBox_SingleSelectionChanged">
                           <ListBoxItem Content="Jährlich (WiSe)"/>
                           <ListBoxItem Content="Jährlich (SoSe)"/>
                           <ListBoxItem Content="Halbjährlich (Jedes Semester)"/>
