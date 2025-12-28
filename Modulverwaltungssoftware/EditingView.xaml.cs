@@ -132,23 +132,23 @@ namespace Modulverwaltungssoftware
                 listBox.SelectedItem = null;
                 return;
             }
-            
+
             // Nur das erste Item auswählen (Single-Selection-Modus)
             string firstItemToSelect = itemsToSelect[0].Trim();
-            
+
             foreach (var item in listBox.Items)
             {
                 if (item is ListBoxItem lbi)
                 {
                     string itemText = lbi.Content.ToString().Trim();
-                    
+
                     // Exakte Übereinstimmung bevorzugen
                     if (string.Equals(itemText, firstItemToSelect, StringComparison.OrdinalIgnoreCase))
                     {
                         listBox.SelectedItem = lbi;
                         return;
                     }
-                    
+
                     // Fallback: Teil-Übereinstimmung
                     if (itemText.Contains(firstItemToSelect) || firstItemToSelect.Contains(itemText))
                     {
@@ -157,7 +157,7 @@ namespace Modulverwaltungssoftware
                     }
                 }
             }
-            
+
             System.Diagnostics.Debug.WriteLine($"⚠️ Kein Match für '{firstItemToSelect}' in {listBox.Name} gefunden");
             listBox.SelectedItem = null;
         }
@@ -273,6 +273,7 @@ namespace Modulverwaltungssoftware
                         Ersteller = VerantwortlicherTextBox.Text,
                         hatKommentar = false
                     };
+                    neueVersion.Modul = WorkflowController.getModulDetails(neueModulId);
                     ModulRepository.Speichere(neueVersion);
 
                     MessageBox.Show($"Neues Modul '{TitelTextBox.Text}' wurde erfolgreich erstellt.",
@@ -333,7 +334,7 @@ namespace Modulverwaltungssoftware
                 hatKommentar = false
             };
             // Modul-Objekt aus dem aktuellen Kontext holen
-            var modul = v.Modul;
+            Modul modul = WorkflowController.getModulDetails(modulId);
 
             // Modultyp (Enum)
             if (ModultypListBox.SelectedItem is ListBoxItem modultypItem)
@@ -428,6 +429,7 @@ namespace Modulverwaltungssoftware
             }
 
             neueVersion.Modul = modul;
+
             ModulRepository.Speichere(neueVersion);
             return;
         }
@@ -577,7 +579,6 @@ namespace Modulverwaltungssoftware
             {
                 dbVersion.Literatur = new List<string>();
             }
-            dbVersion.ModulStatus = ModulVersion.Status.Entwurf;
             dbVersion.LetzteAenderung = DateTime.Now;
             System.Diagnostics.Debug.WriteLine("Speichere Änderungen in Datenbank...");
             bool b = ModulRepository.Speichere(dbVersion);
@@ -658,14 +659,14 @@ namespace Modulverwaltungssoftware
                     // (bedeutet: User hat auf das bereits ausgewählte Item geklickt)
                     var added = e.AddedItems[0];
                     var removed = e.RemovedItems[0];
-                    
+
                     if (added == removed)
                     {
                         // Abwählen durch erneutes Setzen auf null
                         listBox.SelectedItem = null;
                     }
                 }
-                
+
                 System.Diagnostics.Debug.WriteLine($"ListBox '{listBox.Name}': SelectedItem = {listBox.SelectedItem?.ToString() ?? "null"}");
             }
         }

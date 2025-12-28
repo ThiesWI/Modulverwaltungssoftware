@@ -210,44 +210,50 @@ namespace Modulverwaltungssoftware
                     }
 
                     // 3. Modul existiert, Version ist freigegeben/archiviert/sonst: Neue Version anlegen
-                    int hoechsteVersionsnummer = db.ModulVersion
-                        .Where(v => v.ModulId == version.ModulId)
-                        .Select(v => v.Versionsnummer)
-                        .DefaultIfEmpty(0)
-                        .Max();
-
-                    int neueVersionsnummer = hoechsteVersionsnummer + 1;
-
-                    var neueModulVersion = new ModulVersion
+                    if (version.ModulStatus == ModulVersion.Status.Freigegeben || version.ModulStatus == ModulVersion.Status.Archiviert)
                     {
-                        ModulId = version.ModulId,
-                        Versionsnummer = neueVersionsnummer,
-                        GueltigAbSemester = "Entwurf",
-                        ModulStatus = ModulVersion.Status.Entwurf,
-                        LetzteAenderung = DateTime.Now,
-                        WorkloadPraesenz = version.WorkloadPraesenz,
-                        WorkloadSelbststudium = version.WorkloadSelbststudium,
-                        EctsPunkte = version.EctsPunkte,
-                        Pruefungsform = version.Pruefungsform,
-                        Literatur = version.Literatur,
-                        Ersteller = version.Ersteller,
-                        Lernergebnisse = version.Lernergebnisse,
-                        Inhaltsgliederung = version.Inhaltsgliederung,
-                    };
-                    db.ModulVersion.Add(neueModulVersion);
-                    var mod = db.Modul.FirstOrDefault(m => m.ModulID == version.ModulId);
-                    mod.Turnus = version.Modul.Turnus;
-                    mod.ModulnameDE = version.Modul.ModulnameDE;
-                    mod.ModulnameEN = version.Modul.ModulnameEN;
-                    mod.Modultyp = version.Modul.Modultyp;
-                    mod.PruefungsForm = version.Modul.PruefungsForm;
-                    mod.EmpfohlenesSemester = version.Modul.EmpfohlenesSemester;
-                    mod.GueltigAb = version.Modul.GueltigAb;
-                    mod.DauerInSemestern = version.Modul.DauerInSemestern;
-                    mod.Voraussetzungen = version.Modul.Voraussetzungen;
-                    mod.Studiengang = version.Modul.Studiengang;
-                    db.SaveChanges();
-                    return true;
+                        int hoechsteVersionsnummer = db.ModulVersion
+                            .Where(v => v.ModulId == version.ModulId)
+                            .Select(v => v.Versionsnummer)
+                            .DefaultIfEmpty(0)
+                            .Max();
+
+                        int neueVersionsnummer = hoechsteVersionsnummer + 10;
+
+                        var neueModulVersion = new ModulVersion
+                        {
+                            ModulId = version.ModulId,
+                            Versionsnummer = neueVersionsnummer,
+                            GueltigAbSemester = "Entwurf",
+                            ModulStatus = ModulVersion.Status.Entwurf,
+                            LetzteAenderung = DateTime.Now,
+                            WorkloadPraesenz = version.WorkloadPraesenz,
+                            WorkloadSelbststudium = version.WorkloadSelbststudium,
+                            EctsPunkte = version.EctsPunkte,
+                            Pruefungsform = version.Pruefungsform,
+                            Literatur = version.Literatur,
+                            Ersteller = version.Ersteller,
+                            Lernergebnisse = version.Lernergebnisse,
+                            Inhaltsgliederung = version.Inhaltsgliederung,
+                        };
+                        db.ModulVersion.Add(neueModulVersion);
+                        var mod = db.Modul.FirstOrDefault(m => m.ModulID == version.ModulId);
+                        mod.Turnus = version.Modul.Turnus;
+                        mod.ModulnameDE = version.Modul.ModulnameDE;
+                        mod.ModulnameEN = version.Modul.ModulnameEN;
+                        mod.Modultyp = version.Modul.Modultyp;
+                        mod.PruefungsForm = version.Modul.PruefungsForm;
+                        mod.EmpfohlenesSemester = version.Modul.EmpfohlenesSemester;
+                        mod.GueltigAb = version.Modul.GueltigAb;
+                        mod.DauerInSemestern = version.Modul.DauerInSemestern;
+                        mod.Voraussetzungen = version.Modul.Voraussetzungen;
+                        mod.Studiengang = version.Modul.Studiengang;
+                        db.SaveChanges();
+                        return true;
+                    }
+                    else
+                    MessageBox.Show("Module mit Status InPruefung dürfen nicht bearbeitet werden.");
+                    return false;
                 }
             }
             catch (Exception ex)
