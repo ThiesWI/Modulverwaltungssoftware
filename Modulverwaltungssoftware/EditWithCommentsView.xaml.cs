@@ -104,20 +104,39 @@ namespace Modulverwaltungssoftware
 
         private void SelectListBoxItems(ListBox listBox, List<string> itemsToSelect)
         {
-            if (itemsToSelect == null) return;
-            listBox.SelectedItems.Clear();
+            if (itemsToSelect == null || itemsToSelect.Count == 0)
+            {
+                listBox.SelectedItem = null;
+                return;
+            }
+            
+            // Nur das erste Item auswählen (Single-Selection-Modus)
+            string firstItemToSelect = itemsToSelect[0].Trim();
+            
             foreach (var item in listBox.Items)
             {
                 if (item is ListBoxItem lbi)
                 {
-                    string itemText = lbi.Content.ToString();
-                    // Prüfe ob einer der zu selektierenden Strings mit dem Item übereinstimmt
-                    if (itemsToSelect.Any(s => itemText.Contains(s) || s.Contains(itemText)))
+                    string itemText = lbi.Content.ToString().Trim();
+                    
+                    // Exakte Übereinstimmung bevorzugen
+                    if (string.Equals(itemText, firstItemToSelect, StringComparison.OrdinalIgnoreCase))
                     {
-                        listBox.SelectedItems.Add(lbi);
+                        listBox.SelectedItem = lbi;
+                        return;
+                    }
+                    
+                    // Fallback: Teil-Übereinstimmung
+                    if (itemText.Contains(firstItemToSelect) || firstItemToSelect.Contains(itemText))
+                    {
+                        listBox.SelectedItem = lbi;
+                        return;
                     }
                 }
             }
+            
+            System.Diagnostics.Debug.WriteLine($"⚠️ Kein Match für '{firstItemToSelect}' in {listBox.Name} gefunden");
+            listBox.SelectedItem = null;
         }
 
         private void DisplayComments(ModuleDataRepository.CommentData comments)
@@ -251,9 +270,9 @@ namespace Modulverwaltungssoftware
                     WorkloadPraesenz = workloadPraesenz,
                     WorkloadSelbststudium = workloadSelbststudium
                 };
-                var pruefungsformen = GetSelectedListBoxItems(PruefungsformListBox);
-                if (pruefungsformen.Count > 0)
-                    tempModulVersion.Pruefungsform = pruefungsformen[0];
+                var pruefungsformen = GetSelectedListBoxItem(PruefungsformListBox);
+                if (!string.IsNullOrEmpty(pruefungsformen))
+                    tempModulVersion.Pruefungsform = pruefungsformen;
                 else
                     tempModulVersion.Pruefungsform = "Klausur";
 
@@ -331,6 +350,15 @@ namespace Modulverwaltungssoftware
             return selected;
         }
 
+        private string GetSelectedListBoxItem(ListBox listBox)
+        {
+            if (listBox.SelectedItem is ListBoxItem lbi)
+            {
+                return lbi.Content.ToString();
+            }
+            return null;
+        }
+
         private void KommentarVerwerfen_Click(object sender, RoutedEventArgs e)
         {
             var result = MessageBox.Show(
@@ -343,6 +371,32 @@ namespace Modulverwaltungssoftware
             {
                 // Zurück zur ModulView
                 this.NavigationService?.Navigate(new ModulView(int.Parse(_modulId)));
+            }
+        }
+
+        /// <summary>
+        /// ✨ EINZELAUSWAHL-LOGIK: Ermöglicht das Abwählen durch erneutes Klicken
+        /// </summary>
+        private void ListBox_SingleSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (sender is ListBox listBox)
+            {
+                // Wenn ein bereits ausgewähltes Item erneut geklickt wird, abwählen
+                if (e.AddedItems.Count > 0 && e.RemovedItems.Count > 0)
+                {
+                    // Prüfe ob das neu hinzugefügte Item das gleiche ist wie das entfernte
+                    // (bedeutet: User hat auf das bereits ausgewählte Item geklickt)
+                    var added = e.AddedItems[0];
+                    var removed = e.RemovedItems[0];
+                    
+                    if (added == removed)
+                    {
+                        // Abwählen durch erneutes Setzen auf null
+                        listBox.SelectedItem = null;
+                    }
+                }
+                
+                System.Diagnostics.Debug.WriteLine($"ListBox '{listBox.Name}': SelectedItem = {listBox.SelectedItem?.ToString() ?? "null"}");
             }
         }
 

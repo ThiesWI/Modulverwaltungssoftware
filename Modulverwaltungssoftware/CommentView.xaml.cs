@@ -94,20 +94,39 @@ namespace Modulverwaltungssoftware
 
         private void SelectListBoxItems(ListBox listBox, List<string> itemsToSelect)
         {
-            if (itemsToSelect == null) return;
-            listBox.SelectedItems.Clear();
+            if (itemsToSelect == null || itemsToSelect.Count == 0)
+            {
+                listBox.SelectedItem = null;
+                return;
+            }
+            
+            // Nur das erste Item auswählen (Single-Selection-Modus)
+            string firstItemToSelect = itemsToSelect[0].Trim();
+            
             foreach (var item in listBox.Items)
             {
                 if (item is ListBoxItem lbi)
                 {
-                    string itemText = lbi.Content.ToString();
-                    // Prüfe ob einer der zu selektierenden Strings mit dem Item übereinstimmt
-                    if (itemsToSelect.Any(s => itemText.Contains(s) || s.Contains(itemText)))
+                    string itemText = lbi.Content.ToString().Trim();
+                    
+                    // Exakte Übereinstimmung bevorzugen
+                    if (string.Equals(itemText, firstItemToSelect, StringComparison.OrdinalIgnoreCase))
                     {
-                        listBox.SelectedItems.Add(lbi);
+                        listBox.SelectedItem = lbi;
+                        return;
+                    }
+                    
+                    // Fallback: Teil-Übereinstimmung
+                    if (itemText.Contains(firstItemToSelect) || firstItemToSelect.Contains(itemText))
+                    {
+                        listBox.SelectedItem = lbi;
+                        return;
                     }
                 }
             }
+            
+            System.Diagnostics.Debug.WriteLine($"⚠️ Kein Match für '{firstItemToSelect}' in {listBox.Name} gefunden");
+            listBox.SelectedItem = null;
         }
 
         private void KommentarAbschicken_Click(object sender, RoutedEventArgs e)
