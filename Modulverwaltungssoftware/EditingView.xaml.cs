@@ -205,21 +205,21 @@ namespace Modulverwaltungssoftware
                         ModulnameDE = TitelTextBox.Text,
                         Studiengang = StudiengangTextBox.Text,
                         Modultyp = ModultypListBox.SelectedItem is ListBoxItem typLbi && typLbi.Content.ToString().Contains("Wahlpflicht")
-        ? Modul.ModultypEnum.Wahlpflicht
-        : Modul.ModultypEnum.Grundlagen,
+                        ? Modul.ModultypEnum.Wahlpflicht
+                        : Modul.ModultypEnum.Grundlagen,
                         Turnus = TurnusListBox.SelectedItem is ListBoxItem turnusLbi
-        ? (turnusLbi.Content.ToString().Contains("WiSe") || turnusLbi.Content.ToString().Contains("Wintersemester")
-            ? Modul.TurnusEnum.NurWintersemester
-            : (turnusLbi.Content.ToString().Contains("SoSe") || turnusLbi.Content.ToString().Contains("Sommersemester")
-                ? Modul.TurnusEnum.NurSommersemester
-                : Modul.TurnusEnum.JedesSemester))
-        : Modul.TurnusEnum.JedesSemester,
+                        ? (turnusLbi.Content.ToString().Contains("WiSe") || turnusLbi.Content.ToString().Contains("Wintersemester")
+                        ? Modul.TurnusEnum.NurWintersemester
+                        : (turnusLbi.Content.ToString().Contains("SoSe") || turnusLbi.Content.ToString().Contains("Sommersemester")
+                        ? Modul.TurnusEnum.NurSommersemester
+                        : Modul.TurnusEnum.JedesSemester))
+                        : Modul.TurnusEnum.JedesSemester,
                         EmpfohlenesSemester = SemesterListBox.SelectedItem is ListBoxItem semLbi && int.TryParse(semLbi.Content.ToString(), out int sem)
-        ? sem
-        : 1,
+                        ? sem
+                        : 1,
                         Voraussetzungen = !string.IsNullOrWhiteSpace(VoraussetzungenTextBox.Text)
-        ? VoraussetzungenTextBox.Text.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).ToList()
-        : new List<string>()
+                        ? VoraussetzungenTextBox.Text.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).ToList()
+                        : new List<string>()
                     };
 
                     int neueModulId = ModulRepository.addModul(tempModul);
@@ -236,7 +236,6 @@ namespace Modulverwaltungssoftware
                         ModulId = neueModulId,
                         Versionsnummer = 10, // 1.0
                         GueltigAbSemester = "Entwurf",
-                        Modul = tempModul,
                         ModulStatus = ModulVersion.Status.Entwurf,
                         LetzteAenderung = DateTime.Now,
                         WorkloadPraesenz = int.Parse(WorkloadPraesenzTextBox.Text),
@@ -305,6 +304,57 @@ namespace Modulverwaltungssoftware
                 Ersteller = Benutzer.CurrentUser?.Name ?? "Unbekannt",  // ← Problem 4: Aktueller User!
                 hatKommentar = false
             };
+            // Modul-Objekt aus dem aktuellen Kontext holen
+            var modul = v.Modul;
+
+            // Modultyp (Enum)
+            if (ModultypListBox.SelectedItem is ListBoxItem modultypItem)
+            {
+                // Annahme: Content ist der Anzeigename, z.B. "Wahlpflichtmodul"
+                // Mapping von UI-String zu Enum
+                string modultypString = modultypItem.Content.ToString();
+                if (modultypString.Contains("Wahlpflicht"))
+                    modul.Modultyp = Modul.ModultypEnum.Wahlpflicht;
+                else if (modultypString.Contains("Grundlagen"))
+                    modul.Modultyp = Modul.ModultypEnum.Grundlagen;
+                // ggf. weitere Fälle ergänzen
+            }
+
+            // Turnus (Enum)
+            if (TurnusListBox.SelectedItem is ListBoxItem turnusItem)
+            {
+                string turnusString = turnusItem.Content.ToString();
+                if (turnusString.Contains("Jedes Semester"))
+                    modul.Turnus = Modul.TurnusEnum.JedesSemester;
+                else if (turnusString.Contains("WiSe"))
+                    modul.Turnus = Modul.TurnusEnum.NurWintersemester;
+                else if (turnusString.Contains("SoSe"))
+                    modul.Turnus = Modul.TurnusEnum.NurSommersemester;
+                // ggf. weitere Fälle ergänzen
+            }
+
+            // EmpfohlenesSemester (int)
+            if (SemesterListBox.SelectedItem is ListBoxItem semesterItem &&
+                int.TryParse(semesterItem.Content.ToString(), out int semester))
+            {
+                modul.EmpfohlenesSemester = semester;
+            }
+
+            // Voraussetzungen (List<string> aus TextBox)
+            if (!string.IsNullOrWhiteSpace(VoraussetzungenTextBox.Text))
+            {
+                modul.Voraussetzungen = VoraussetzungenTextBox.Text
+                    .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
+                    .ToList();
+            }
+            else
+            {
+                modul.Voraussetzungen = new List<string>();
+            }
+
+            // Studiengang (string)
+            modul.Studiengang = StudiengangTextBox.Text;
+
 
             // Prüfungsform (versionsspezifisch)
             var pruefungsformen = GetSelectedListBoxItems(PruefungsformListBox);
@@ -349,12 +399,7 @@ namespace Modulverwaltungssoftware
                 neueVersion.Literatur = new List<string>();
             }
 
-            // WICHTIG: Modul-Daten werden NICHT geändert!
-            // Titel, Studiengang, Modultyp, Turnus, Semester, Voraussetzungen
-            // sind GLOBAL für alle Versionen und können nicht versioniert werden.
-            // Diese Felder sollten in der UI als "read-only" markiert werden oder
-            // Änderungen sollten mit einer Warnung versehen werden.
-            neueVersion.Modul = v.Modul;
+            neueVersion.Modul = modul;
             ModulRepository.Speichere(neueVersion);
             return;
         }
@@ -506,12 +551,18 @@ namespace Modulverwaltungssoftware
             {
                 dbVersion.Literatur = new List<string>();
             }
-            dbVersion.Modul = WorkflowController.getModulDetails(modulId);
             dbVersion.ModulStatus = ModulVersion.Status.Entwurf;
             dbVersion.LetzteAenderung = DateTime.Now;
             System.Diagnostics.Debug.WriteLine("Speichere Änderungen in Datenbank...");
-            ModulRepository.Speichere(dbVersion);
-            System.Diagnostics.Debug.WriteLine("Erfolgreich gespeichert!");
+            bool b = ModulRepository.Speichere(dbVersion);
+            if (b == true)
+            {
+                System.Diagnostics.Debug.WriteLine("Erfolgreich gespeichert!");
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("Fehler beim Speichern!");
+            }
         }
         private void EntwurfVerwerfen_Click(object sender, RoutedEventArgs e)
         {

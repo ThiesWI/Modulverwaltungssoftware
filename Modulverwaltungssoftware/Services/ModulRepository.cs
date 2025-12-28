@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Validation;
 using System.Linq;
-using System.Data.Entity;
 using System.Windows; // <--- Diese using-Direktive ergänzen
 
 namespace Modulverwaltungssoftware
@@ -79,27 +79,27 @@ namespace Modulverwaltungssoftware
                 return null;
             }
         } // alle Versionen von Modul abrufen
-        public static void Speichere(ModulVersion version)
+        public static bool Speichere(ModulVersion version)
         {
             string fehlermeldung = PlausibilitaetsService.pruefeForm(version);
             if (fehlermeldung != "Keine Fehler gefunden.")
             {
                 MessageBox.Show(fehlermeldung, "Moduldaten wurden nicht in die Datenbank übernommen.");
-                return;
+                return false;
             }
             if (version == null)
             {
                 MessageBox.Show("ModulVersion darf nicht null sein.");
-                return;
+                return false;
             }
             else if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == false && Benutzer.CurrentUser.AktuelleRolle.DarfFreigeben == false)
             {
                 MessageBox.Show("Nur Benutzer mit Bearbeitungs- oder Freigaberechten können speichern.");
-                return;
+                return false;
             }
             try
             {
-                    using (var db = new Services.DatabaseContext())
+                using (var db = new Services.DatabaseContext())
                 {
                     // Prüfe, ob das Modul existiert
                     var modul = db.Modul.FirstOrDefault(m => m.ModulID == version.ModulId);
@@ -110,7 +110,7 @@ namespace Modulverwaltungssoftware
                         if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == false)
                         {
                             MessageBox.Show("Der aktuelle Benutzer hat keine Berechtigung zum Anlegen von Modulen.");
-                            return;
+                            return false;
                         }
                         if (version.Modul.GueltigAb == default)
                         {
@@ -133,11 +133,11 @@ namespace Modulverwaltungssoftware
                             Literatur = version.Literatur,
                             Ersteller = version.Ersteller,
                             Lernergebnisse = version.Lernergebnisse,
-                            Inhaltsgliederung = version.Inhaltsgliederung
+                            Inhaltsgliederung = version.Inhaltsgliederung,
                         };
                         db.ModulVersion.Add(neueVersion);
                         db.SaveChanges();
-                        return;
+                        return true;
                     }
 
                     // 2. Modul existiert, Version im Entwurf/Aenderungsbedarf: Update bestehende Version
@@ -162,8 +162,19 @@ namespace Modulverwaltungssoftware
                                 Ersteller = version.Ersteller,
                                 Lernergebnisse = version.Lernergebnisse,
                                 Inhaltsgliederung = version.Inhaltsgliederung,
-                                hatKommentar = version.hatKommentar
+                                hatKommentar = version.hatKommentar,
                             };
+                            var mod1 = db.Modul.FirstOrDefault(m => m.ModulID == version.ModulId);
+                            mod1.Turnus = version.Modul.Turnus;
+                            mod1.ModulnameDE = version.Modul.ModulnameDE;
+                            mod1.ModulnameEN = version.Modul.ModulnameEN;
+                            mod1.Modultyp = version.Modul.Modultyp;
+                            mod1.PruefungsForm = version.Modul.PruefungsForm;
+                            mod1.EmpfohlenesSemester = version.Modul.EmpfohlenesSemester;
+                            mod1.GueltigAb = version.Modul.GueltigAb;
+                            mod1.DauerInSemestern = version.Modul.DauerInSemestern;
+                            mod1.Voraussetzungen = version.Modul.Voraussetzungen;
+                            mod1.Studiengang = version.Modul.Studiengang;
                             db.ModulVersion.Add(neueVersion);
                         }
                         else
@@ -181,9 +192,21 @@ namespace Modulverwaltungssoftware
                             modulVersion.Lernergebnisse = version.Lernergebnisse;
                             modulVersion.Inhaltsgliederung = version.Inhaltsgliederung;
                             modulVersion.hatKommentar = version.hatKommentar;
+
+                            var mod2 = db.Modul.FirstOrDefault(m => m.ModulID == version.ModulId);
+                            mod2.Turnus = version.Modul.Turnus;
+                            mod2.ModulnameDE = version.Modul.ModulnameDE;
+                            mod2.ModulnameEN = version.Modul.ModulnameEN;
+                            mod2.Modultyp = version.Modul.Modultyp;
+                            mod2.PruefungsForm = version.Modul.PruefungsForm;
+                            mod2.EmpfohlenesSemester = version.Modul.EmpfohlenesSemester;
+                            mod2.GueltigAb = version.Modul.GueltigAb;
+                            mod2.DauerInSemestern = version.Modul.DauerInSemestern;
+                            mod2.Voraussetzungen = version.Modul.Voraussetzungen;
+                            mod2.Studiengang = version.Modul.Studiengang;
                         }
                         db.SaveChanges();
-                        return;
+                        return true;
                     }
 
                     // 3. Modul existiert, Version ist freigegeben/archiviert/sonst: Neue Version anlegen
@@ -209,16 +232,28 @@ namespace Modulverwaltungssoftware
                         Literatur = version.Literatur,
                         Ersteller = version.Ersteller,
                         Lernergebnisse = version.Lernergebnisse,
-                        Inhaltsgliederung = version.Inhaltsgliederung
+                        Inhaltsgliederung = version.Inhaltsgliederung,
                     };
                     db.ModulVersion.Add(neueModulVersion);
+                    var mod = db.Modul.FirstOrDefault(m => m.ModulID == version.ModulId);
+                    mod.Turnus = version.Modul.Turnus;
+                    mod.ModulnameDE = version.Modul.ModulnameDE;
+                    mod.ModulnameEN = version.Modul.ModulnameEN;
+                    mod.Modultyp = version.Modul.Modultyp;
+                    mod.PruefungsForm = version.Modul.PruefungsForm;
+                    mod.EmpfohlenesSemester = version.Modul.EmpfohlenesSemester;
+                    mod.GueltigAb = version.Modul.GueltigAb;
+                    mod.DauerInSemestern = version.Modul.DauerInSemestern;
+                    mod.Voraussetzungen = version.Modul.Voraussetzungen;
+                    mod.Studiengang = version.Modul.Studiengang;
                     db.SaveChanges();
+                    return true;
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten");
-                return;
+                return false;
             }
         }
         public static List<Modul> sucheModule(string suchbegriff)
@@ -248,7 +283,7 @@ namespace Modulverwaltungssoftware
                 return null;
             }
         }
-    public static List<Modul> getAllModule()
+        public static List<Modul> getAllModule()
         {
             try
             {
@@ -268,7 +303,7 @@ namespace Modulverwaltungssoftware
                 return null;
             }
         } // alle gültigen Module abrufen
-        
+
         /// <summary>
         /// Gibt Module zurück die für den aktuellen Benutzer sichtbar sind (basierend auf Status und Rolle)
         /// </summary>
@@ -280,7 +315,7 @@ namespace Modulverwaltungssoftware
                 {
                     string currentUser = Benutzer.CurrentUser?.Name;
                     string rolle = Benutzer.CurrentUser?.RollenName ?? "Gast";
-                    
+
                     // Admin, Koordination und Gremium sehen ALLE Module
                     if (rolle == "Admin" || rolle == "Koordination" || rolle == "Gremium")
                     {
@@ -290,12 +325,12 @@ namespace Modulverwaltungssoftware
                             .OrderBy(m => m.ModulnameDE)
                             .ToList();
                     }
-                    
+
                     // Dozent: Eigene Module (alle Stati) + Freigegebene Module anderer
                     if (rolle == "Dozent")
                     {
                         var modulIds = db.ModulVersion
-                            .Where(v => 
+                            .Where(v =>
                                 // Eigene Module (alle Stati)
                                 v.Ersteller == currentUser ||
                                 // ODER: Freigegebene Module
@@ -303,25 +338,25 @@ namespace Modulverwaltungssoftware
                             .Select(v => v.ModulId)
                             .Distinct()
                             .ToList();
-                        
+
                         return db.Modul
                             .Include("ModulVersionen")
-                            .Where(m => modulIds.Contains(m.ModulID) && 
+                            .Where(m => modulIds.Contains(m.ModulID) &&
                                        m.GueltigAb != null && m.GueltigAb < DateTime.Now)
                             .OrderBy(m => m.ModulnameDE)
                             .ToList();
                     }
-                    
+
                     // Gast: NUR freigegebene Module
                     var freigegebeneModulIds = db.ModulVersion
                         .Where(v => v.ModulStatus == ModulVersion.Status.Freigegeben)
                         .Select(v => v.ModulId)
                         .Distinct()
                         .ToList();
-                    
+
                     return db.Modul
                         .Include("ModulVersionen")
-                        .Where(m => freigegebeneModulIds.Contains(m.ModulID) && 
+                        .Where(m => freigegebeneModulIds.Contains(m.ModulID) &&
                                    m.GueltigAb != null && m.GueltigAb < DateTime.Now)
                         .OrderBy(m => m.ModulnameDE)
                         .ToList();
@@ -335,9 +370,9 @@ namespace Modulverwaltungssoftware
         }
         public static int addModul(Modul modul)
         {
-            if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == false) 
-            { 
-                MessageBox.Show("Der aktuelle Benutzer hat keine Berechtigung zum Anlegen von Modulen."); 
+            if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == false)
+            {
+                MessageBox.Show("Der aktuelle Benutzer hat keine Berechtigung zum Anlegen von Modulen.");
                 return -1;
             }
             try
@@ -358,10 +393,10 @@ namespace Modulverwaltungssoftware
                     return modul.ModulID;
                 }
             }
-            catch (Exception ex) 
-            { 
-                MessageBox.Show(ex.Message); 
-                return -1; 
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return -1;
             }
         }
     }

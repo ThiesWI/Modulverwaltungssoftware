@@ -59,6 +59,7 @@
                                 <TextBlock Text="Titel:" Style="{StaticResource CommentFieldLabelStyle}"/>
                                 <TextBlock Text="Titel des Moduls" Style="{StaticResource CommentFieldDescriptionStyle}"/>
                                 <TextBox x:Name="TitelTextBox" 
+                                         IsReadOnly="True"
                                          AutomationProperties.Name="Titel des Moduls"
                                          AutomationProperties.HelpText="Read-only Feld"
                                          Height="24" TextWrapping="Wrap" HorizontalScrollBarVisibility="Disabled" MaxLength="100"

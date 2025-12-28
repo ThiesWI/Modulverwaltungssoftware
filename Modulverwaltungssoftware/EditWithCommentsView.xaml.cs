@@ -256,7 +256,7 @@ namespace Modulverwaltungssoftware
                     tempModulVersion.Pruefungsform = pruefungsformen[0];
                 else
                     tempModulVersion.Pruefungsform = "Klausur";
-
+                tempModulVersion.Ersteller = VerantwortlicherTextBox.Text;
                 // Lernziele (versionsspezifisch)
                 if (!string.IsNullOrWhiteSpace(LernzieleTextBox.Text))
                 {
@@ -292,17 +292,71 @@ namespace Modulverwaltungssoftware
                 {
                     tempModulVersion.Literatur = new List<string>();
                 }
+                
+                // Modul-Objekt aus dem aktuellen Kontext holen
+                var modul = tempModulVersion.Modul;
+
+                // Modultyp (Enum)
+                if (ModultypListBox.SelectedItem is ListBoxItem modultypItem)
+                {
+                    // Annahme: Content ist der Anzeigename, z.B. "Wahlpflichtmodul"
+                    // Mapping von UI-String zu Enum
+                    string modultypString = modultypItem.Content.ToString();
+                    if (modultypString.Contains("Wahlpflicht"))
+                        modul.Modultyp = Modul.ModultypEnum.Wahlpflicht;
+                    else if (modultypString.Contains("Grundlagen"))
+                        modul.Modultyp = Modul.ModultypEnum.Grundlagen;
+                    // ggf. weitere Fälle ergänzen
+                }
+
+                // Turnus (Enum)
+                if (TurnusListBox.SelectedItem is ListBoxItem turnusItem)
+                {
+                    string turnusString = turnusItem.Content.ToString();
+                    if (turnusString.Contains("Jedes Semester"))
+                        modul.Turnus = Modul.TurnusEnum.JedesSemester;
+                    else if (turnusString.Contains("WiSe"))
+                        modul.Turnus = Modul.TurnusEnum.NurWintersemester;
+                    else if (turnusString.Contains("SoSe"))
+                        modul.Turnus = Modul.TurnusEnum.NurSommersemester;
+                    // ggf. weitere Fälle ergänzen
+                }
+
+                // EmpfohlenesSemester (int)
+                if (SemesterListBox.SelectedItem is ListBoxItem semesterItem &&
+                    int.TryParse(semesterItem.Content.ToString(), out int semester))
+                {
+                    modul.EmpfohlenesSemester = semester;
+                }
+
+                // Voraussetzungen (List<string> aus TextBox)
+                if (!string.IsNullOrWhiteSpace(VoraussetzungenTextBox.Text))
+                {
+                    modul.Voraussetzungen = VoraussetzungenTextBox.Text
+                        .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
+                        .ToList();
+                }
+                else
+                {
+                    modul.Voraussetzungen = new List<string>();
+                }
+
+                // Studiengang (string)
+                modul.Studiengang = StudiengangTextBox.Text;
+
                 // Kommentierte Version bearbeiten → Neue Version erstellen
-                ModulRepository.Speichere(tempModulVersion);
+                bool s = ModulRepository.Speichere(tempModulVersion);
                 ModulVersion neueVersion = ModulRepository.getModulVersion(modulId);
 
                 ModulVersion.setStatus(neueVersion.Versionsnummer, modulId, ModulVersion.Status.Entwurf);
-
-                MessageBox.Show($"Änderungen wurden als neue Version gespeichert.\nDie kommentierte Version bleibt erhalten.", 
+                if (s == true)
+                {
+                    MessageBox.Show($"Änderungen erfolgreich gespeichert.\nDie Kommentare bleiben erhalten.",
                     "Gespeichert", MessageBoxButton.OK, MessageBoxImage.Information);
+                    this.NavigationService?.Navigate(new ModulView(modulId));
+                }
+                return;
 
-                // Zurück zur ModulView
-                this.NavigationService?.Navigate(new ModulView(modulId));
             }
             catch (Exception ex)
             {

@@ -158,13 +158,13 @@ namespace Modulverwaltungssoftware
                 return;
             }
         }
-        public static void setDaten(ModulVersion version) //Setzt die Daten der Modulversion in der DB
+        public static bool setDaten(ModulVersion version) //Setzt die Daten der Modulversion in der DB
         {
             string fehlermeldung = PlausibilitaetsService.pruefeForm(version);
             if (fehlermeldung != "Keine Fehler gefunden.")
             {
                 MessageBox.Show(fehlermeldung, "Moduldaten wurden nicht in die Datenbank übernommen.");
-                return;
+                return false;
             }
             try
             {
@@ -195,19 +195,24 @@ namespace Modulverwaltungssoftware
                             };
                             db.ModulVersion.Add(modulVersion);
                             db.SaveChanges();
+                            return true;
                         }
                         else
                         {
                             MessageBox.Show("Der aktuelle Benutzer hat nicht die erforderlichen Rechte, um diese Aktion durchzuführen.");
+                            return false;
                         }
-                        return;
                     }
                     if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == true)
                     {
                         if (modulVersion.ModulStatus != Status.Entwurf && modulVersion.ModulStatus != Status.Aenderungsbedarf)
                         {
-                            ModulController.create(modulVersion.ModulId, modulVersion);
-                            return;
+                            int i = ModulController.create(modulVersion.ModulId, modulVersion);
+                            if (i == -1)
+                            {
+                                MessageBox.Show("Fehler beim Erstellen der neuen Modulversion.");
+                                return false;
+                            }
                         }
                         modulVersion.GueltigAbSemester = version.GueltigAbSemester;
                         modulVersion.WorkloadPraesenz = version.WorkloadPraesenz;
@@ -222,14 +227,16 @@ namespace Modulverwaltungssoftware
                     else
                     {
                         MessageBox.Show("Der aktuelle Benutzer hat nicht die erforderlichen Rechte, um diese Aktion durchzuführen.");
+                        return false;
                     }
                     db.SaveChanges();
+                    return true;
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten");
-                return;
+                return false;
             }
         }
     }

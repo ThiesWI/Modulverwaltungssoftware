@@ -74,7 +74,7 @@ namespace Modulverwaltungssoftware
         catch(Exception ex)
         {
             MessageBox.Show($"Fehler beim Erstellen der neuen Modulversion: {ex.Message}");
-            return 0;
+            return -1;
         }
         } // Neue Modulversion erstellen, basierend auf der letzten Version
         public static int create(int modulID, ModulVersion version)
@@ -108,6 +108,15 @@ namespace Modulverwaltungssoftware
                             Inhaltsgliederung = version.Inhaltsgliederung
                         };
                         db.ModulVersion.Add(erstelleVersion);
+                        Modul modul = db.Modul.FirstOrDefault(m => m.ModulID == modulID);
+                        modul.Turnus = version.Modul.Turnus;
+                        modul.Modultyp = version.Modul.Modultyp;
+                        modul.PruefungsForm = version.Modul.PruefungsForm;
+                        modul.EmpfohlenesSemester = version.Modul.EmpfohlenesSemester;
+                        modul.GueltigAb = version.Modul.GueltigAb;
+                        modul.DauerInSemestern = version.Modul.DauerInSemestern;
+                        modul.Voraussetzungen = version.Modul.Voraussetzungen;
+                        db.SaveChanges();
                         db.SaveChanges();
                         return version.Versionsnummer;
                     }
@@ -128,8 +137,15 @@ namespace Modulverwaltungssoftware
                         Lernergebnisse = version.Lernergebnisse,
                         Inhaltsgliederung = version.Inhaltsgliederung,
                     };
-
                     db.ModulVersion.Add(neueVersion);
+                    Modul mod = db.Modul.FirstOrDefault(m => m.ModulID == modulID);
+                    mod.Turnus = version.Modul.Turnus;
+                    mod.Modultyp = version.Modul.Modultyp;
+                    mod.PruefungsForm = version.Modul.PruefungsForm;
+                    mod.EmpfohlenesSemester = version.Modul.EmpfohlenesSemester;
+                    mod.GueltigAb = version.Modul.GueltigAb;
+                    mod.DauerInSemestern = version.Modul.DauerInSemestern;
+                    mod.Voraussetzungen = version.Modul.Voraussetzungen;
                     db.SaveChanges();
 
                     // Erfolgsmeldung nur im Frontend!
@@ -139,7 +155,7 @@ namespace Modulverwaltungssoftware
             catch (Exception ex)
             {
                 MessageBox.Show($"Fehler beim Erstellen der neuen Modulversion: {ex.Message}");
-                return 0;
+                return -1;
             }
         } // Neue Modulversion erstellen, basierend auf der letzten Version
     }
