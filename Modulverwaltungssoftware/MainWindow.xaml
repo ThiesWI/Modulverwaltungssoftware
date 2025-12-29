@@ -53,10 +53,83 @@ Height="450" Width="800">
                 <!-- Rechte Seite: Notifications, Userinfo, Meine Projekte -->
                 <StackPanel Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Top">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <!-- Notification Icon -->
-                        <Button Width="32" Height="32" Margin="0,0,10,0" ToolTip="Benachrichtigungen" Click="NotificationButton_Click">
-                            <Image Source="notification.png" Width="20" Height="20"/>
+                        <!-- Notification Icon mit Badge -->
+                        <Button x:Name="NotificationButton" Width="32" Height="32" Margin="0,0,10,0" ToolTip="Benachrichtigungen" Click="NotificationButton_Click" Background="Transparent" BorderThickness="0">
+                            <Grid>
+                                <TextBlock Text="🔔" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                <!-- Badge für ungelesene Anzahl -->
+                                <Border x:Name="NotificationBadge" 
+                                        Background="Red" 
+                                        CornerRadius="10" 
+                                        Width="18" Height="18"
+                                        HorizontalAlignment="Right" 
+                                        VerticalAlignment="Top"
+                                        Margin="0,-4,-4,0"
+                                        Visibility="Collapsed">
+                                    <TextBlock x:Name="NotificationCount" 
+                                               Text="0" 
+                                               Foreground="White" 
+                                               FontSize="10" 
+                                               FontWeight="Bold"
+                                               HorizontalAlignment="Center" 
+                                               VerticalAlignment="Center"/>
+                                </Border>
+                            </Grid>
                         </Button>
+                        
+                        <!-- Notifications Popup -->
+                        <Popup x:Name="NotificationsPopup" 
+                               PlacementTarget="{Binding ElementName=NotificationButton}"
+                               Placement="Bottom"
+                               StaysOpen="False"
+                               AllowsTransparency="True"
+                               MaxHeight="450">
+                            <Border Background="White" BorderBrush="#CCC" BorderThickness="1" 
+                                    CornerRadius="5" Padding="10" Width="380">
+                                <StackPanel>
+                                    <TextBlock Text="Benachrichtigungen" FontWeight="Bold" FontSize="14" Margin="0,0,0,10"/>
+                                    
+                                    <!-- Scrollbare Liste -->
+                                    <ScrollViewer MaxHeight="320" VerticalScrollBarVisibility="Auto">
+                                        <ItemsControl x:Name="NotificationsList">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Button Click="NotificationItem_Click" 
+                                                            HorizontalContentAlignment="Stretch"
+                                                            Margin="0,0,0,8"
+                                                            Padding="8"
+                                                            Background="#F9F9F9"
+                                                            BorderBrush="#DDD"
+                                                            BorderThickness="1">
+                                                        <StackPanel>
+                                                            <TextBlock Text="{Binding Nachricht}" 
+                                                                       TextWrapping="Wrap"
+                                                                       FontWeight="SemiBold"
+                                                                       Margin="0,0,0,4"/>
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <TextBlock Text="Von: " FontSize="10" Foreground="Gray"/>
+                                                                <TextBlock Text="{Binding Sender}" FontSize="10" Foreground="Gray" Margin="0,0,10,0"/>
+                                                                <TextBlock Text="{Binding GesendetAm, StringFormat='dd.MM.yyyy HH:mm'}" 
+                                                                           FontSize="10" Foreground="Gray"/>
+                                                            </StackPanel>
+                                                        </StackPanel>
+                                                    </Button>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+                                    
+                                    <!-- "Alle als gelesen markieren" Button -->
+                                    <Button Content="Alle als gelesen markieren" 
+                                            Click="MarkAllAsRead_Click" 
+                                            Margin="0,10,0,0"
+                                            Padding="8,6"
+                                            Background="#E0E0E0"
+                                            BorderThickness="0"/>
+                                </StackPanel>
+                            </Border>
+                        </Popup>
+                        
                         <!-- Userinfo -->
                         <TextBlock Text="{Binding UserInfo}" 
                            VerticalAlignment="Center" FontWeight="SemiBold"/>

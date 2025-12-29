@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Modulverwaltungssoftware.Models;  // ✅ HINZUGEFÜGT für Benachrichtigung
 
 
 namespace Modulverwaltungssoftware
@@ -28,6 +29,8 @@ namespace Modulverwaltungssoftware
         // Property für User-Info Anzeige (Platzhalter, später dynamisch)
         public string UserInfo => $"User: {Benutzer.CurrentUser.Name}\nRolle: {Benutzer.CurrentUser.RollenName}";
 
+        private System.Windows.Threading.DispatcherTimer _notificationTimer;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -38,11 +41,21 @@ namespace Modulverwaltungssoftware
             this.Deactivated += (s, e) =>
             {
                 if (ProjectsPopup != null) ProjectsPopup.IsOpen = false;
+                if (NotificationsPopup != null) NotificationsPopup.IsOpen = false;
             };
 
             // MEINE PROJEKTE laden (nur Module des Users)
             // ✅ INTELLIGENTE FILTERUNG: RefreshMyProjects() übernimmt die Logik
             RefreshMyProjects();
+
+            // ✅ BENACHRICHTIGUNGEN initial laden
+            LoadNotifications();
+
+            // ✅ Timer für automatische Aktualisierung (alle 30 Sekunden)
+            _notificationTimer = new System.Windows.Threading.DispatcherTimer();
+            _notificationTimer.Interval = TimeSpan.FromSeconds(30);
+            _notificationTimer.Tick += (s, e) => LoadNotifications();
+            _notificationTimer.Start();
 
             // Initial navigation
             MainFrame.Navigate(new StartPage());
@@ -61,6 +74,9 @@ namespace Modulverwaltungssoftware
 
                 // "Meine Projekte" bei jeder Navigation aktualisieren
                 RefreshMyProjects();
+                
+                // ✅ Benachrichtigungen bei jeder Navigation aktualisieren
+                LoadNotifications();
             };
         }
 
@@ -276,7 +292,183 @@ namespace Modulverwaltungssoftware
 
         private void NotificationButton_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Keine neuen Benachrichtigungen.", "Benachrichtigungen", MessageBoxButton.OK, MessageBoxImage.Information);
+            LoadNotifications(); // Aktualisieren vor dem Öffnen
+            NotificationsPopup.IsOpen = !NotificationsPopup.IsOpen;
+        }
+
+        /// <summary>
+        /// ✅ Lädt ungelesene Benachrichtigungen und aktualisiert das Badge
+        /// </summary>
+        private void LoadNotifications()
+        {
+            try
+            {
+                var ungelesene = BenachrichtigungsService.EmpfangeBenachrichtigung();
+                
+                if (ungelesene == null || ungelesene.Count == 0)
+                {
+                    NotificationBadge.Visibility = Visibility.Collapsed;
+                    NotificationsList.ItemsSource = null;
+                    return;
+                }
+                
+                // ✅ FILTERUNG: Nur relevante Benachrichtigungen anzeigen
+                var relevanteNotifications = FilterRelevantNotifications(ungelesene);
+                
+                if (relevanteNotifications.Count == 0)
+                {
+                    NotificationBadge.Visibility = Visibility.Collapsed;
+                    NotificationsList.ItemsSource = null;
+                    return;
+                }
+                
+                // Badge anzeigen mit Anzahl
+                NotificationBadge.Visibility = Visibility.Visible;
+                NotificationCount.Text = relevanteNotifications.Count > 99 ? "99+" : relevanteNotifications.Count.ToString();
+                
+                // Badge-Farbe basierend auf Priorität
+                if (relevanteNotifications.Any(n => n.Nachricht.Contains("Änderungsbedarf") || n.Nachricht.Contains("kommentiert")))
+                {
+                    NotificationBadge.Background = new SolidColorBrush(Colors.Red); // Dringend
+                }
+                else
+                {
+                    NotificationBadge.Background = new SolidColorBrush(Colors.OrangeRed); // Normal
+                }
+                
+                // Liste befüllen (nach Datum sortiert, neueste zuerst)
+                NotificationsList.ItemsSource = relevanteNotifications.OrderByDescending(n => n.GesendetAm).ToList();
+                
+                System.Diagnostics.Debug.WriteLine($"📬 {relevanteNotifications.Count} relevante Benachrichtigungen geladen");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Fehler beim Laden der Benachrichtigungen: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// ✅ Filtert Benachrichtigungen basierend auf Rolle und Modulstatus
+        /// Koordination/Gremium: Nur Benachrichtigungen zu Modulen, die noch in ihrem Status sind
+        /// </summary>
+        private List<Benachrichtigung> FilterRelevantNotifications(List<Benachrichtigung> alle)
+        {
+            string rolle = Benutzer.CurrentUser?.RollenName ?? "Gast";
+            
+            // Für Dozenten, Admin und Gäste: Alle ungelesenen Benachrichtigungen anzeigen
+            if (rolle == "Dozent" || rolle == "Admin" || rolle == "Gast")
+            {
+                return alle;
+            }
+            
+            // Für Koordination und Gremium: Nur Benachrichtigungen zu Modulen anzeigen, 
+            // die noch im entsprechenden Status sind
+            var relevante = new List<Benachrichtigung>();
+            
+            using (var db = new Services.DatabaseContext())
+            {
+                foreach (var notification in alle)
+                {
+                    // Benachrichtigungen ohne ModulVersionID immer anzeigen (Systemmeldungen)
+                    if (!notification.BetroffeneModulVersionID.HasValue)
+                    {
+                        relevante.Add(notification);
+                        continue;
+                    }
+                    
+                    // ModulVersion-Status prüfen
+                    var modulVersion = db.ModulVersion
+                        .FirstOrDefault(v => v.ModulVersionID == notification.BetroffeneModulVersionID.Value);
+                    
+                    if (modulVersion == null)
+                    {
+                        // Wenn ModulVersion nicht mehr existiert, Benachrichtigung ignorieren
+                        continue;
+                    }
+                    
+                    // Koordination: Nur Benachrichtigungen zu Modulen mit Status "InPruefungKoordination"
+                    if (rolle == "Koordination")
+                    {
+                        if (modulVersion.ModulStatus == ModulVersion.Status.InPruefungKoordination)
+                        {
+                            relevante.Add(notification);
+                        }
+                        // Benachrichtigungen zu anderen Stati werden NICHT angezeigt
+                        // (= wurden bereits weitergeleitet/kommentiert)
+                    }
+                    // Gremium: Nur Benachrichtigungen zu Modulen mit Status "InPruefungGremium"
+                    else if (rolle == "Gremium")
+                    {
+                        if (modulVersion.ModulStatus == ModulVersion.Status.InPruefungGremium)
+                        {
+                            relevante.Add(notification);
+                        }
+                        // Benachrichtigungen zu anderen Stati werden NICHT angezeigt
+                        // (= wurden bereits freigegeben/kommentiert)
+                    }
+                }
+            }
+            
+            return relevante;
+        }
+
+        /// <summary>
+        /// ✅ Klick auf eine Benachrichtigung → zur ModulVersion navigieren
+        /// </summary>
+        private void NotificationItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.DataContext is Benachrichtigung notification)
+            {
+                // Benachrichtigung als gelesen markieren
+                using (var db = new Services.DatabaseContext())
+                {
+                    var dbNotification = db.Benachrichtigung.Find(notification.BenachrichtigungsID);
+                    if (dbNotification != null)
+                    {
+                        dbNotification.Gelesen = true;
+                        db.SaveChanges();
+                    }
+                }
+                
+                // Zur ModulVersion navigieren (falls vorhanden)
+                if (notification.BetroffeneModulVersionID.HasValue && notification.BetroffeneModulVersionID.Value > 0)
+                {
+                    // ModulID aus ModulVersion ermitteln
+                    using (var db = new Services.DatabaseContext())
+                    {
+                        var modulVersion = db.ModulVersion
+                            .FirstOrDefault(v => v.ModulVersionID == notification.BetroffeneModulVersionID.Value);
+                        
+                        if (modulVersion != null)
+                        {
+                            MainFrame.Navigate(new ModulView(modulVersion.ModulId));
+                            NotificationsPopup.IsOpen = false;
+                            LoadNotifications(); // Badge aktualisieren
+                            return;
+                        }
+                    }
+                }
+                
+                // Falls keine ModulVersion verknüpft, nur Popup schließen
+                NotificationsPopup.IsOpen = false;
+                LoadNotifications();
+                
+                MessageBox.Show(notification.Nachricht, "Benachrichtigung", 
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
+        /// <summary>
+        /// ✅ Alle Benachrichtigungen als gelesen markieren
+        /// </summary>
+        private void MarkAllAsRead_Click(object sender, RoutedEventArgs e)
+        {
+            BenachrichtigungsService.MarkiereAlsGelesen();
+            LoadNotifications();
+            NotificationsPopup.IsOpen = false;
+            
+            MessageBox.Show("Alle Benachrichtigungen wurden als gelesen markieren.", 
+                "Benachrichtigungen", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         // Tastatur-Unterstützung für Projekte-Dropdown (Enter/Space)
@@ -288,6 +480,5 @@ namespace Modulverwaltungssoftware
                 e.Handled = true;
             }
         }
-
     }
 }
