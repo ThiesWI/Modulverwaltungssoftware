@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Modulverwaltungssoftware.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -236,26 +237,13 @@ namespace Modulverwaltungssoftware
 
         private void KommentarAbschicken_Click(object sender, RoutedEventArgs e)
         {
-            // Validierung
-            if (string.IsNullOrWhiteSpace(TitelTextBox.Text))
+            // ✅ Alle Felder zurücksetzen
+            ResetValidationHighlights();
+            
+            // ✅ Basis-Validierung
+            if (!ValidateBasicInputs(out int ects, out int workloadPraesenz, out int workloadSelbststudium))
             {
-                MessageBox.Show("Bitte Titel eingeben.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-            if (!int.TryParse(EctsTextBox.Text, out int ects))
-            {
-                MessageBox.Show("Bitte gültige ECTS-Punktzahl eingeben.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-            if (!int.TryParse(WorkloadPraesenzTextBox.Text, out int workloadPraesenz))
-            {
-                MessageBox.Show("Bitte gültige Workload Präsenz eingeben.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-            if (!int.TryParse(WorkloadSelbststudiumTextBox.Text, out int workloadSelbststudium))
-            {
-                MessageBox.Show("Bitte gültige Workload Selbststudium eingeben.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
+                return; // Fehlermeldung wurde bereits angezeigt
             }
 
             try
@@ -381,6 +369,127 @@ namespace Modulverwaltungssoftware
             {
                 MessageBox.Show($"Fehler beim Speichern: {ex.Message}", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        /// <summary>
+        /// ✅ NEU: Validiert Basis-Eingaben und hebt fehlerhafte Felder hervor
+        /// </summary>
+        private bool ValidateBasicInputs(out int ects, out int workloadPraesenz, out int workloadSelbststudium)
+        {
+            ects = 0;
+            workloadPraesenz = 0;
+            workloadSelbststudium = 0;
+            bool isValid = true;
+
+            // Titel prüfen
+            if (string.IsNullOrWhiteSpace(TitelTextBox.Text))
+            {
+                ValidationHelper.MarkAsInvalid(TitelTextBox, "Titel darf nicht leer sein.");
+                isValid = false;
+            }
+
+            // ECTS prüfen
+            if (!int.TryParse(EctsTextBox.Text, out ects) || ects <= 0)
+            {
+                ValidationHelper.MarkAsInvalid(EctsTextBox, "Bitte gültige ECTS-Punktzahl (> 0) eingeben.");
+                isValid = false;
+            }
+
+            // Workload Präsenz prüfen
+            if (!int.TryParse(WorkloadPraesenzTextBox.Text, out workloadPraesenz))
+            {
+                ValidationHelper.MarkAsInvalid(WorkloadPraesenzTextBox, "Bitte gültige Workload Präsenz eingeben.");
+                isValid = false;
+            }
+
+            // Workload Selbststudium prüfen
+            if (!int.TryParse(WorkloadSelbststudiumTextBox.Text, out workloadSelbststudium))
+            {
+                ValidationHelper.MarkAsInvalid(WorkloadSelbststudiumTextBox, "Bitte gültige Workload Selbststudium eingeben.");
+                isValid = false;
+            }
+
+            // Verantwortlicher prüfen
+            if (string.IsNullOrWhiteSpace(VerantwortlicherTextBox.Text))
+            {
+                ValidationHelper.MarkAsInvalid(VerantwortlicherTextBox, "Verantwortlicher darf nicht leer sein.");
+                isValid = false;
+            }
+
+            // Lernziele prüfen
+            if (string.IsNullOrWhiteSpace(LernzieleTextBox.Text))
+            {
+                ValidationHelper.MarkAsInvalid(LernzieleTextBox, "Bitte mindestens ein Lernziel angeben.");
+                isValid = false;
+            }
+
+            // Lehrinhalte prüfen
+            if (string.IsNullOrWhiteSpace(LehrinhalteTextBox.Text))
+            {
+                ValidationHelper.MarkAsInvalid(LehrinhalteTextBox, "Bitte mindestens einen Lehrinhalt angeben.");
+                isValid = false;
+            }
+
+            // Modultyp prüfen
+            if (ModultypListBox.SelectedItem == null)
+            {
+                ValidationHelper.MarkAsInvalid(ModultypListBox, "Bitte einen Modultyp auswählen.");
+                isValid = false;
+            }
+
+            // Semester prüfen
+            if (SemesterListBox.SelectedItem == null)
+            {
+                ValidationHelper.MarkAsInvalid(SemesterListBox, "Bitte ein empfohlenes Semester auswählen (1-8).");
+                isValid = false;
+            }
+
+            // Prüfungsform prüfen
+            if (PruefungsformListBox.SelectedItem == null)
+            {
+                ValidationHelper.MarkAsInvalid(PruefungsformListBox, "Bitte eine Prüfungsform auswählen.");
+                isValid = false;
+            }
+
+            // Turnus prüfen
+            if (TurnusListBox.SelectedItem == null)
+            {
+                ValidationHelper.MarkAsInvalid(TurnusListBox, "Bitte einen Turnus auswählen.");
+                isValid = false;
+            }
+
+            if (!isValid)
+            {
+                MessageBox.Show(
+                    "Bitte korrigieren Sie die markierten Felder.\n\n" +
+                    "Fehlerhafte Felder sind rot umrandet und enthalten einen Tooltip mit Details.",
+                    "Validierungsfehler",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning
+                );
+            }
+
+            return isValid;
+        }
+
+        /// <summary>
+        /// ✅ NEU: Setzt alle Validierungs-Hervorhebungen zurück
+        /// </summary>
+        private void ResetValidationHighlights()
+        {
+            ValidationHelper.ResetAll(
+                TitelTextBox,
+                EctsTextBox,
+                WorkloadPraesenzTextBox,
+                WorkloadSelbststudiumTextBox,
+                VerantwortlicherTextBox,
+                LernzieleTextBox,
+                LehrinhalteTextBox,
+                ModultypListBox,
+                SemesterListBox,
+                PruefungsformListBox,
+                TurnusListBox
+            );
         }
 
         private int ParseVersionsnummer(string version)

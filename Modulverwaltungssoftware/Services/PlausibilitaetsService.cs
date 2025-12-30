@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Modulverwaltungssoftware.Helpers;
 
 namespace Modulverwaltungssoftware
 {
@@ -178,6 +179,85 @@ namespace Modulverwaltungssoftware
             }
 
             return fehlerMeldungen;
+        }
+        /// <summary>
+        /// ✅ NEU: Validiert eine ModulVersion und gibt detaillierte Feldfehler zurück
+        /// </summary>
+        public static ValidationResult ValidateModulVersion(ModulVersion v)
+        {
+            var result = new ValidationResult();
+            
+            if (v == null || v.Modul == null)
+            {
+                result.IsValid = false;
+                result.GlobalMessage = "Modulversion oder Modul-Daten fehlen.";
+                return result;
+            }
+
+            // Modultyp prüfen
+            string modultyp = v.Modul.Modultyp.ToString();
+            if (modultyp != "Grundlagen" && modultyp != "Wahlpflicht")
+            {
+                result.AddError("Modultyp", "Ungültiger Modultyp. Nur 'Grundlagen' oder 'Wahlpflicht' erlaubt.");
+            }
+
+            // Semester prüfen (1-8)
+            int semester = v.Modul.EmpfohlenesSemester;
+            if (semester < 1 || semester > 8)
+            {
+                result.AddError("Semester", "Empfohlenes Semester muss zwischen 1 und 8 liegen.");
+            }
+
+            // Prüfungsform prüfen
+            var gueltigePruefungsformen = new List<string>
+            {
+                "PL", "SP", "SL", "Klausur", "Mündliche Prüfung", "Projektarbeit", 
+                "Hausarbeit", "Präsentation", "Portfolio", "Referat"
+            };
+            if (string.IsNullOrWhiteSpace(v.Pruefungsform) || !gueltigePruefungsformen.Contains(v.Pruefungsform))
+            {
+                result.AddError("Pruefungsform", "Ungültige Prüfungsform.");
+            }
+
+            // Turnus prüfen
+            string turnus = v.Modul.Turnus.ToString();
+            if (turnus != "JedesSemester" && turnus != "NurWintersemester" && turnus != "NurSommersemester")
+            {
+                result.AddError("Turnus", "Ungültiger Turnus.");
+            }
+
+            // Verantwortlicher prüfen
+            if (string.IsNullOrEmpty(v.Ersteller))
+            {
+                result.AddError("Verantwortlicher", "Kein Verantwortlicher angegeben.");
+            }
+
+            // Lernziele prüfen
+            if (v.Lernergebnisse == null || v.Lernergebnisse.Count == 0)
+            {
+                result.AddError("Lernziele", "Keine Lernziele angegeben.");
+            }
+
+            // Lehrinhalte prüfen
+            if (v.Inhaltsgliederung == null || v.Inhaltsgliederung.Count == 0)
+            {
+                result.AddError("Lehrinhalte", "Keine Lehrinhalte angegeben.");
+            }
+
+            // Workload prüfen
+            int workloadGesamt = v.WorkloadPraesenz + v.WorkloadSelbststudium;
+            int ects = v.EctsPunkte;
+            
+            if (ects <= 0)
+            {
+                result.AddError("ECTS", "ECTS-Punkte müssen größer als 0 sein.");
+            }
+            else if (!pruefeWorkloadStandardIntern(workloadGesamt, ects))
+            {
+                result.AddError("Workload", "Workload entspricht nicht dem Standard (28-32 Stunden/ECTS).");
+            }
+
+            return result;
         }
     }
 }

@@ -197,6 +197,7 @@
       <DependentUpon>EditWithCommentsView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Helpers\ValidationHelper.cs" />
+    <Compile Include="Helpers\ValidationResult.cs" />
     <Compile Include="LoginPage.xaml.cs">
       <DependentUpon>LoginPage.xaml</DependentUpon>
     </Compile>
