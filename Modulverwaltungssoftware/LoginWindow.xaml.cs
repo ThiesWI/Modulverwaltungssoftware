@@ -25,93 +25,63 @@ namespace Modulverwaltungssoftware
         {
             InitializeComponent();
 #if DEBUG // Wird nur im DEBUG-Modus kompiliert
-            bool autoLoginFlag = true; // Setze auf true, um die Auto-Login-Funktion zu aktivieren
-            bool istDozentFlag = false; // Setze auf true, um als Dozent einzuloggen
+            bool autoLoginFlag = true; // true = Auto-Login aktivieren, false = Manueller Login
+            bool istDozentFlag = true; // Setze auf true, um als Dozent einzuloggen
             bool istKoordinationFlag = false; // Setze auf true, um als Koordination einzuloggen
             bool istGremiumFlag = false; // Setze auf true, um als Gremium einzuloggen
-            bool istAdminFlag = true; // Setze auf true, um als Admin einzuloggen
-            void autoLogin() // DEBUG-Methode zum automatischen Einloggen
+            bool istAdminFlag = false; // Setze auf true, um als Admin einzuloggen
+            
+            if (autoLoginFlag) // Nur wenn aktiviert
             {
-                if (autoLoginFlag == true)
+                if (istDozentFlag)
                 {
-                    if (istDozentFlag == true)
+                    Benutzer.CurrentUser = new Benutzer
                     {
-                        Benutzer.CurrentUser = new Benutzer
-                        {
-                            BenutzerID = 1,
-                            Name = "Dr. Max Mustermann",
-                            Email = "",
-                            RollenName = "Dozent",
-                            AktuelleRolle = new Rolle
-                            {
-                                RollenName = "Dozent",
-                                DarfBearbeiten = true,
-                                DarfFreigeben = false,
-                                DarfStatusAendern = false
-                            }
-                        };
-                    }
-                    else if (istKoordinationFlag == true)
-                    {
-                        Benutzer.CurrentUser = new Benutzer
-                        {
-                            BenutzerID = 2,
-                            Name = "Sabine Beispiel",
-                            Email = "",
-                            RollenName = "Koordination",
-                            AktuelleRolle = new Rolle
-                            {
-                                RollenName = "Koordination",
-                                DarfBearbeiten = false,
-                                DarfFreigeben = false,
-                                DarfKommentieren = true,
-                                DarfStatusAendern = true
-                            }
-                        };
-                    }
-                    else if (istGremiumFlag == true)
-                    {
-                        Benutzer.CurrentUser = new Benutzer
-                        {
-                            BenutzerID = 3,
-                            Name = "Prof. Erika Musterfrau",
-                            Email = "",
-                            RollenName = "Gremium",
-                            AktuelleRolle = new Rolle
-                            {
-                                RollenName = "Gremium",
-                                DarfBearbeiten = false,
-                                DarfFreigeben = true,
-                                DarfKommentieren = true,
-                                DarfStatusAendern = true
-                            }
-                        };
-                    }
-                    else if (istAdminFlag == true)
-                    {
-                        Benutzer.CurrentUser = new Benutzer
-                        {
-                            BenutzerID = 99,
-                            Name = "Philipp Admin",
-                            Email = "",
-                            RollenName = "Admin",
-                            AktuelleRolle = new Rolle
-                            {
-                                RollenName = "Admin",
-                                DarfBearbeiten = true,
-                                DarfFreigeben = true,
-                                DarfKommentieren = true,
-                                DarfStatusAendern = true
-                            }
-                        };
-                    }
+                        BenutzerID = 1,
+                        Name = "Dr. Max Mustermann",
+                        Email = "max.mustermann@hs-example.de",
+                        RollenName = "Dozent",
+                        AktuelleRolle = Models.RollenKonfiguration.GetRolleByName("Dozent")
+                    };
                 }
-                var mainWindow = new MainWindow(); // Mainwindow öffnen, LoginWindow schließen
+                else if (istKoordinationFlag)
+                {
+                    Benutzer.CurrentUser = new Benutzer
+                    {
+                        BenutzerID = 2,
+                        Name = "Sabine Beispiel",
+                        Email = "sabine.beispiel@hs-example.de",
+                        RollenName = "Koordination",
+                        AktuelleRolle = Models.RollenKonfiguration.GetRolleByName("Koordination")
+                    };
+                }
+                else if (istGremiumFlag)
+                {
+                    Benutzer.CurrentUser = new Benutzer
+                    {
+                        BenutzerID = 3,
+                        Name = "Prof. Erika Musterfrau",
+                        Email = "erika.musterfrau@hs-example.de",
+                        RollenName = "Gremium",
+                        AktuelleRolle = Models.RollenKonfiguration.GetRolleByName("Gremium")
+                    };
+                }
+                else if (istAdminFlag)
+                {
+                    Benutzer.CurrentUser = new Benutzer
+                    {
+                        BenutzerID = 99,
+                        Name = "Philipp Admin",
+                        Email = "admin@hs-example.de",
+                        RollenName = "Admin",
+                        AktuelleRolle = Models.RollenKonfiguration.GetRolleByName("Admin")
+                    };
+                }
+                
+                var mainWindow = new MainWindow();
                 mainWindow.Show();
                 this.Close();
-                return;
             }
-            autoLogin();
 #endif
         }
 

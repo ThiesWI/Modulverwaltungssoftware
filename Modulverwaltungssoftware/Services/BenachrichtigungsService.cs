@@ -1,5 +1,4 @@
-﻿
-using Modulverwaltungssoftware.Models;
+﻿using Modulverwaltungssoftware.Models;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity.Infrastructure;
@@ -15,6 +14,12 @@ namespace Modulverwaltungssoftware
         {
             try
             {
+                if (Benutzer.CurrentUser == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("⚠️ Benachrichtigung kann nicht gesendet werden: CurrentUser ist null");
+                    return;
+                }
+
                 using (var db = new Services.DatabaseContext())
                 {
                     if (betroffeneModulVersionID == 0)
@@ -51,10 +56,17 @@ namespace Modulverwaltungssoftware
                 return;
             }
         } // Benachrichtigung "senden" (in DB speichern)
+        
         public static List<Benachrichtigung> EmpfangeBenachrichtigung()
         {
             try
             {
+                if (Benutzer.CurrentUser == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("⚠️ Benachrichtigungen können nicht geladen werden: CurrentUser ist null");
+                    return new List<Benachrichtigung>();
+                }
+
                 using (var db = new Services.DatabaseContext())
                 {
                     var benachrichtigungen = db.Benachrichtigung
@@ -69,10 +81,17 @@ namespace Modulverwaltungssoftware
                 return null;
             }
         } // Alle Benachrichtigungen mit istGelesen == false für aktuellen Benuter aus DB abfragen
+        
         public static void MarkiereAlsGelesen()
         {
             try
             {
+                if (Benutzer.CurrentUser == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("⚠️ Benachrichtigungen können nicht als gelesen markiert werden: CurrentUser ist null");
+                    return;
+                }
+
                 using (var db = new Services.DatabaseContext())
                 {
                     var ungelesene = db.Benachrichtigung

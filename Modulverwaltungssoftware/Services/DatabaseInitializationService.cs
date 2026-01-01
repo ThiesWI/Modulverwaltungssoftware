@@ -33,29 +33,29 @@ namespace Modulverwaltungssoftware.Services
                         };
                         var dozent = new Benutzer
                         {
-                            Name = "Dozent",
-                            Email = "dozent@hochschule.de",
+                            Name = "Dr. Max Mustermann",  // ✅ Geändert, um mit Auto-Login übereinzustimmen
+                            Email = "max.mustermann@hs-example.de",
                             Passwort = "dozent123",
                             RollenName = "Dozent",
                         };
                         var koordination = new Benutzer
                         {
-                            Name = "Koordination",
-                            Email = "koordination@hochschule.de",
+                            Name = "Sabine Beispiel",  // ✅ Geändert, um mit Auto-Login übereinzustimmen
+                            Email = "sabine.beispiel@hs-example.de",
                             Passwort = "koordination123",
                             RollenName = "Koordination",
                         };
                         var gremium = new Benutzer
                         {
-                            Name = "Gremium",
-                            Email = "gremium@hochschule.de",
+                            Name = "Prof. Erika Musterfrau",  // ✅ Geändert, um mit Auto-Login übereinzustimmen
+                            Email = "erika.musterfrau@hs-example.de",
                             Passwort = "gremium123",
                             RollenName = "Gremium",
                         };
                         var admin = new Benutzer
                         {
-                            Name = "Admin",
-                            Email = "admin@hochschule.de",
+                            Name = "Philipp Admin",  // ✅ Geändert, um mit Auto-Login übereinzustimmen
+                            Email = "admin@hs-example.de",
                             Passwort = "admin123",
                             RollenName = "Admin",
                         };
