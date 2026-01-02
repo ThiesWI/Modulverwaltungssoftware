@@ -22,37 +22,60 @@ namespace Modulverwaltungssoftware
 
                 using (var db = new Services.DatabaseContext())
                 {
-                    if (betroffeneModulVersionID == 0)
+                    // ✅ FIX: Wenn Empfänger eine ROLLE ist, an ALLE Benutzer mit dieser Rolle senden
+                    var empfaengerRollen = new[] { "Gast", "Dozent", "Koordination", "Gremium", "Admin" };
+                    
+                    if (empfaengerRollen.Contains(empfaenger))
                     {
-                        var benachrichtigung = new Benachrichtigung
+                        // ROLLEN-BASIERTE BENACHRICHTIGUNG
+                        // Hole alle Benutzer mit dieser Rolle
+                        var benutzerMitRolle = db.Benutzer
+                            .Where(b => b.RollenName == empfaenger)
+                            .ToList();
+                        
+                        System.Diagnostics.Debug.WriteLine($"📨 Sende Benachrichtigung an ROLLE '{empfaenger}': {benutzerMitRolle.Count} Empfänger gefunden");
+                        
+                        foreach (var benutzer in benutzerMitRolle)
                         {
-                            Sender = Benutzer.CurrentUser.Name,
-                            Empfaenger = empfaenger,
-                            Nachricht = nachricht,
-                            GesendetAm = System.DateTime.Now,
-                            Gelesen = false
-                        };
-                        db.Benachrichtigung.Add(benachrichtigung);
+                            var benachrichtigung = new Benachrichtigung
+                            {
+                                BetroffeneModulVersionID = betroffeneModulVersionID > 0 ? (int?)betroffeneModulVersionID : null,
+                                Sender = Benutzer.CurrentUser.Name,
+                                Empfaenger = benutzer.Name,  // ✅ BENUTZERNAME, nicht Rolle!
+                                Nachricht = nachricht,
+                                GesendetAm = System.DateTime.Now,
+                                Gelesen = false
+                            };
+                            db.Benachrichtigung.Add(benachrichtigung);
+                            
+                            System.Diagnostics.Debug.WriteLine($"   → Benachrichtigung an '{benutzer.Name}' erstellt");
+                        }
                     }
                     else
                     {
+                        // EINZELBENUTZER-BENACHRICHTIGUNG
                         var benachrichtigung = new Benachrichtigung
                         {
-                            BetroffeneModulVersionID = betroffeneModulVersionID,
+                            BetroffeneModulVersionID = betroffeneModulVersionID > 0 ? (int?)betroffeneModulVersionID : null,
                             Sender = Benutzer.CurrentUser.Name,
-                            Empfaenger = empfaenger,
+                            Empfaenger = empfaenger,  // Direkter Benutzername
                             Nachricht = nachricht,
                             GesendetAm = System.DateTime.Now,
                             Gelesen = false
                         };
                         db.Benachrichtigung.Add(benachrichtigung);
+                        
+                        System.Diagnostics.Debug.WriteLine($"📨 Benachrichtigung an Einzelbenutzer '{empfaenger}' erstellt");
                     }
+                    
                     db.SaveChanges();
+                    System.Diagnostics.Debug.WriteLine($"✅ Benachrichtigungen erfolgreich gespeichert");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten"); ;
+                System.Diagnostics.Debug.WriteLine($"❌ FEHLER beim Senden der Benachrichtigung: {ex.Message}");
+                MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten");
                 return;
             }
         } // Benachrichtigung "senden" (in DB speichern)

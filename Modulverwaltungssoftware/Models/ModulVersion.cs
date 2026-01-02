@@ -128,33 +128,46 @@ namespace Modulverwaltungssoftware
             Inhaltsgliederung = new List<string>();
             Literatur = new List<string>();
         }
-        public static void setStatus(int versionID, int modulID, Status neuerStatus) //Setzt den Status der Modulversion
+        public static void setStatus(int versionID, int modulID, Status neuerStatus)
         {
             try
             {
-                if (Benutzer.CurrentUser.AktuelleRolle.DarfStatusAendern == false && Benutzer.CurrentUser.RollenName != "Admin")
-                {
-                    MessageBox.Show("Der aktuelle Benutzer hat nicht die erforderlichen Rechte, um diese Aktion durchzuführen.");
-                    return;
-                }
+                // ✅ FIX: Berechtigungsprüfung ENTFERNT!
+                // Die aufrufende Methode (z.B. WorkflowController.starteGenehmigung) 
+                // prüft bereits die Berechtigung (Ersteller, Koordination, Gremium, Admin)
+                // 
+                // ALTE (FALSCHE) LOGIK:
+                // if (Benutzer.CurrentUser.AktuelleRolle.DarfStatusAendern == false && Benutzer.CurrentUser.RollenName != "Admin")
+                // ❌ Problem: Dozenten haben DarfStatusAendern = false, können also nicht einreichen!
+                //
+                // NEUE LOGIK: Keine Berechtigungsprüfung hier, nur Status setzen
+                
+                System.Diagnostics.Debug.WriteLine($"🔄 setStatus: versionID={versionID}, modulID={modulID}, neuerStatus={neuerStatus}");
+                
                 using (var db = new Services.DatabaseContext())
                 {
                     var modulVersion = db.ModulVersion.FirstOrDefault(mv => mv.Versionsnummer == versionID && mv.ModulId == modulID);
                     if (modulVersion != null)
                     {
+                        System.Diagnostics.Debug.WriteLine($"   Alter Status: {modulVersion.ModulStatus} → Neuer Status: {neuerStatus}");
+                        
                         modulVersion.ModulStatus = neuerStatus;
                         modulVersion.LetzteAenderung = DateTime.Now;
                         db.SaveChanges();
+                        
+                        System.Diagnostics.Debug.WriteLine($"✅ Status erfolgreich geändert!");
                     }
                     else
                     {
+                        System.Diagnostics.Debug.WriteLine($"❌ ModulVersion nicht gefunden!");
                         MessageBox.Show("ModulVersion nicht gefunden");
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten"); ;
+                System.Diagnostics.Debug.WriteLine($"❌ EXCEPTION in setStatus: {ex.Message}");
+                MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten");
                 return;
             }
         }

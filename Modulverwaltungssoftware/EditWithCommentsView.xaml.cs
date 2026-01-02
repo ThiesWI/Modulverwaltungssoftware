@@ -263,7 +263,7 @@ namespace Modulverwaltungssoftware
                     tempModulVersion.Pruefungsform = pruefungsformen;
                 else
                     tempModulVersion.Pruefungsform = "Klausur";
-                tempModulVersion.Ersteller = VerantwortlicherTextBox.Text;
+                tempModulVersion.Ersteller = Benutzer.CurrentUser?.Name ?? "Unbekannt"; // ✅ FIX: Aktueller Benutzer statt Textfeld
                 // Lernziele (versionsspezifisch)
                 if (!string.IsNullOrWhiteSpace(LernzieleTextBox.Text))
                 {

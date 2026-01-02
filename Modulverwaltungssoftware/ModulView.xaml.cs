@@ -559,10 +559,10 @@ namespace Modulverwaltungssoftware
             bool isDozent = rolle == "Dozent";
             bool isGast = rolle == "Gast";
             
-            // ? ROBUSTERE ERSTELLER-PRÜFUNG (case-insensitive + Null-Check)
+            // ? ROBUSTERE ERSTELLER-PRÜFUNG (case-insensitive + Null-Check + Trim)
             bool isErsteller = !string.IsNullOrEmpty(data.Ersteller) && 
                                !string.IsNullOrEmpty(currentUser) &&
-                               data.Ersteller.Equals(currentUser, StringComparison.OrdinalIgnoreCase);
+                               data.Ersteller.Trim().Equals(currentUser.Trim(), StringComparison.OrdinalIgnoreCase);
             
             var status = data.ModulStatus;
 
@@ -573,7 +573,7 @@ namespace Modulverwaltungssoftware
             var kommentierenButton = FindButtonInVisualTree("Kommentieren");
             var einreichenButton = FindButtonInVisualTree("Einreichen");
 
-            System.Diagnostics.Debug.WriteLine($"UpdateButtonStates: Rolle={rolle}, Status={status}, Ersteller={data.Ersteller}, CurrentUser={currentUser}, isErsteller={isErsteller}");
+            System.Diagnostics.Debug.WriteLine($"?? UpdateButtonStates: Rolle={rolle}, Status={status}, Ersteller='{data.Ersteller}', CurrentUser='{currentUser}', isErsteller={isErsteller}");
 
             // ? GAST: IMMER ALLE BUTTONS DEAKTIVIEREN (außer Exportieren)
             if (isGast)
@@ -583,7 +583,7 @@ namespace Modulverwaltungssoftware
                 if (loeschenButton != null) { loeschenButton.IsEnabled = false; loeschenButton.ToolTip = "Keine Berechtigung"; }
                 if (kommentierenButton != null) { kommentierenButton.IsEnabled = false; kommentierenButton.ToolTip = "Keine Berechtigung"; }
                 if (einreichenButton != null) { einreichenButton.IsEnabled = false; einreichenButton.ToolTip = "Keine Berechtigung"; }
-                System.Diagnostics.Debug.WriteLine("GAST: Alle Buttons deaktiviert (außer Exportieren)");
+                System.Diagnostics.Debug.WriteLine("?? GAST: Alle Buttons deaktiviert (außer Exportieren)");
                 return;
             }
 
@@ -630,7 +630,7 @@ namespace Modulverwaltungssoftware
                             if (!bearbeitenButton.IsEnabled)
                                 bearbeitenButton.ToolTip = "Nur der Ersteller oder Admin können eigene Module im Entwurf bearbeiten";
                             
-                            System.Diagnostics.Debug.WriteLine($"ENTWURF: Bearbeiten={bearbeitenButton.IsEnabled} (isErsteller={isErsteller}, isAdmin={isAdmin})");
+                            System.Diagnostics.Debug.WriteLine($"?? ENTWURF: Bearbeiten={bearbeitenButton.IsEnabled} (isErsteller={isErsteller}, isAdmin={isAdmin})");
                         }
                     }
                     
@@ -657,7 +657,7 @@ namespace Modulverwaltungssoftware
                         if (!einreichenButton.IsEnabled)
                             einreichenButton.ToolTip = "Nur der Ersteller oder Admin können Module einreichen";
                         
-                        System.Diagnostics.Debug.WriteLine($"ENTWURF: Einreichen={einreichenButton.IsEnabled} (isErsteller={isErsteller}, isAdmin={isAdmin})");
+                        System.Diagnostics.Debug.WriteLine($"?? ENTWURF: Einreichen={einreichenButton.IsEnabled} (isErsteller={isErsteller}, isAdmin={isAdmin})");
                     }
                     
                     // ? KOMMENTIEREN: Im Entwurf deaktiviert
@@ -697,7 +697,7 @@ namespace Modulverwaltungssoftware
                             kommentierenButton.IsEnabled = isGremium || isAdmin;
                     }
                     
-                    System.Diagnostics.Debug.WriteLine($"IN_PRÜFUNG: Bearbeiten={isAdmin}, Löschen={isAdmin}, Kommentieren={kommentierenButton?.IsEnabled}, Einreichen={einreichenButton?.IsEnabled}");
+                    System.Diagnostics.Debug.WriteLine($"?? IN_PRÜFUNG: Bearbeiten={isAdmin}, Löschen={isAdmin}, Kommentieren={kommentierenButton?.IsEnabled}, Einreichen={einreichenButton?.IsEnabled}");
                     break;
 
                 case ModulVersion.Status.Freigegeben:
@@ -725,7 +725,7 @@ namespace Modulverwaltungssoftware
                         if (!isAdmin)
                             kommentierenButton.ToolTip = "Freigegebene Module können nur vom Admin kommentiert werden";
                     }
-                    System.Diagnostics.Debug.WriteLine($"FREIGEGEBEN: Bearbeiten={isAdmin}, Löschen={isAdmin}, Einreichen=false, Kommentieren={isAdmin}");
+                    System.Diagnostics.Debug.WriteLine($"? FREIGEGEBEN: Bearbeiten={isAdmin}, Löschen={isAdmin}, Einreichen=false, Kommentieren={isAdmin}");
                     break;
 
                 case ModulVersion.Status.Archiviert:
@@ -747,7 +747,7 @@ namespace Modulverwaltungssoftware
                     break;
             }
 
-            System.Diagnostics.Debug.WriteLine($"  Bearbeiten: {bearbeitenButton?.IsEnabled ?? false}, Löschen: {loeschenButton?.IsEnabled ?? false}, Kommentieren: {kommentierenButton?.IsEnabled ?? false}, Einreichen: {einreichenButton?.IsEnabled ?? false}");
+            System.Diagnostics.Debug.WriteLine($"  ? Bearbeiten: {bearbeitenButton?.IsEnabled ?? false}, Löschen: {loeschenButton?.IsEnabled ?? false}, Kommentieren: {kommentierenButton?.IsEnabled ?? false}, Einreichen: {einreichenButton?.IsEnabled ?? false}");
         }
 
         /// <summary>

@@ -87,6 +87,16 @@ namespace Modulverwaltungssoftware
             string currentUser = Benutzer.CurrentUser?.Name;
             string rolle = Benutzer.CurrentUser?.RollenName ?? "Gast";
             
+            System.Diagnostics.Debug.WriteLine($"🔍 RefreshMyProjects aufgerufen - User: {currentUser}, Rolle: {rolle}");
+            
+            // ✅ NULL-CHECK: Falls CurrentUser nicht gesetzt ist
+            if (Benutzer.CurrentUser == null)
+            {
+                System.Diagnostics.Debug.WriteLine("⚠️ Benutzer.CurrentUser ist NULL!");
+                UpdateProjects(new List<string> { "Keine eigenen Projekte vorhanden" });
+                return;
+            }
+            
             List<string> modulNamen = new List<string>();
 
             using (var db = new Services.DatabaseContext())
@@ -99,6 +109,7 @@ namespace Modulverwaltungssoftware
                         // Gäste haben KEINE eigenen Projekte
                         modulNamen = new List<string> { "Keine eigenen Projekte vorhanden" };
                         UpdateProjects(modulNamen);
+                        System.Diagnostics.Debug.WriteLine("👤 GAST: Keine Projekte");
                         return;
 
                     case "Dozent":
@@ -108,6 +119,8 @@ namespace Modulverwaltungssoftware
                             .Select(v => v.ModulId)
                             .Distinct()
                             .ToList();
+                        
+                        System.Diagnostics.Debug.WriteLine($"🔍 Dozent '{currentUser}' - Gefundene ModulIDs: {string.Join(", ", dozentenModulIds)}");
                         
                         meineModule = db.Modul.Where(m => dozentenModulIds.Contains(m.ModulID));
                         break;
@@ -120,6 +133,8 @@ namespace Modulverwaltungssoftware
                             .Distinct()
                             .ToList();
                         
+                        System.Diagnostics.Debug.WriteLine($"🔍 Koordination - Gefundene ModulIDs: {string.Join(", ", koordinationModulIds)}");
+                        
                         meineModule = db.Modul.Where(m => koordinationModulIds.Contains(m.ModulID));
                         break;
 
@@ -131,18 +146,22 @@ namespace Modulverwaltungssoftware
                             .Distinct()
                             .ToList();
                         
+                        System.Diagnostics.Debug.WriteLine($"🔍 Gremium - Gefundene ModulIDs: {string.Join(", ", gremiumModulIds)}");
+                        
                         meineModule = db.Modul.Where(m => gremiumModulIds.Contains(m.ModulID));
                         break;
 
                     case "Admin":
                         // Admin sieht ALLE Module
                         meineModule = db.Modul;
+                        System.Diagnostics.Debug.WriteLine("👑 Admin - Alle Module werden angezeigt");
                         break;
 
                     default:
                         // Sicherheitshalber: Keine Module
                         modulNamen = new List<string> { "Keine eigenen Projekte vorhanden" };
                         UpdateProjects(modulNamen);
+                        System.Diagnostics.Debug.WriteLine($"⚠️ Unbekannte Rolle: {rolle}");
                         return;
                 }
 
@@ -165,7 +184,7 @@ namespace Modulverwaltungssoftware
 
             UpdateProjects(modulNamen);
             
-            System.Diagnostics.Debug.WriteLine($"'Meine Projekte' geladen: Rolle={rolle}, Anzahl={modulNamen.Count}");
+            System.Diagnostics.Debug.WriteLine($"✅ 'Meine Projekte' geladen: Rolle={rolle}, Anzahl={modulNamen.Count}, Module: {string.Join(", ", modulNamen)}");
         }
 
         // Aktualisiert die ObservableCollection mit den übergebenen Projektnamen

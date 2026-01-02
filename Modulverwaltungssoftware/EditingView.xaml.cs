@@ -116,6 +116,13 @@ namespace Modulverwaltungssoftware
             _modulId = null;
             _versionNummer = "1.0";
             VersionTextBox.Text = "1.0 (Entwurf)";
+            
+            // ✅ FIX: Verantwortlicher-Feld automatisch mit aktuellem Benutzer befüllen
+            if (Benutzer.CurrentUser != null)
+            {
+                VerantwortlicherTextBox.Text = Benutzer.CurrentUser.Name;
+                System.Diagnostics.Debug.WriteLine($"✅ Verantwortlicher automatisch gesetzt: {Benutzer.CurrentUser.Name}");
+            }
         }
 
         /// <summary>
@@ -362,10 +369,14 @@ namespace Modulverwaltungssoftware
                         Inhaltsgliederung = !string.IsNullOrWhiteSpace(LehrinhalteTextBox.Text)
                             ? LehrinhalteTextBox.Text.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).ToList()
                             : new List<string>(),
-                        Ersteller = VerantwortlicherTextBox.Text,
+                        // ✅ FIX: Ersteller ist der AKTUELL ANGEMELDETE BENUTZER, nicht der Text aus VerantwortlicherTextBox!
+                        Ersteller = Benutzer.CurrentUser?.Name ?? "Unbekannt",
                         hatKommentar = false
                     };
                     neueVersion.Modul = WorkflowController.getModulDetails(neueModulId);
+                    
+                    System.Diagnostics.Debug.WriteLine($"💾 Erstelle neues Modul '{TitelTextBox.Text}' mit Ersteller='{neueVersion.Ersteller}' (CurrentUser={Benutzer.CurrentUser?.Name})");
+                    
                     ModulRepository.Speichere(neueVersion);
 
                     MessageBox.Show($"Neues Modul '{TitelTextBox.Text}' wurde erfolgreich erstellt.",
@@ -816,7 +827,8 @@ namespace Modulverwaltungssoftware
             dbVersion.EctsPunkte = ects;
             dbVersion.WorkloadPraesenz = workloadPraesenz;
             dbVersion.WorkloadSelbststudium = workloadSelbststudium;
-            dbVersion.Ersteller = VerantwortlicherTextBox.Text;
+            // ✅ FIX: Ersteller NICHT überschreiben - bleibt beim ursprünglichen Ersteller!
+            // dbVersion.Ersteller wird NICHT geändert (bleibt beim Original-Ersteller)
 
             // 📝 LERNZIELE (Multi-Line → List<string>)
             if (!string.IsNullOrWhiteSpace(LernzieleTextBox.Text))
@@ -1028,7 +1040,7 @@ namespace Modulverwaltungssoftware
                 return;
             }
 
-            // 🔍 PLAUSIBILITÄTSPRÜFUNG DURCHFÜHREN
+            // 🔍 PLAUSIBILITÄTSPRÜFUNG DURCHFÜREN
             string ergebnis = PlausibilitaetsService.pruefeWorkloadStandard(workloadGesamt, ects);
             double stundenProEcts = ects > 0 ? (double)workloadGesamt / ects : 0;
             double berechneteEcts = workloadGesamt / 30.0;

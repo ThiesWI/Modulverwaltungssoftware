@@ -25,62 +25,62 @@ namespace Modulverwaltungssoftware
         {
             InitializeComponent();
 #if DEBUG // Wird nur im DEBUG-Modus kompiliert
-            bool autoLoginFlag = true; // true = Auto-Login aktivieren, false = Manueller Login
-            bool istDozentFlag = true; // Setze auf true, um als Dozent einzuloggen
+            bool autoLoginFlag = false; // true = Auto-Login aktivieren, false = Manueller Login
+            bool istDozentFlag = false; // Setze auf true, um als Dozent einzuloggen
             bool istKoordinationFlag = false; // Setze auf true, um als Koordination einzuloggen
             bool istGremiumFlag = false; // Setze auf true, um als Gremium einzuloggen
             bool istAdminFlag = false; // Setze auf true, um als Admin einzuloggen
             
             if (autoLoginFlag) // Nur wenn aktiviert
             {
-                if (istDozentFlag)
+                // ✅ FIX: Benutzer aus Datenbank laden statt manuell erstellen
+                using (var db = new Services.DatabaseContext())
                 {
-                    Benutzer.CurrentUser = new Benutzer
+                    Benutzer benutzer = null;
+                    
+                    if (istDozentFlag)
                     {
-                        BenutzerID = 1,
-                        Name = "Dr. Max Mustermann",
-                        Email = "max.mustermann@hs-example.de",
-                        RollenName = "Dozent",
-                        AktuelleRolle = Models.RollenKonfiguration.GetRolleByName("Dozent")
-                    };
-                }
-                else if (istKoordinationFlag)
-                {
-                    Benutzer.CurrentUser = new Benutzer
+                        benutzer = db.Benutzer.FirstOrDefault(b => b.Name == "Dr. Max Mustermann");
+                    }
+                    else if (istKoordinationFlag)
                     {
-                        BenutzerID = 2,
-                        Name = "Sabine Beispiel",
-                        Email = "sabine.beispiel@hs-example.de",
-                        RollenName = "Koordination",
-                        AktuelleRolle = Models.RollenKonfiguration.GetRolleByName("Koordination")
-                    };
-                }
-                else if (istGremiumFlag)
-                {
-                    Benutzer.CurrentUser = new Benutzer
+                        benutzer = db.Benutzer.FirstOrDefault(b => b.Name == "Sabine Beispiel");
+                    }
+                    else if (istGremiumFlag)
                     {
-                        BenutzerID = 3,
-                        Name = "Prof. Erika Musterfrau",
-                        Email = "erika.musterfrau@hs-example.de",
-                        RollenName = "Gremium",
-                        AktuelleRolle = Models.RollenKonfiguration.GetRolleByName("Gremium")
-                    };
-                }
-                else if (istAdminFlag)
-                {
-                    Benutzer.CurrentUser = new Benutzer
+                        benutzer = db.Benutzer.FirstOrDefault(b => b.Name == "Prof. Erika Musterfrau");
+                    }
+                    else if (istAdminFlag)
                     {
-                        BenutzerID = 99,
-                        Name = "Philipp Admin",
-                        Email = "admin@hs-example.de",
-                        RollenName = "Admin",
-                        AktuelleRolle = Models.RollenKonfiguration.GetRolleByName("Admin")
-                    };
+                        benutzer = db.Benutzer.FirstOrDefault(b => b.Name == "Philipp Admin");
+                    }
+                    
+                    if (benutzer != null)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"✅ Auto-Login: Benutzer '{benutzer.Name}' aus DB geladen (Passwort vor Löschen: '{benutzer.Passwort}')");
+                        
+                        // ⚠️ WICHTIG: Passwort nur aus dem IN-MEMORY Objekt löschen
+                        // Entity Framework darf NICHT tracken, sonst wird DB geändert!
+                        // LÖSUNG: Benutzer-Objekt detachen BEVOR wir Passwort löschen
+                        db.Entry(benutzer).State = System.Data.Entity.EntityState.Detached;
+                        
+                        // Jetzt können wir das Passwort sicher löschen (nur im Speicher)
+                        benutzer.Passwort = null;
+                        
+                        // ✅ AktuelleRolle wird automatisch über die Property gesetzt
+                        Benutzer.CurrentUser = benutzer;
+                        
+                        System.Diagnostics.Debug.WriteLine($"✅ Auto-Login erfolgreich: {benutzer.Name} (Rolle: {benutzer.RollenName}, ID: {benutzer.BenutzerID})");
+                        
+                        var mainWindow = new MainWindow();
+                        mainWindow.Show();
+                        this.Close();
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine("❌ Auto-Login fehlgeschlagen: Benutzer nicht in Datenbank gefunden");
+                    }
                 }
-                
-                var mainWindow = new MainWindow();
-                mainWindow.Show();
-                this.Close();
             }
 #endif
         }

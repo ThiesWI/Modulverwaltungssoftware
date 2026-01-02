@@ -59,7 +59,8 @@ namespace Modulverwaltungssoftware
             // Collection leeren (wichtig bei erneutem Laden!)
             ModulePreviews.Clear();
 
-            // ✅ ROLLENBASIERTE SICHTBARKEIT: Verwende GetModuleForUser() statt getAllModule()
+            // ✅ NUR FREIGEGEBENE MODULE FÜR STARTPAGE
+            // StartPage ist die öffentliche Übersicht → Nur Status.Freigegeben anzeigen!
             var alleModule = ModulRepository.GetModuleForUser();
 
             // Temporäre Liste für Sortierung
@@ -69,26 +70,34 @@ namespace Modulverwaltungssoftware
             {
                 foreach (var modul in alleModule)
                 {
-                    // ✅ FIX: Neueste ODER letzte Version holen (nicht nur höchste Nummer)
-                    var neuesteVersion = db.ModulVersion
-                        .Where(v => v.ModulId == modul.ModulID)
-                        .OrderByDescending(v => v.LetzteAenderung)
-                        .ThenByDescending(v => v.Versionsnummer)
+                    // ✅ FIX: NUR FREIGEGEBENE VERSIONEN HOLEN!
+                    // StartPage zeigt KEINE Entwürfe, InPrüfung, Änderungsbedarf etc.
+                    var freigegebeneVersion = db.ModulVersion
+                        .Where(v => v.ModulId == modul.ModulID && 
+                                    v.ModulStatus == ModulVersion.Status.Freigegeben)
+                        .OrderByDescending(v => v.Versionsnummer)
                         .FirstOrDefault();
 
-                    if (neuesteVersion != null)
+                    // ⚠️ WICHTIG: Nur Module MIT freigegebener Version anzeigen!
+                    if (freigegebeneVersion != null)
                     {
                         // Versionsnummer formatieren
-                        string versionDisplay = FormatVersionsnummer(neuesteVersion.Versionsnummer);
+                        string versionDisplay = FormatVersionsnummer(freigegebeneVersion.Versionsnummer);
                         
                         tempList.Add(new ModulePreview
                         {
-                            Title = modul.ModulnameDE,  // MODULNAME
-                            Studiengang = modul.Studiengang,  // ✅ FIX: Von Modul, nicht ModulVersion
-                            Version = $"{versionDisplay} ({neuesteVersion.ModulStatus})",
-                            ContentPreview = GenerateContentPreview(neuesteVersion),
+                            Title = modul.ModulnameDE,
+                            Studiengang = modul.Studiengang,
+                            Version = $"{versionDisplay} (Freigegeben)",  // Status ist immer "Freigegeben"
+                            ContentPreview = GenerateContentPreview(freigegebeneVersion),
                             ModulId = modul.ModulID.ToString()
                         });
+                        
+                        System.Diagnostics.Debug.WriteLine($"  ✅ Modul hinzugefügt: {modul.ModulnameDE} (Version {versionDisplay} - Freigegeben)");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"  ⏭️ Modul übersprungen: {modul.ModulnameDE} (Keine freigegebene Version)");
                     }
                 }
             }
@@ -102,10 +111,9 @@ namespace Modulverwaltungssoftware
             foreach (var module in sortedModules)
             {
                 ModulePreviews.Add(module);
-                System.Diagnostics.Debug.WriteLine($"  → Modul: {module.Title}, Version: {module.Version}");
             }
 
-            System.Diagnostics.Debug.WriteLine($"StartPage: {sortedModules.Count} Module geladen (alphabetisch sortiert)");
+            System.Diagnostics.Debug.WriteLine($"📋 StartPage: {sortedModules.Count} FREIGEGEBENE Module geladen (alphabetisch sortiert)");
         }
 
         // Hilfsmethode: Konvertiere interne Versionsnummer zu Anzeige-Format (10 → "1.0")
