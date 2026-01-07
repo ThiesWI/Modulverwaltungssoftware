@@ -493,7 +493,7 @@ namespace Modulverwaltungssoftware
                     statusBadge.Background = new SolidColorBrush(Color.FromRgb(189, 189, 189)); // Grau
                     statusIcon.Foreground = new SolidColorBrush(Colors.White);
                     statusText.Foreground = new SolidColorBrush(Colors.White);
-                    statusIcon.Text = "?"; // Stift-Symbol
+                    statusIcon.Text = "??"; // ? Stift-Symbol
                     statusText.Text = "Entwurf";
                     break;
 
@@ -501,7 +501,7 @@ namespace Modulverwaltungssoftware
                     statusBadge.Background = new SolidColorBrush(Color.FromRgb(255, 152, 0)); // Orange
                     statusIcon.Foreground = new SolidColorBrush(Colors.White);
                     statusText.Foreground = new SolidColorBrush(Colors.White);
-                    statusIcon.Text = "?"; // Sanduhr
+                    statusIcon.Text = "?"; // ? Sanduhr
                     statusText.Text = "In Prüfung";
                     break;
 
@@ -509,7 +509,7 @@ namespace Modulverwaltungssoftware
                     statusBadge.Background = new SolidColorBrush(Color.FromRgb(255, 193, 7)); // Gelb/Gold
                     statusIcon.Foreground = new SolidColorBrush(Colors.Black);
                     statusText.Foreground = new SolidColorBrush(Colors.Black);
-                    statusIcon.Text = "?"; // Waage-Symbol
+                    statusIcon.Text = "??"; // ? Waage-Symbol
                     statusText.Text = "Gremium";
                     break;
 
@@ -517,7 +517,7 @@ namespace Modulverwaltungssoftware
                     statusBadge.Background = new SolidColorBrush(Color.FromRgb(244, 67, 54)); // Rot
                     statusIcon.Foreground = new SolidColorBrush(Colors.White);
                     statusText.Foreground = new SolidColorBrush(Colors.White);
-                    statusIcon.Text = "?"; // Warnung
+                    statusIcon.Text = "??"; // ? Warnung
                     statusText.Text = "Änderung";
                     break;
 
@@ -525,7 +525,7 @@ namespace Modulverwaltungssoftware
                     statusBadge.Background = new SolidColorBrush(Color.FromRgb(76, 175, 80)); // Grün
                     statusIcon.Foreground = new SolidColorBrush(Colors.White);
                     statusText.Foreground = new SolidColorBrush(Colors.White);
-                    statusIcon.Text = "?"; // Haken
+                    statusIcon.Text = "?"; // ? Haken (einfach, funktioniert überall)
                     statusText.Text = "Freigegeben";
                     break;
 
@@ -533,7 +533,7 @@ namespace Modulverwaltungssoftware
                     statusBadge.Background = new SolidColorBrush(Color.FromRgb(158, 158, 158)); // Dunkelgrau
                     statusIcon.Foreground = new SolidColorBrush(Colors.White);
                     statusText.Foreground = new SolidColorBrush(Colors.White);
-                    statusIcon.Text = "??"; // Archiv-Box
+                    statusIcon.Text = "??"; // ? Archiv-Box
                     statusText.Text = "Archiviert";
                     break;
 

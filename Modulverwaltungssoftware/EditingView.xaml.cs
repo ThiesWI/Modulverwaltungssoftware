@@ -103,6 +103,11 @@ namespace Modulverwaltungssoftware
             EctsTextBox.TextChanged += ValidierePlausibilitaet;
             WorkloadPraesenzTextBox.TextChanged += ValidierePlausibilitaet;
             WorkloadSelbststudiumTextBox.TextChanged += ValidierePlausibilitaet;
+            
+            // ✨ SUCHFUNKTION: TextChanged Event für SearchBox
+            var searchBox = FindName("SearchBox") as TextBox;
+            if (searchBox != null)
+                searchBox.TextChanged += SearchBox_TextChanged;
         }
 
         /// <summary>
@@ -285,25 +290,31 @@ namespace Modulverwaltungssoftware
                 try
                 {
                     int modulIdInt = int.Parse(_modulId);
+                    bool erfolg = false;
 
                     if (_isCommentedVersion)
                     {
                         // 🆕 KOMMENTIERTE VERSION → Neue Version erstellen
                         // (Kommentare bleiben an alter Version)
-                        ErstelleNeueVersionMitAenderungen(modulIdInt, ects, workloadPraesenz, workloadSelbststudium);
+                        erfolg = ErstelleNeueVersionMitAenderungen(modulIdInt, ects, workloadPraesenz, workloadSelbststudium);
                     }
                     else
                     {
                         // 🔄 NICHT-KOMMENTIERTE VERSION → In-Place Update
                         // (Bestehende Version wird überschrieben)
-                        AktualisiereBestehendeVersion(modulIdInt, ects, workloadPraesenz, workloadSelbststudium);
+                        erfolg = AktualisiereBestehendeVersion(modulIdInt, ects, workloadPraesenz, workloadSelbststudium);
                     }
 
-                    MessageBox.Show($"Änderungen wurden erfolgreich gespeichert.",
-                        "Gespeichert", MessageBoxButton.OK, MessageBoxImage.Information);
+                    // ✅ NUR BEI ERFOLG: Erfolgsmeldung + Navigation
+                    if (erfolg)
+                    {
+                        MessageBox.Show($"Änderungen wurden erfolgreich gespeichert.",
+                            "Gespeichert", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                    // 🔙 Zurück zur ModulView
-                    this.NavigationService?.Navigate(new ModulView(modulIdInt));
+                        // 🔙 Zurück zur ModulView
+                        this.NavigationService?.Navigate(new ModulView(modulIdInt));
+                    }
+                    // ❌ BEI FEHLER: Bleibe in EditingView (Fehlerhafte Felder sind bereits markiert)
                 }
                 catch (Exception ex)
                 {
@@ -377,8 +388,19 @@ namespace Modulverwaltungssoftware
                     
                     System.Diagnostics.Debug.WriteLine($"💾 Erstelle neues Modul '{TitelTextBox.Text}' mit Ersteller='{neueVersion.Ersteller}' (CurrentUser={Benutzer.CurrentUser?.Name})");
                     
-                    ModulRepository.Speichere(neueVersion);
+                    // ✅ KRITISCH: Rückgabewert MUSS geprüft werden!
+                    bool speichernErfolgreich = ModulRepository.Speichere(neueVersion);
 
+                    if (!speichernErfolgreich)
+                    {
+                        // ❌ SPEICHERN FEHLGESCHLAGEN (z.B. Plausibilitätsprüfung)
+                        // Die Fehlermeldung wurde bereits von ModulRepository.Speichere() angezeigt
+                        // BLEIBE in EditingView - KEINE Navigation!
+                        System.Diagnostics.Debug.WriteLine("❌ Speichern fehlgeschlagen - bleibe in EditingView");
+                        return; // ⛔ ABBRUCH
+                    }
+
+                    // ✅ SPEICHERN ERFOLGREICH
                     MessageBox.Show($"Neues Modul '{TitelTextBox.Text}' wurde erfolgreich erstellt.",
                         "Gespeichert", MessageBoxButton.OK, MessageBoxImage.Information);
 
@@ -569,9 +591,13 @@ namespace Modulverwaltungssoftware
         /// - Versionsnummern werden * 10 gespeichert (2.1 → 21)
         /// - Status wird auf "Entwurf" gesetzt
         /// - hatKommentar = false (neue Version ist unkommentiert)
+        /// 
+        /// RÜCKGABE:
+        /// - true: Erfolgreich gespeichert
+        /// - false: Fehler (Plausibilitätsprüfung fehlgeschlagen oder DB-Fehler)
         /// ═══════════════════════════════════════════════════════════════════
         /// </summary>
-        private void ErstelleNeueVersionMitAenderungen(int modulId, int ects, int workloadPraesenz, int workloadSelbststudium)
+        private bool ErstelleNeueVersionMitAenderungen(int modulId, int ects, int workloadPraesenz, int workloadSelbststudium)
         {
             // 🔍 Aktuelle Version laden
             string cleanVersion = _versionNummer.TrimEnd('K'); // "2.1K" → "2.1"
@@ -687,8 +713,20 @@ namespace Modulverwaltungssoftware
             // 🔗 Modul-Objekt an Version anhängen
             neueVersion.Modul = modul;
 
-            // 💾 In Datenbank speichern
-            ModulRepository.Speichere(neueVersion);
+            // 💾 In Datenbank speichern und Rückgabewert prüfen
+            System.Diagnostics.Debug.WriteLine("💾 Speichere neue Version nach Kommentierung...");
+            bool erfolg = ModulRepository.Speichere(neueVersion);
+            
+            if (erfolg)
+            {
+                System.Diagnostics.Debug.WriteLine("✅ Neue Version erfolgreich gespeichert!");
+                return true;
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("❌ Fehler beim Speichern der neuen Version!");
+                return false;
+            }
         }
 
         /// <summary>
@@ -700,19 +738,12 @@ namespace Modulverwaltungssoftware
         /// Aktualisiert eine nicht-kommentierte Modulversion direkt
         /// KEINE neue Version wird erstellt!
         /// 
-        /// ABLAUF:
-        /// 1. PLAUSIBILITÄTSPRÜFUNG: ECTS/Workload-Verhältnis prüfen (28-32h/ECTS)
-        /// 2. Bei Fehler → Abbruch mit detaillierter Fehlermeldung
-        /// 3. Bei Erfolg → Modul-Daten aus UI in Datenbank-Objekt übertragen
-        /// 4. ModulRepository.Speichere() aufrufen
-        /// 
-        /// WICHTIG:
-        /// - Nur für Versionen mit Status "Entwurf" oder "Änderungsbedarf"
-        /// - Versionsnummer bleibt UNVERÄNDERT
-        /// - Kommentare bleiben erhalten (falls vorhanden)
+        /// RÜCKGABE:
+        /// - true: Erfolgreich gespeichert
+        /// - false: Fehler (Plausibilitätsprüfung fehlgeschlagen oder DB-Fehler)
         /// ═══════════════════════════════════════════════════════════════════
         /// </summary>
-        private void AktualisiereBestehendeVersion(int modulId, int ects, int workloadPraesenz, int workloadSelbststudium)
+        private bool AktualisiereBestehendeVersion(int modulId, int ects, int workloadPraesenz, int workloadSelbststudium)
         {
             // 🔍 Aktuelle Version aus Datenbank laden
             string cleanVersion = _versionNummer.TrimEnd('K');
@@ -723,7 +754,7 @@ namespace Modulverwaltungssoftware
             if (dbVersion == null)
             {
                 MessageBox.Show("Modulversion nicht gefunden.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
+                return false;
             }
 
             // ═══════════════════════════════════════════════════════════════
@@ -751,14 +782,20 @@ namespace Modulverwaltungssoftware
                     $"   • Standard: 30 Stunden/ECTS\n" +
                     $"   • Empfohlener ECTS-Wert für {workloadGesamt}h: {berechneteEcts:0.#} ECTS\n\n" +
                     $"⚠️ Systemmeldung:\n{plausibilitaetsErgebnis}\n\n" +
+                    $"❌ DAS MODUL WURDE NICHT GESPEICHERT!\n\n" +
                     $"Bitte passen Sie die Werte an, damit die Plausibilitätsprüfung erfolgreich ist.";
 
                 MessageBox.Show(detaillierteFehlermeldung,
-                    "ECTS-Plausibilitätsprüfung fehlgeschlagen",
+                    "Speichern fehlgeschlagen - Plausibilitätsprüfung",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
                 
-                return; // ⛔ ABBRUCH - Änderungen werden NICHT gespeichert
+                // ✅ Fehlerhafte Felder markieren
+                ValidationHelper.MarkAsInvalid(EctsTextBox, "ECTS-Wert entspricht nicht dem Workload");
+                ValidationHelper.MarkAsInvalid(WorkloadPraesenzTextBox, "Workload entspricht nicht dem Standard");
+                ValidationHelper.MarkAsInvalid(WorkloadSelbststudiumTextBox, "Workload entspricht nicht dem Standard");
+                
+                return false; // ⛔ ABBRUCH - Änderungen werden NICHT gespeichert
             }
 
             // ═══════════════════════════════════════════════════════════════
@@ -876,10 +913,12 @@ namespace Modulverwaltungssoftware
             if (erfolg)
             {
                 System.Diagnostics.Debug.WriteLine("✅ Erfolgreich gespeichert!");
+                return true;
             }
             else
             {
                 System.Diagnostics.Debug.WriteLine("❌ Fehler beim Speichern!");
+                return false;
             }
         }
 
@@ -1167,6 +1206,126 @@ namespace Modulverwaltungssoftware
             if (decimal.TryParse(version, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal dec))
                 return (int)(dec * 10);
             return 10; // Fallback: Version 1.0
+        }
+
+        #region ═══════════════════════════════════════════════════════════
+        // SUCHFUNKTION
+        #endregion ════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// Durchsucht alle Felder (Namen + Inhalte) im Formular und scrollt zum ersten Treffer
+        /// </summary>
+        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var searchBox = sender as TextBox;
+            string suchbegriff = searchBox?.Text?.Trim().ToLower();
+
+            // Alle Hintergrundfarben zurücksetzen
+            ResetHighlights();
+
+            if (string.IsNullOrEmpty(suchbegriff))
+                return;
+
+            // Liste aller durchsuchbaren Felder
+            var searchableFields = new List<Tuple<string, Control>>
+            {
+                Tuple.Create("Titel", (Control)TitelTextBox),
+                Tuple.Create("Version", (Control)VersionTextBox),
+                Tuple.Create("Modultyp", (Control)ModultypListBox),
+                Tuple.Create("Studiengang", (Control)StudiengangTextBox),
+                Tuple.Create("Semester", (Control)SemesterListBox),
+                Tuple.Create("Prüfungsform", (Control)PruefungsformListBox),
+                Tuple.Create("Turnus", (Control)TurnusListBox),
+                Tuple.Create("ECTS", (Control)EctsTextBox),
+                Tuple.Create("Workload Präsenz", (Control)WorkloadPraesenzTextBox),
+                Tuple.Create("Workload Selbststudium", (Control)WorkloadSelbststudiumTextBox),
+                Tuple.Create("Verantwortlicher", (Control)VerantwortlicherTextBox),
+                Tuple.Create("Voraussetzungen", (Control)VoraussetzungenTextBox),
+                Tuple.Create("Lernziele", (Control)LernzieleTextBox),
+                Tuple.Create("Lehrinhalte", (Control)LehrinhalteTextBox),
+                Tuple.Create("Literatur", (Control)LiteraturTextBox)
+            };
+
+            UIElement ersterTreffer = null;
+            int trefferAnzahl = 0;
+
+            foreach (var field in searchableFields)
+            {
+                string feldName = field.Item1;
+                Control control = field.Item2;
+                bool istTreffer = false;
+
+                // Prüfe Feldname
+                if (feldName.ToLower().Contains(suchbegriff))
+                {
+                    istTreffer = true;
+                }
+                // Prüfe Inhalt
+                else if (control is TextBox textBox && !string.IsNullOrEmpty(textBox.Text))
+                {
+                    if (textBox.Text.ToLower().Contains(suchbegriff))
+                        istTreffer = true;
+                }
+                else if (control is ListBox listBox)
+                {
+                    foreach (var item in listBox.SelectedItems)
+                    {
+                        if (item is ListBoxItem lbi && lbi.Content.ToString().ToLower().Contains(suchbegriff))
+                        {
+                            istTreffer = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (istTreffer)
+                {
+                    // Hervorheben
+                    control.Background = new SolidColorBrush(Color.FromArgb(100, 255, 255, 0)); // Gelb transparent
+                    trefferAnzahl++;
+
+                    if (ersterTreffer == null)
+                        ersterTreffer = control;
+                }
+            }
+
+            // Zum ersten Treffer scrollen
+            if (ersterTreffer != null && _contentScrollViewer != null)
+            {
+                // Cast zu FrameworkElement für BringIntoView
+                if (ersterTreffer is FrameworkElement element)
+                {
+                    element.BringIntoView();
+                    System.Diagnostics.Debug.WriteLine($"EditingView Suche '{suchbegriff}': {trefferAnzahl} Treffer");
+                }
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine($"EditingView Suche '{suchbegriff}': Keine Treffer");
+            }
+        }
+
+        /// <summary>
+        /// Setzt alle Hintergrundfarben auf Standard zurück
+        /// </summary>
+        private void ResetHighlights()
+        {
+            var fieldsToReset = new List<Control>
+            {
+                TitelTextBox, VersionTextBox, StudiengangTextBox,
+                EctsTextBox, WorkloadPraesenzTextBox, WorkloadSelbststudiumTextBox,
+                VerantwortlicherTextBox, VoraussetzungenTextBox, LernzieleTextBox,
+                LehrinhalteTextBox, LiteraturTextBox,
+                ModultypListBox, SemesterListBox, PruefungsformListBox, TurnusListBox
+            };
+
+            foreach (var control in fieldsToReset)
+            {
+                if (control is TextBox)
+                    control.Background = Brushes.White;
+                else if (control is ListBox)
+                    control.Background = new SolidColorBrush(Color.FromRgb(245, 245, 245)); // #F5F5F5
+            }
         }
     }
 }
