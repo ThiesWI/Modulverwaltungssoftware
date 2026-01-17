@@ -28,7 +28,7 @@ namespace Modulverwaltungssoftware
                         var erstelleVersion = new ModulVersion
                         {
                             ModulId = modulID,
-                            Versionsnummer = 1,
+                            Versionsnummer = 10,
                             GueltigAbSemester = "Entwurf",
                             ModulStatus = ModulVersion.Status.Entwurf,
                             LetzteAenderung = DateTime.Now,
@@ -45,7 +45,7 @@ namespace Modulverwaltungssoftware
                         db.SaveChanges();
                         return 1;
                     }
-                    neueVersionsnummer = alteVersion.Versionsnummer + 1;
+                    neueVersionsnummer = (alteVersion.Versionsnummer / 10 + 1)*10;
                     var neueVersion = new ModulVersion
                     {
                         ModulId = alteVersion.ModulId,
@@ -120,7 +120,7 @@ namespace Modulverwaltungssoftware
                         db.SaveChanges();
                         return version.Versionsnummer;
                     }
-                    int neueVersionsnummer = alteVersion.Versionsnummer + 1;
+                    int neueVersionsnummer = (alteVersion.Versionsnummer / 10 + 1)*10;
                     var neueVersion = new ModulVersion
                     {
                         ModulId = version.ModulId,

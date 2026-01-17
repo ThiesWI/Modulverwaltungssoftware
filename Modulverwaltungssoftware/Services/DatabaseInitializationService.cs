@@ -233,6 +233,122 @@ namespace Modulverwaltungssoftware.Services
                                     }
                                 }
                             },
+                            new Modul // Test
+                            {
+                                GueltigAb = DateTime.Now.AddYears(-5),
+                                Studiengang = "B.Sc. WI",
+                                ModulnameDE = "Testmodul Entwurf",
+                                ModulnameEN = "Testmodul Entwurf",
+                                EmpfohlenesSemester = 1,
+                                DauerInSemestern = 1,
+                                VoraussetzungenDb = null,
+                                Modultyp = Modul.ModultypEnum.Grundlagen,
+                                Turnus = Modul.TurnusEnum.JedesSemester,
+                                PruefungsForm = Modul.PruefungsFormEnum.PL,
+
+                                ModulVersionen = new List<ModulVersion>
+                                {
+                                    new ModulVersion
+                                    {
+                                        Versionsnummer = 10,  // ? FIX: 1.0 = 10
+                                        ModulStatus = ModulVersion.Status.Entwurf,
+                                        GueltigAbSemester = "WiSe 2425",
+                                        EctsPunkte = 5,
+                                        WorkloadPraesenz = 60, WorkloadSelbststudium = 90,
+                                        Pruefungsform = "Digitale Praesenzpruefung",
+                                        LernergebnisseDb = "Grundlagen des Programmierens mit C#",
+                                        InhaltsgliederungDb = "Schreiben von einfachen Konsolen-Apps",
+                                        Ersteller = dozent.Name
+                                    }
+                                }
+                            },
+                            new Modul
+                            {
+                                GueltigAb = DateTime.Now.AddYears(-2),
+                                Studiengang = "B.Sc. WI",
+                                ModulnameDE = "Testmodul Koordination",
+                                ModulnameEN = "Testmodul Koordination",
+                                EmpfohlenesSemester = 1,
+                                DauerInSemestern = 1,
+                                VoraussetzungenDb = null,
+                                Modultyp = Modul.ModultypEnum.Grundlagen,
+                                Turnus = Modul.TurnusEnum.JedesSemester,
+                                PruefungsForm = Modul.PruefungsFormEnum.PL,
+
+                                ModulVersionen = new List<ModulVersion>
+                                {
+                                    new ModulVersion
+                                    {
+                                        Versionsnummer = 10,  // ? FIX: 1.0 = 10
+                                        ModulStatus = ModulVersion.Status.InPruefungKoordination,
+                                        GueltigAbSemester = "WiSe 2425",
+                                        EctsPunkte = 5,
+                                        WorkloadPraesenz = 60, WorkloadSelbststudium = 90,
+                                        Pruefungsform = "Digitale Praesenzpruefung",
+                                        LernergebnisseDb = "Grundlagen des Programmierens mit C#",
+                                        InhaltsgliederungDb = "Schreiben von einfachen Konsolen-Apps",
+                                        Ersteller = dozent.Name
+                                    }
+                                }
+                            },
+                            new Modul
+                            {
+                                GueltigAb = DateTime.Now.AddYears(-1),
+                                Studiengang = "B.Sc. WI",
+                                ModulnameDE = "Testmodul Gremium",
+                                ModulnameEN = "Testmodul Gremium",
+                                EmpfohlenesSemester = 1,
+                                DauerInSemestern = 1,
+                                VoraussetzungenDb = null,
+                                Modultyp = Modul.ModultypEnum.Grundlagen,
+                                Turnus = Modul.TurnusEnum.JedesSemester,
+                                PruefungsForm = Modul.PruefungsFormEnum.PL,
+
+                                ModulVersionen = new List<ModulVersion>
+                                {
+                                    new ModulVersion
+                                    {
+                                        Versionsnummer = 10,  // ? FIX: 1.0 = 10
+                                        ModulStatus = ModulVersion.Status.InPruefungGremium,
+                                        GueltigAbSemester = "WiSe 2425",
+                                        EctsPunkte = 5,
+                                        WorkloadPraesenz = 60, WorkloadSelbststudium = 90,
+                                        Pruefungsform = "Digitale Praesenzpruefung",
+                                        LernergebnisseDb = "Grundlagen des Programmierens mit C#",
+                                        InhaltsgliederungDb = "Schreiben von einfachen Konsolen-Apps",
+                                        Ersteller = dozent.Name
+                                    }
+                                }
+                            },
+                            new Modul
+                            {
+                                GueltigAb = DateTime.Now.AddYears(-1),
+                                Studiengang = "B.Sc. WI",
+                                ModulnameDE = "Testmodul Archiv",
+                                ModulnameEN = "Testmodul Archiv",
+                                EmpfohlenesSemester = 1,
+                                DauerInSemestern = 1,
+                                VoraussetzungenDb = null,
+                                Modultyp = Modul.ModultypEnum.Grundlagen,
+                                Turnus = Modul.TurnusEnum.JedesSemester,
+                                PruefungsForm = Modul.PruefungsFormEnum.PL,
+
+                                ModulVersionen = new List<ModulVersion>
+                                {
+                                    new ModulVersion
+                                    {
+                                        Versionsnummer = 10,  // ? FIX: 1.0 = 10
+                                        ModulStatus = ModulVersion.Status.Archiviert,
+                                        GueltigAbSemester = "WiSe 2425",
+                                        EctsPunkte = 5,
+                                        WorkloadPraesenz = 60, WorkloadSelbststudium = 90,
+                                        Pruefungsform = "Digitale Praesenzpruefung",
+                                        LernergebnisseDb = "Grundlagen des Programmierens mit C#",
+                                        InhaltsgliederungDb = "Schreiben von einfachen Konsolen-Apps",
+                                        Ersteller = dozent.Name
+                                    }
+                                }
+                            },
                             new Modul
                             {
                                 GueltigAb = DateTime.Now.AddMonths(-6),
@@ -533,12 +649,12 @@ namespace Modulverwaltungssoftware.Services
     };
 
                             db.Kommentar.AddRange(kommentare);
-                            
+
                             // Module als kommentiert markieren
                             seModul.ModulVersionen.Last().hatKommentar = true;
                             thermoModul.ModulVersionen.First().hatKommentar = true;
                             pyroModul.ModulVersionen.First().hatKommentar = true;
-                            
+
                             db.SaveChanges();
                             Console.WriteLine("4 feldspezifische Kommentare erfolgreich angelegt.");
                         }

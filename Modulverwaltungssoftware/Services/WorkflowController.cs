@@ -131,8 +131,18 @@ namespace Modulverwaltungssoftware
                 }
                 else
                 {
-                    ModulVersion.setStatus(versionsnummer, modulID, ModulVersion.Status.InPruefungGremium);
-                    BenachrichtigungsService.SendeBenachrichtigung("Gremium", $"{Benutzer.CurrentUser.Name} hat Version {versionsnummer} für Modul {modulID} zur Prüfung durch das Gremium weitergeleitet.", versionsnummer);
+                    using (var db = new Services.DatabaseContext())
+                    {
+                        var modulVersion = db.ModulVersion
+                            .Include("Modul")
+                            .FirstOrDefault(v => v.Versionsnummer == versionsnummer && v.ModulId == modulID);
+
+                        if (modulVersion != null)
+                        {
+                            ModulVersion.setStatus(versionsnummer, modulID, ModulVersion.Status.InPruefungGremium);
+                            BenachrichtigungsService.SendeBenachrichtigung("Gremium", $"{Benutzer.CurrentUser.Name} hat Version {versionsnummer} für Modul {modulID} zur Prüfung durch das Gremium weitergeleitet.", modulVersion.ModulVersionID);
+                        }
+                    }
                 }
             }
             catch (Exception ex)

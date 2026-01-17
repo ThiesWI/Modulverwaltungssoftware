@@ -122,7 +122,7 @@ namespace Modulverwaltungssoftware
                         var neueVersion = new ModulVersion
                         {
                             ModulId = version.Modul.ModulID,
-                            Versionsnummer = 1,
+                            Versionsnummer = 10,
                             GueltigAbSemester = "Entwurf",
                             ModulStatus = ModulVersion.Status.Entwurf,
                             LetzteAenderung = DateTime.Now,
@@ -218,7 +218,7 @@ namespace Modulverwaltungssoftware
                             .DefaultIfEmpty(0)
                             .Max();
 
-                        int neueVersionsnummer = hoechsteVersionsnummer + 10;
+                        int neueVersionsnummer = (hoechsteVersionsnummer/10 + 1)*10;
 
                         var neueModulVersion = new ModulVersion
                         {

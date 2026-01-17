@@ -309,14 +309,13 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="ViewModels\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Resource Include="logo.png" />
     <Resource Include="notification.png" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="readme.txt" />
     <Content Include="SQL\RepairPasswords.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
