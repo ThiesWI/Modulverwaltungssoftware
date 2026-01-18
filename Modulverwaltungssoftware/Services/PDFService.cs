@@ -152,12 +152,12 @@ namespace PDF_Test
                                 if (!string.IsNullOrWhiteSpace(lehrinhalteText))
                                     literaturBlock += lehrinhalteText;
 
-                                literaturBlock += "\n\n";
-
-                                literaturBlock += "<b>Literatur</b>";
-
                                 if (literatur != null && literatur.Count > 0)
                                 {
+                                    literaturBlock += "\n\n";
+
+                                    literaturBlock += "<b>Literatur</b>";
+
                                     literaturBlock += string.Join("\n", literatur);
                                 }
 
@@ -165,10 +165,13 @@ namespace PDF_Test
                                 {
                                     if (!string.IsNullOrWhiteSpace(lehrinhalteText))
                                         t.Span(lehrinhalteText);
+                                    if (literatur != null && literatur.Count > 0)
+                                    {
+                                        t.Line("\n");
+                                        t.Span("Literatur").Bold();
+                                        t.Line("\n");
+                                    }
 
-                                    t.Line("\n");
-                                    t.Span("Literatur").Bold();
-                                    t.Line("\n");
 
                                     if (literatur != null && literatur.Count > 0)
                                     {

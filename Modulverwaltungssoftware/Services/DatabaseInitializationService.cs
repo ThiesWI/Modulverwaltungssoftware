@@ -193,7 +193,7 @@ namespace Modulverwaltungssoftware.Services
                                     new ModulVersion
                                     {
                                         Versionsnummer = 10,  // ? FIX: 1.0 = 10
-                                        ModulStatus = ModulVersion.Status.Freigegeben,
+                                        ModulStatus = ModulVersion.Status.InPruefungGremium,
                                         GueltigAbSemester = "SoSe 24",
                                         EctsPunkte = 5,
                                         WorkloadPraesenz = 30, WorkloadSelbststudium = 120,
@@ -222,124 +222,8 @@ namespace Modulverwaltungssoftware.Services
                                     new ModulVersion
                                     {
                                         Versionsnummer = 10,  // ? FIX: 1.0 = 10
-                                        ModulStatus = ModulVersion.Status.Freigegeben,
-                                        GueltigAbSemester = "WiSe 2425",
-                                        EctsPunkte = 5,
-                                        WorkloadPraesenz = 60, WorkloadSelbststudium = 90,
-                                        Pruefungsform = "Digitale Praesenzpruefung",
-                                        LernergebnisseDb = "Grundlagen des Programmierens mit C#",
-                                        InhaltsgliederungDb = "Schreiben von einfachen Konsolen-Apps",
-                                        Ersteller = dozent.Name
-                                    }
-                                }
-                            },
-                            new Modul // Test
-                            {
-                                GueltigAb = DateTime.Now.AddYears(-5),
-                                Studiengang = "B.Sc. WI",
-                                ModulnameDE = "Testmodul Entwurf",
-                                ModulnameEN = "Testmodul Entwurf",
-                                EmpfohlenesSemester = 1,
-                                DauerInSemestern = 1,
-                                VoraussetzungenDb = null,
-                                Modultyp = Modul.ModultypEnum.Grundlagen,
-                                Turnus = Modul.TurnusEnum.JedesSemester,
-                                PruefungsForm = Modul.PruefungsFormEnum.PL,
-
-                                ModulVersionen = new List<ModulVersion>
-                                {
-                                    new ModulVersion
-                                    {
-                                        Versionsnummer = 10,  // ? FIX: 1.0 = 10
-                                        ModulStatus = ModulVersion.Status.Entwurf,
-                                        GueltigAbSemester = "WiSe 2425",
-                                        EctsPunkte = 5,
-                                        WorkloadPraesenz = 60, WorkloadSelbststudium = 90,
-                                        Pruefungsform = "Digitale Praesenzpruefung",
-                                        LernergebnisseDb = "Grundlagen des Programmierens mit C#",
-                                        InhaltsgliederungDb = "Schreiben von einfachen Konsolen-Apps",
-                                        Ersteller = dozent.Name
-                                    }
-                                }
-                            },
-                            new Modul
-                            {
-                                GueltigAb = DateTime.Now.AddYears(-2),
-                                Studiengang = "B.Sc. WI",
-                                ModulnameDE = "Testmodul Koordination",
-                                ModulnameEN = "Testmodul Koordination",
-                                EmpfohlenesSemester = 1,
-                                DauerInSemestern = 1,
-                                VoraussetzungenDb = null,
-                                Modultyp = Modul.ModultypEnum.Grundlagen,
-                                Turnus = Modul.TurnusEnum.JedesSemester,
-                                PruefungsForm = Modul.PruefungsFormEnum.PL,
-
-                                ModulVersionen = new List<ModulVersion>
-                                {
-                                    new ModulVersion
-                                    {
-                                        Versionsnummer = 10,  // ? FIX: 1.0 = 10
                                         ModulStatus = ModulVersion.Status.InPruefungKoordination,
-                                        GueltigAbSemester = "WiSe 2425",
-                                        EctsPunkte = 5,
-                                        WorkloadPraesenz = 60, WorkloadSelbststudium = 90,
-                                        Pruefungsform = "Digitale Praesenzpruefung",
-                                        LernergebnisseDb = "Grundlagen des Programmierens mit C#",
-                                        InhaltsgliederungDb = "Schreiben von einfachen Konsolen-Apps",
-                                        Ersteller = dozent.Name
-                                    }
-                                }
-                            },
-                            new Modul
-                            {
-                                GueltigAb = DateTime.Now.AddYears(-1),
-                                Studiengang = "B.Sc. WI",
-                                ModulnameDE = "Testmodul Gremium",
-                                ModulnameEN = "Testmodul Gremium",
-                                EmpfohlenesSemester = 1,
-                                DauerInSemestern = 1,
-                                VoraussetzungenDb = null,
-                                Modultyp = Modul.ModultypEnum.Grundlagen,
-                                Turnus = Modul.TurnusEnum.JedesSemester,
-                                PruefungsForm = Modul.PruefungsFormEnum.PL,
-
-                                ModulVersionen = new List<ModulVersion>
-                                {
-                                    new ModulVersion
-                                    {
-                                        Versionsnummer = 10,  // ? FIX: 1.0 = 10
-                                        ModulStatus = ModulVersion.Status.InPruefungGremium,
-                                        GueltigAbSemester = "WiSe 2425",
-                                        EctsPunkte = 5,
-                                        WorkloadPraesenz = 60, WorkloadSelbststudium = 90,
-                                        Pruefungsform = "Digitale Praesenzpruefung",
-                                        LernergebnisseDb = "Grundlagen des Programmierens mit C#",
-                                        InhaltsgliederungDb = "Schreiben von einfachen Konsolen-Apps",
-                                        Ersteller = dozent.Name
-                                    }
-                                }
-                            },
-                            new Modul
-                            {
-                                GueltigAb = DateTime.Now.AddYears(-1),
-                                Studiengang = "B.Sc. WI",
-                                ModulnameDE = "Testmodul Archiv",
-                                ModulnameEN = "Testmodul Archiv",
-                                EmpfohlenesSemester = 1,
-                                DauerInSemestern = 1,
-                                VoraussetzungenDb = null,
-                                Modultyp = Modul.ModultypEnum.Grundlagen,
-                                Turnus = Modul.TurnusEnum.JedesSemester,
-                                PruefungsForm = Modul.PruefungsFormEnum.PL,
-
-                                ModulVersionen = new List<ModulVersion>
-                                {
-                                    new ModulVersion
-                                    {
-                                        Versionsnummer = 10,  // ? FIX: 1.0 = 10
-                                        ModulStatus = ModulVersion.Status.Archiviert,
-                                        GueltigAbSemester = "WiSe 2425",
+                                        GueltigAbSemester = "SoSe 26",
                                         EctsPunkte = 5,
                                         WorkloadPraesenz = 60, WorkloadSelbststudium = 90,
                                         Pruefungsform = "Digitale Praesenzpruefung",
@@ -379,11 +263,11 @@ namespace Modulverwaltungssoftware.Services
                             },
                             new Modul
                             {
-                                ModulnameDE = "Rechtschreibung und Grammatik",
-                                Studiengang = "B.A. TuerkischFuerAnfaenger",
-                                EmpfohlenesSemester = 5,
-                                DauerInSemestern = 2,
-                                VoraussetzungenDb = "Semesterbeitrag rechtzeitig bezahlt",
+                                ModulnameDE = "Akademisches Schreiben",
+                                Studiengang = "B.Sc Angewandte Informatik / Wirtschaftsinformatik",
+                                EmpfohlenesSemester = 4,
+                                DauerInSemestern = 1,
+                                VoraussetzungenDb = "Keine",
                                 Modultyp = Modul.ModultypEnum.Wahlpflicht,
                                 Turnus = Modul.TurnusEnum.JedesSemester,
                                 PruefungsForm = Modul.PruefungsFormEnum.SL,
@@ -399,8 +283,8 @@ namespace Modulverwaltungssoftware.Services
                                         EctsPunkte = 10,
                                         WorkloadPraesenz = 200, WorkloadSelbststudium = 100,
                                         Pruefungsform = "Hausarbeit",
-                                        LernergebnisseDb = "Texte mit maximal einem Fehler auf 1000 Wörter schreiben",
-                                        InhaltsgliederungDb = "1. Duden-Workouts\n2. Grammatik-Yoga",
+                                        LernergebnisseDb = "Wissenschaftliche Fragestellungen zu formulieren und einzugrenzen.\nZitationsstile (IEEE, APA) korrekt anzuwenden und Plagiate zu vermeiden.\nWissenschaftliche Literatur systematisch zu recherchieren und zu bewerten.\nStrukturierte Gliederungen für Fachberichte und Thesis-Arbeiten zu erstellen.",
+                                        InhaltsgliederungDb = "Grundlagen des wissenschaftlichen Arbeitens: Ethik und Standards.\nLiteraturrecherche: Umgang mit Bibliotheksdatenbanken, Google Scholar und ACM Digital Library.\nZitiertechnik: Direkte und indirekte Zitate, Quellenverwaltung mit BibTeX/Zotero.\nSchreibprozess: Vom Abstract bis zum Fazit – Stilistik und roter Faden.\nPräsentation von Ergebnissen: Poster-Sessions und wissenschaftliche Vorträge.",
                                         Ersteller = dozent.Name
                                     }
                                 }
@@ -409,22 +293,34 @@ namespace Modulverwaltungssoftware.Services
                             {
                                 ModulnameDE = "Einführung in die Pyrotechnik",
                                 ModulnameEN = "Pyrotechnics I",
-                                Studiengang = "B.SC. Buehneneffekte",
+                                Studiengang = "B.Sc. Sicherheitstechnik, B.Sc Veranstaltungstechnik",
                                 EmpfohlenesSemester = 5,
                                 DauerInSemestern = 1,
-                                VoraussetzungenDb = null,
+                                VoraussetzungenDb = "Grundlagen der Anorganischen Chemie, Mathematik I",
                                 Modultyp = Modul.ModultypEnum.Wahlpflicht,
-                                Turnus = Modul.TurnusEnum.JedesSemester,
+                                Turnus = Modul.TurnusEnum.NurSommersemester,
                                 PruefungsForm = Modul.PruefungsFormEnum.SP,
                                 GueltigAb = DateTime.Now,
 
                                 ModulVersionen = new List<ModulVersion>
                                 {
-                                    new ModulVersion
+                                                                        new ModulVersion
                                     {
                                         Versionsnummer = 10,  // ? FIX: 1.0 = 10
-                                        ModulStatus = ModulVersion.Status.Aenderungsbedarf,
-                                        GueltigAbSemester = "WiSe 2526",
+                                        ModulStatus = ModulVersion.Status.Archiviert,
+                                        GueltigAbSemester = "SoSe 9999",
+                                        EctsPunkte = 5,
+                                        WorkloadPraesenz = 60, WorkloadSelbststudium = 90,
+                                        Pruefungsform = "Laborabnahmen (50%), Online-Klausur (50%)",
+                                        LernergebnisseDb = "Die Studierenden kennen Grundlagen von Explosivstoffen. Sie können Gefährdungen beurteilen. Rechtliche Rahmenbedingungen werden besprochen.",
+                                        InhaltsgliederungDb = "1. Stoffkunde, 2. Zündtechnik, 3. Sicherheitsmanagement, 4. Recht.",
+                                        Ersteller = dozent.Name
+                                    },
+                                    new ModulVersion
+                                    {
+                                        Versionsnummer = 20,  // ? FIX: 1.0 = 10
+                                        ModulStatus = ModulVersion.Status.Entwurf,
+                                        GueltigAbSemester = "SoSe 26",
                                         EctsPunkte = 5,
                                         WorkloadPraesenz = 60, WorkloadSelbststudium = 90,
                                         Pruefungsform = "Laborabnahmen (50%), Online-Klausur (50%)",
@@ -438,36 +334,6 @@ namespace Modulverwaltungssoftware.Services
                                       "4. Farberzeugung und akustische Effekte\n" +
                                       "5. Zündsysteme und elektrische Zündung\n" +
                                       "6. Sicherheitstechnik und Lagerung",
-                                        Ersteller = dozent.Name
-                                    }
-                                }
-                            },
-
-                            new Modul
-                            {
-                                GueltigAb = DateTime.Now.AddMonths(-30),
-                                ModulnameDE = "Cooking Basics",
-                                ModulnameEN = "Cooking Basics",
-                                Studiengang = "B.Sc. Culinary Arts",
-                                EmpfohlenesSemester = 1,
-                                DauerInSemestern = 1,
-                                VoraussetzungenDb = null,
-                                Modultyp = Modul.ModultypEnum.Grundlagen,
-                                Turnus = Modul.TurnusEnum.JedesSemester,
-                                PruefungsForm = Modul.PruefungsFormEnum.SP,
-
-                                ModulVersionen = new List<ModulVersion>
-                                {
-                                    new ModulVersion
-                                    {
-                                        Versionsnummer = 10,  // ? FIX: 1.0 = 10
-                                        ModulStatus = ModulVersion.Status.Freigegeben,
-                                        GueltigAbSemester = "SoSe 23",
-                                        EctsPunkte = 5,
-                                        WorkloadPraesenz = 30, WorkloadSelbststudium = 120,
-                                        Pruefungsform = "Laborabnahmen",
-                                        LernergebnisseDb = "Grundlagen des Kochens",
-                                        InhaltsgliederungDb = "1. Sicherheitseinweisung und Brandbekaempfung\n2. Einfache Rezepte",
                                         Ersteller = dozent.Name
                                     }
                                 }

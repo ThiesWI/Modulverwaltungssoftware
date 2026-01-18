@@ -5,6 +5,11 @@ namespace Modulverwaltungssoftware
 {
     public class PlausibilitaetsService
     {
+        private const int ECTS_MIN = 2;
+        private const int ECTS_MAX = 30;
+        private const int Workload_Max = 900; // 30 ECTS * 30 Stunden
+        private const double HOURS_PER_ECTS_STANDARD_MIN = 28.0;
+        private const double HOURS_PER_ECTS_STANDARD_MAX = 32.0;
         public static string pruefeWorkloadStandard(int stunden, int ects)
         {
             // Verhindere Division durch 0
@@ -38,15 +43,19 @@ namespace Modulverwaltungssoftware
         }
         internal static bool pruefeWorkloadStandardIntern(int stunden, int ects)
         {
-            if (stunden / ects < 28 || stunden / ects > 32)
+            if (ects <= 0) {
+                return false;
+            }
+            double stundenProEcts = (double)stunden / (double)ects;
+            if (ects < ECTS_MIN || ects > ECTS_MAX)
             {
                 return false;
             }
-            else if (stunden / 30 >= 2.5 && stunden / 30 <= 15)
+            if (stunden <= 0 || stunden > Workload_Max)
             {
-                return true;
+                return false;
             }
-            else if (stunden / 30 >= 15 && stunden / 30 <= 30)
+            if (stundenProEcts >= HOURS_PER_ECTS_STANDARD_MIN && stundenProEcts <= HOURS_PER_ECTS_STANDARD_MAX)
             {
                 return true;
             }
