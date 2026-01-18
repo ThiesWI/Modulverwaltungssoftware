@@ -21,17 +21,17 @@ namespace Modulverwaltungssoftware
             double stundenProEcts = (double)stunden / ects;
             
             // ✅ KORRIGIERT: 28-32 Stunden pro ECTS IST der Standard (entspricht dem 30h-Standard)
-            if (stundenProEcts >= 28 && stundenProEcts <= 32)
+            if (stundenProEcts >= HOURS_PER_ECTS_STANDARD_MIN && stundenProEcts <= HOURS_PER_ECTS_STANDARD_MAX)
             {
                 return "Der Workload entspricht dem Standard."; // ✅ KORRIGIERT
             }
             // Plausibilitätsprüfung: 75-450 Stunden Gesamtworkload (2.5-15 ECTS)
-            else if (stunden >= 75 && stunden <= 450)
+            else if (stunden >= 60 && stunden <= 450)
             {
                 return "Der Workload liegt im akzeptablen Bereich.";
             }
             // Warnung bei sehr hohem Workload (450-900 Stunden = 15-30 ECTS)
-            else if (stunden >= 450 && stunden <= 900)
+            else if (stunden >= 450 && stunden <= Workload_Max)
             {
                 return "Ungewöhnlich hoher Workload. Bitte stellen Sie sicher, dass dies beabsichtigt ist.";
             }
