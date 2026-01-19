@@ -17,7 +17,7 @@ namespace PDF_Test
             int semester = v.Modul.EmpfohlenesSemester;
             string pruefungsform = v.Pruefungsform.ToString();
             string turnus = v.Modul.Turnus.ToString();
-            int ects = v.EctsPunkte;
+            double ects = v.EctsPunkte;
             int workloadPraesenz = v.WorkloadPraesenz;
             int workloadSelbststudium = v.WorkloadSelbststudium;
             string verantwortlicher = v.Ersteller;

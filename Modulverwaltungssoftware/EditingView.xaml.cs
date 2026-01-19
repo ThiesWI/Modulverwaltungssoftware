@@ -75,7 +75,7 @@ namespace Modulverwaltungssoftware
             public List<string> Semester { get; set; }
             public List<string> Pruefungsformen { get; set; }
             public List<string> Turnus { get; set; }
-            public int Ects { get; set; }
+            public double Ects { get; set; }
             public int WorkloadPraesenz { get; set; }
             public int WorkloadSelbststudium { get; set; }
             public string Verantwortlicher { get; set; }
@@ -103,7 +103,7 @@ namespace Modulverwaltungssoftware
             EctsTextBox.TextChanged += ValidierePlausibilitaet;
             WorkloadPraesenzTextBox.TextChanged += ValidierePlausibilitaet;
             WorkloadSelbststudiumTextBox.TextChanged += ValidierePlausibilitaet;
-            
+
             // ✨ SUCHFUNKTION: TextChanged Event für SearchBox
             var searchBox = FindName("SearchBox") as TextBox;
             if (searchBox != null)
@@ -121,7 +121,7 @@ namespace Modulverwaltungssoftware
             _modulId = null;
             _versionNummer = "1.0";
             VersionTextBox.Text = "1.0 (Entwurf)";
-            
+
             // ✅ FIX: Verantwortlicher-Feld automatisch mit aktuellem Benutzer befüllen
             if (Benutzer.CurrentUser != null)
             {
@@ -276,7 +276,7 @@ namespace Modulverwaltungssoftware
             ResetValidationHighlights();
 
             // ✅ SCHRITT 2: Basis-Validierung durchführen
-            if (!ValidateBasicInputs(out int ects, out int workloadPraesenz, out int workloadSelbststudium))
+            if (!ValidateBasicInputs(out double ects, out int workloadPraesenz, out int workloadSelbststudium))
             {
                 return; // ⛔ Validierung fehlgeschlagen → Felder sind rot markiert
             }
@@ -369,7 +369,7 @@ namespace Modulverwaltungssoftware
                         LetzteAenderung = DateTime.Now,
                         WorkloadPraesenz = int.Parse(WorkloadPraesenzTextBox.Text),
                         WorkloadSelbststudium = int.Parse(WorkloadSelbststudiumTextBox.Text),
-                        EctsPunkte = int.Parse(EctsTextBox.Text),
+                        EctsPunkte = double.Parse(EctsTextBox.Text),
                         Pruefungsform = PruefungsformListBox.SelectedItem is ListBoxItem lbi ? lbi.Content.ToString() : "Klausur",
                         Literatur = !string.IsNullOrWhiteSpace(LiteraturTextBox.Text)
                             ? LiteraturTextBox.Text.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).ToList()
@@ -385,9 +385,9 @@ namespace Modulverwaltungssoftware
                         hatKommentar = false
                     };
                     neueVersion.Modul = WorkflowController.getModulDetails(neueModulId);
-                    
+
                     System.Diagnostics.Debug.WriteLine($"💾 Erstelle neues Modul '{TitelTextBox.Text}' mit Ersteller='{neueVersion.Ersteller}' (CurrentUser={Benutzer.CurrentUser?.Name})");
-                    
+
                     // ✅ KRITISCH: Rückgabewert MUSS geprüft werden!
                     bool speichernErfolgreich = ModulRepository.Speichere(neueVersion);
 
@@ -447,7 +447,7 @@ namespace Modulverwaltungssoftware
         /// - false: Fehler gefunden (Felder sind rot markiert + MessageBox)
         /// ═══════════════════════════════════════════════════════════════════
         /// </summary>
-        private bool ValidateBasicInputs(out int ects, out int workloadPraesenz, out int workloadSelbststudium)
+        private bool ValidateBasicInputs(out double ects, out int workloadPraesenz, out int workloadSelbststudium)
         {
             ects = 0;
             workloadPraesenz = 0;
@@ -464,7 +464,7 @@ namespace Modulverwaltungssoftware
                 isValid = false;
             }
 
-            if (string.IsNullOrWhiteSpace(EctsTextBox.Text) || !int.TryParse(EctsTextBox.Text, out ects) || ects <= 0)
+            if (string.IsNullOrWhiteSpace(EctsTextBox.Text) || !double.TryParse(EctsTextBox.Text, out ects) || ects <= 0)
             {
                 ValidationHelper.MarkAsInvalid(EctsTextBox, "Bitte gültige ECTS-Punktzahl (> 0) eingeben.");
                 isValid = false;
@@ -597,7 +597,7 @@ namespace Modulverwaltungssoftware
         /// - false: Fehler (Plausibilitätsprüfung fehlgeschlagen oder DB-Fehler)
         /// ═══════════════════════════════════════════════════════════════════
         /// </summary>
-        private bool ErstelleNeueVersionMitAenderungen(int modulId, int ects, int workloadPraesenz, int workloadSelbststudium)
+        private bool ErstelleNeueVersionMitAenderungen(int modulId, double ects, int workloadPraesenz, int workloadSelbststudium)
         {
             // 🔍 Aktuelle Version laden
             string cleanVersion = _versionNummer.TrimEnd('K'); // "2.1K" → "2.1"
@@ -716,7 +716,7 @@ namespace Modulverwaltungssoftware
             // 💾 In Datenbank speichern und Rückgabewert prüfen
             System.Diagnostics.Debug.WriteLine("💾 Speichere neue Version nach Kommentierung...");
             bool erfolg = ModulRepository.Speichere(neueVersion);
-            
+
             if (erfolg)
             {
                 System.Diagnostics.Debug.WriteLine("✅ Neue Version erfolgreich gespeichert!");
@@ -743,7 +743,7 @@ namespace Modulverwaltungssoftware
         /// - false: Fehler (Plausibilitätsprüfung fehlgeschlagen oder DB-Fehler)
         /// ═══════════════════════════════════════════════════════════════════
         /// </summary>
-        private bool AktualisiereBestehendeVersion(int modulId, int ects, int workloadPraesenz, int workloadSelbststudium)
+        private bool AktualisiereBestehendeVersion(int modulId, double ects, int workloadPraesenz, int workloadSelbststudium)
         {
             // 🔍 Aktuelle Version aus Datenbank laden
             string cleanVersion = _versionNummer.TrimEnd('K');
@@ -789,12 +789,12 @@ namespace Modulverwaltungssoftware
                     "Speichern fehlgeschlagen - Plausibilitätsprüfung",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
-                
+
                 // ✅ Fehlerhafte Felder markieren
                 ValidationHelper.MarkAsInvalid(EctsTextBox, "ECTS-Wert entspricht nicht dem Workload");
                 ValidationHelper.MarkAsInvalid(WorkloadPraesenzTextBox, "Workload entspricht nicht dem Standard");
                 ValidationHelper.MarkAsInvalid(WorkloadSelbststudiumTextBox, "Workload entspricht nicht dem Standard");
-                
+
                 return false; // ⛔ ABBRUCH - Änderungen werden NICHT gespeichert
             }
 
@@ -909,7 +909,7 @@ namespace Modulverwaltungssoftware
             // 💾 IN DATENBANK SPEICHERN
             System.Diagnostics.Debug.WriteLine("💾 Speichere Änderungen in Datenbank...");
             bool erfolg = ModulRepository.Speichere(dbVersion);
-            
+
             if (erfolg)
             {
                 System.Diagnostics.Debug.WriteLine("✅ Erfolgreich gespeichert!");
@@ -961,7 +961,7 @@ namespace Modulverwaltungssoftware
         protected override void OnPreviewMouseWheel(MouseWheelEventArgs e)
         {
             base.OnPreviewMouseWheel(e);
-            
+
             if (_contentScrollViewer != null)
             {
                 _contentScrollViewer.ScrollToVerticalOffset(_contentScrollViewer.VerticalOffset - e.Delta);
@@ -975,7 +975,18 @@ namespace Modulverwaltungssoftware
         /// </summary>
         private void NumericTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
-            e.Handled = !IsTextNumeric(e.Text);
+            TextBox textBox = sender as TextBox;
+
+            // 1. Aktuellen Text holen
+            string currentText = textBox.Text;
+
+            // 2. Markierten Text entfernen und neues Zeichen an der Cursor-Position einfügen
+            // Das simuliert exakt das, was nach dem Tastendruck in der Box stehen würde.
+            string newFullText = currentText.Remove(textBox.SelectionStart, textBox.SelectionLength)
+                                            .Insert(textBox.SelectionStart, e.Text);
+
+            // 3. Wenn der neue Gesamttext keine gültige Zahl wäre, Eingabe blockieren
+            e.Handled = !IsTextNumeric(newFullText);
         }
 
         /// <summary>
@@ -986,12 +997,15 @@ namespace Modulverwaltungssoftware
             if (string.IsNullOrEmpty(text))
                 return false;
 
-            foreach (char c in text)
-            {
-                if (!char.IsDigit(c))
-                    return false;
-            }
-            return true;
+            // Erlaubt Ziffern sowie Punkt und Komma.
+            // Wir lassen ein einzelnes Trennzeichen vorübergehend zu, 
+            // damit der User ",5" oder "12," tippen kann.
+            if (text == ",") return true;
+
+            return double.TryParse(text,
+                                   System.Globalization.NumberStyles.Any,
+                                   System.Globalization.CultureInfo.CurrentCulture,
+                                   out _);
         }
 
         /// <summary>
@@ -1056,7 +1070,7 @@ namespace Modulverwaltungssoftware
         private void ValidierePlausibilitaet(object sender, TextChangedEventArgs e)
         {
             // 📊 Werte aus UI auslesen
-            if (!int.TryParse(EctsTextBox.Text, out int ects))
+            if (!double.TryParse(EctsTextBox.Text, out double ects))
                 ects = 0;
             if (!int.TryParse(WorkloadPraesenzTextBox.Text, out int workloadPraesenz))
                 workloadPraesenz = 0;

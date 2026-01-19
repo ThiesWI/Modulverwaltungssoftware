@@ -3,7 +3,7 @@
     using System;
     using System.Data.Entity.Migrations;
     
-    public partial class KommentarZuModulVersion : DbMigration
+    public partial class ECTS_sind_jetzt_double_Wert : DbMigration
     {
         public override void Up()
         {
@@ -38,8 +38,10 @@
                 c => new
                     {
                         KommentarID = c.Int(nullable: false, identity: true),
+                        FeldName = c.String(maxLength: 100),
                         Text = c.String(nullable: false, maxLength: 2147483647),
                         ErstellungsDatum = c.DateTime(),
+                        Ersteller = c.String(maxLength: 100),
                         GehoertZuModulVersionID = c.Int(nullable: false),
                         GehoertZuModulID = c.Int(nullable: false),
                     })
@@ -76,11 +78,12 @@
                         LetzteAenderung = c.DateTime(nullable: false),
                         WorkloadPraesenz = c.Int(nullable: false),
                         WorkloadSelbststudium = c.Int(nullable: false),
-                        EctsPunkte = c.Int(nullable: false),
+                        EctsPunkte = c.Double(nullable: false),
                         Pruefungsform = c.String(nullable: false, maxLength: 100),
                         Ersteller = c.String(maxLength: 2147483647),
                         LernergebnisseDb = c.String(nullable: false, maxLength: 4000),
                         InhaltsgliederungDb = c.String(nullable: false, maxLength: 4000),
+                        LiteraturDb = c.String(maxLength: 4000),
                         Kommentar_KommentarID = c.Int(),
                     })
                 .PrimaryKey(t => t.ModulVersionID)

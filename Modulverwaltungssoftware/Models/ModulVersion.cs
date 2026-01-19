@@ -37,7 +37,7 @@ namespace Modulverwaltungssoftware
         [Required]
         public int WorkloadSelbststudium { get; set; }
         [Required]
-        public int EctsPunkte { get; set; }
+        public double EctsPunkte { get; set; }
         [Required]
         [StringLength(100)]
         public string Pruefungsform { get; set; } = "Klausur";

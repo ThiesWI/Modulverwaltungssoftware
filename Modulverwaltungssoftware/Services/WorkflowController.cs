@@ -70,7 +70,7 @@ namespace Modulverwaltungssoftware
                     // Benachrichtigung an alle Koordinatoren senden
                     BenachrichtigungsService.SendeBenachrichtigung(
                         "Koordination",
-                        $"{currentUser} hat das Modul '{modulVersion.Modul.ModulnameDE}' (Version {versionsnummer / 10.0:0.0}) zur Prüfung eingereicht.",
+                        $"{currentUser} ({Benutzer.CurrentUser.RollenName}) hat das Modul '{modulVersion.Modul.ModulnameDE}' (Version {versionsnummer / 10.0:0.0}) zur Prüfung eingereicht.",
                         modulVersion.ModulVersionID
                     );
                     
@@ -108,7 +108,7 @@ namespace Modulverwaltungssoftware
                             // ✅ FIX: Benachrichtigung an ERSTELLER senden, nicht an "Dozent" (Rolle)
                             BenachrichtigungsService.SendeBenachrichtigung(
                                 modulVersion.Ersteller,  // ✅ Benutzername des Erstellers
-                                $"{Benutzer.CurrentUser.Name} hat Ihr Modul '{modulVersion.Modul.ModulnameDE}' abgelehnt. Bitte überarbeiten Sie das Modul entsprechend der Kommentare.",
+                                $"{Benutzer.CurrentUser.Name} ({Benutzer.CurrentUser.RollenName}) hat Ihr Modul '{modulVersion.Modul.ModulnameDE}' abgelehnt. Bitte überarbeiten Sie das Modul entsprechend der Kommentare.",
                                 modulVersion.ModulVersionID
                             );
                         }
@@ -140,7 +140,7 @@ namespace Modulverwaltungssoftware
                         if (modulVersion != null)
                         {
                             ModulVersion.setStatus(versionsnummer, modulID, ModulVersion.Status.InPruefungGremium);
-                            BenachrichtigungsService.SendeBenachrichtigung("Gremium", $"{Benutzer.CurrentUser.Name} hat Version {versionsnummer} für Modul {modulID} zur Prüfung durch das Gremium weitergeleitet.", modulVersion.ModulVersionID);
+                            BenachrichtigungsService.SendeBenachrichtigung("Gremium", $"{Benutzer.CurrentUser.Name} ({Benutzer.CurrentUser.RollenName}) hat Version {versionsnummer} für Modul {modulID} zur Prüfung durch das Gremium weitergeleitet.", modulVersion.ModulVersionID);
                         }
                     }
                 }
@@ -174,7 +174,7 @@ namespace Modulverwaltungssoftware
                             // ✅ FIX: Benachrichtigung an ERSTELLER senden, nicht an "Dozent" (Rolle)
                             BenachrichtigungsService.SendeBenachrichtigung(
                                 modulVersion.Ersteller,  // ✅ Benutzername des Erstellers
-                                $"{Benutzer.CurrentUser.Name} (Gremium) hat Ihr Modul '{modulVersion.Modul.ModulnameDE}' final abgelehnt. Bitte überarbeiten Sie das Modul entsprechend der Kommentare.",
+                                $"{Benutzer.CurrentUser.Name} ({Benutzer.CurrentUser.RollenName}) hat Ihr Modul '{modulVersion.Modul.ModulnameDE}' final abgelehnt. Bitte überarbeiten Sie das Modul entsprechend der Kommentare.",
                                 modulVersion.ModulVersionID
                             );
                         }
@@ -210,7 +210,7 @@ namespace Modulverwaltungssoftware
                             // ✅ FIX: Benachrichtigung an ERSTELLER senden, nicht an "Dozent" (Rolle)
                             BenachrichtigungsService.SendeBenachrichtigung(
                                 modulVersion.Ersteller,  // ✅ Benutzername des Erstellers
-                                $"Glückwunsch! Ihr Modul '{modulVersion.Modul.ModulnameDE}' wurde von {Benutzer.CurrentUser.Name} (Gremium) freigegeben und ist jetzt offiziell veröffentlicht.",
+                                $"Glückwunsch! Ihr Modul '{modulVersion.Modul.ModulnameDE}' wurde von {Benutzer.CurrentUser.Name} ({Benutzer.CurrentUser.RollenName}) freigegeben und ist jetzt offiziell veröffentlicht.",
                                 modulVersion.ModulVersionID
                             );
                         }

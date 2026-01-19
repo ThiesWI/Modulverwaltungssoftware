@@ -5,12 +5,12 @@ namespace Modulverwaltungssoftware
 {
     public class PlausibilitaetsService
     {
-        private const int ECTS_MIN = 2;
-        private const int ECTS_MAX = 30;
+        private const double ECTS_MIN = 2.5;
+        private const double ECTS_MAX = 30.0;
         private const int Workload_Max = 900; // 30 ECTS * 30 Stunden
         private const double HOURS_PER_ECTS_STANDARD_MIN = 28.0;
         private const double HOURS_PER_ECTS_STANDARD_MAX = 32.0;
-        public static string pruefeWorkloadStandard(int stunden, int ects)
+        public static string pruefeWorkloadStandard(int stunden, double ects)
         {
             // Verhindere Division durch 0
             if (ects <= 0)
@@ -41,12 +41,12 @@ namespace Modulverwaltungssoftware
                 return "Der Workload liegt außerhalb des üblichen Bereichs. Bitte prüfen Sie, ob ein Eingabefehler vorliegt.";
             }
         }
-        internal static bool pruefeWorkloadStandardIntern(int stunden, int ects)
+        internal static bool pruefeWorkloadStandardIntern(int stunden, double ects)
         {
             if (ects <= 0) {
                 return false;
             }
-            double stundenProEcts = (double)stunden / (double)ects;
+            double stundenProEcts = (double)stunden / ects;
             if (ects < ECTS_MIN || ects > ECTS_MAX)
             {
                 return false;
@@ -70,7 +70,7 @@ namespace Modulverwaltungssoftware
             int semester = v.Modul.EmpfohlenesSemester;
             string pruefungsform = v.Pruefungsform;
             string turnus = v.Modul.Turnus.ToString();
-            int ects = v.EctsPunkte;
+            double ects = v.EctsPunkte;
             int workloadPraesenz = v.WorkloadPraesenz;
             int workloadSelbststudium = v.WorkloadSelbststudium;
             string verantwortlicher = v.Ersteller;
@@ -255,7 +255,7 @@ namespace Modulverwaltungssoftware
 
             // Workload prüfen
             int workloadGesamt = v.WorkloadPraesenz + v.WorkloadSelbststudium;
-            int ects = v.EctsPunkte;
+            double ects = v.EctsPunkte;
             
             if (ects <= 0)
             {

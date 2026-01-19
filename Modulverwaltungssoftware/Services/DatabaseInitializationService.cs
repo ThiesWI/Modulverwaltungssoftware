@@ -135,8 +135,8 @@ namespace Modulverwaltungssoftware.Services
                                         Versionsnummer = 20,  // ? FIX: 2.0 = 20 (nicht 2!)
                                         ModulStatus = ModulVersion.Status.Aenderungsbedarf,
                                         GueltigAbSemester = "WiSe 2324",
-                                        EctsPunkte = 5,
-                                        WorkloadPraesenz = 45, WorkloadSelbststudium = 105,
+                                        EctsPunkte = 7.5,
+                                        WorkloadPraesenz = 100, WorkloadSelbststudium = 125,
                                         Pruefungsform = "Portfolio-Prüfung",
                                         LernergebnisseDb = "Scrum, Kanban, DevOps...",
                                         InhaltsgliederungDb = "1. Agile Werte\n2. Scrum Guide",
@@ -195,8 +195,8 @@ namespace Modulverwaltungssoftware.Services
                                         Versionsnummer = 10,  // ? FIX: 1.0 = 10
                                         ModulStatus = ModulVersion.Status.InPruefungGremium,
                                         GueltigAbSemester = "SoSe 24",
-                                        EctsPunkte = 5,
-                                        WorkloadPraesenz = 30, WorkloadSelbststudium = 120,
+                                        EctsPunkte = 2.5,
+                                        WorkloadPraesenz = 25, WorkloadSelbststudium = 50,
                                         Pruefungsform = "Hausarbeit",
                                         LernergebnisseDb = "Projektplanung, Risikomanagement...",
                                         InhaltsgliederungDb = "1. Projektphasen\n2. Stakeholder",

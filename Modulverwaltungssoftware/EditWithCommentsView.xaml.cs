@@ -241,7 +241,7 @@ namespace Modulverwaltungssoftware
             ResetValidationHighlights();
             
             // ✅ Basis-Validierung
-            if (!ValidateBasicInputs(out int ects, out int workloadPraesenz, out int workloadSelbststudium))
+            if (!ValidateBasicInputs(out double ects, out int workloadPraesenz, out int workloadSelbststudium))
             {
                 return; // Fehlermeldung wurde bereits angezeigt
             }
@@ -374,7 +374,7 @@ namespace Modulverwaltungssoftware
         /// <summary>
         /// ✅ NEU: Validiert Basis-Eingaben und hebt fehlerhafte Felder hervor
         /// </summary>
-        private bool ValidateBasicInputs(out int ects, out int workloadPraesenz, out int workloadSelbststudium)
+        private bool ValidateBasicInputs(out double ects, out int workloadPraesenz, out int workloadSelbststudium)
         {
             ects = 0;
             workloadPraesenz = 0;
@@ -389,7 +389,7 @@ namespace Modulverwaltungssoftware
             }
 
             // ECTS prüfen
-            if (!int.TryParse(EctsTextBox.Text, out ects) || ects <= 0)
+            if (!double.TryParse(EctsTextBox.Text, out ects) || ects <= 0)
             {
                 ValidationHelper.MarkAsInvalid(EctsTextBox, "Bitte gültige ECTS-Punktzahl (> 0) eingeben.");
                 isValid = false;

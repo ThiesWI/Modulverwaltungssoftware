@@ -3,7 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
@@ -18,6 +20,7 @@ namespace Modulverwaltungssoftware
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
+            Thread.CurrentThread.CurrentCulture = new CultureInfo("de-DE");
 
             DatabaseInitializationService.InitializeDatabase();
             this.DispatcherUnhandledException += App_DispatcherUnhandledException;

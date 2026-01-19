@@ -204,9 +204,9 @@
     <Compile Include="LoginWindow.xaml.cs">
       <DependentUpon>LoginWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202512211859436_KommentarZuModulVersion.cs" />
-    <Compile Include="Migrations\202512211859436_KommentarZuModulVersion.Designer.cs">
-      <DependentUpon>202512211859436_KommentarZuModulVersion.cs</DependentUpon>
+    <Compile Include="Migrations\202601190905466_ECTS_sind_jetzt_double_Wert.cs" />
+    <Compile Include="Migrations\202601190905466_ECTS_sind_jetzt_double_Wert.Designer.cs">
+      <DependentUpon>202601190905466_ECTS_sind_jetzt_double_Wert.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Benachrichtigung.cs" />
@@ -289,8 +289,8 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <EmbeddedResource Include="Migrations\202512211859436_KommentarZuModulVersion.resx">
-      <DependentUpon>202512211859436_KommentarZuModulVersion.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\202601190905466_ECTS_sind_jetzt_double_Wert.resx">
+      <DependentUpon>202601190905466_ECTS_sind_jetzt_double_Wert.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

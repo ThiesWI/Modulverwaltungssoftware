@@ -7,13 +7,13 @@ namespace Modulverwaltungssoftware.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.5.1")]
-    public sealed partial class KommentarZuModulVersion : IMigrationMetadata
+    public sealed partial class ECTS_sind_jetzt_double_Wert : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(KommentarZuModulVersion));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(ECTS_sind_jetzt_double_Wert));
         
         string IMigrationMetadata.Id
         {
-            get { return "202512211859436_KommentarZuModulVersion"; }
+            get { return "202601190905466_ECTS_sind_jetzt_double_Wert"; }
         }
         
         string IMigrationMetadata.Source

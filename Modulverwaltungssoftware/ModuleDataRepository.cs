@@ -18,7 +18,7 @@ namespace Modulverwaltungssoftware
             public List<string> Semester { get; set; }
             public List<string> Pruefungsformen { get; set; }
             public List<string> Turnus { get; set; }
-            public int Ects { get; set; }
+            public double Ects { get; set; }
             public int WorkloadPraesenz { get; set; }
             public int WorkloadSelbststudium { get; set; }
             public string Verantwortlicher { get; set; }

@@ -117,7 +117,6 @@ namespace Modulverwaltungssoftware
                         modul.DauerInSemestern = version.Modul.DauerInSemestern;
                         modul.Voraussetzungen = version.Modul.Voraussetzungen;
                         db.SaveChanges();
-                        db.SaveChanges();
                         return version.Versionsnummer;
                     }
                     int neueVersionsnummer = (alteVersion.Versionsnummer / 10 + 1)*10;
