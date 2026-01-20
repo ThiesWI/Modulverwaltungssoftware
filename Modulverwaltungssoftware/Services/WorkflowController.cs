@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data.Entity.Infrastructure;
-using System.Data.Entity.Validation;
 using System.Linq;
 using System.Windows;
 
@@ -16,64 +13,64 @@ namespace Modulverwaltungssoftware
                 // ✅ FIX: Prüfe ob User der Ersteller ist ODER Admin, nicht DarfBearbeiten
                 string currentUser = Benutzer.CurrentUser?.Name;
                 string rolle = Benutzer.CurrentUser?.RollenName ?? "Gast";
-                
+
                 System.Diagnostics.Debug.WriteLine($"🔍 starteGenehmigung GESTARTET:");
                 System.Diagnostics.Debug.WriteLine($"   CurrentUser Name: '{currentUser}'");
                 System.Diagnostics.Debug.WriteLine($"   CurrentUser Rolle: '{rolle}'");
                 System.Diagnostics.Debug.WriteLine($"   Versionsnummer: {versionsnummer}");
                 System.Diagnostics.Debug.WriteLine($"   ModulID: {modulID}");
-                
+
                 using (var db = new Services.DatabaseContext())
                 {
                     var modulVersion = db.ModulVersion
                         .Include("Modul")
                         .FirstOrDefault(v => v.ModulId == modulID && v.Versionsnummer == versionsnummer);
-                    
+
                     if (modulVersion == null)
                     {
                         System.Diagnostics.Debug.WriteLine($"❌ MODULVERSION NICHT GEFUNDEN! (ModulID={modulID}, Versionsnummer={versionsnummer})");
                         MessageBox.Show("Fehler: Modulversion nicht gefunden.");
                         return;
                     }
-                    
+
                     System.Diagnostics.Debug.WriteLine($"✅ ModulVersion gefunden:");
                     System.Diagnostics.Debug.WriteLine($"   Modul: '{modulVersion.Modul.ModulnameDE}'");
                     System.Diagnostics.Debug.WriteLine($"   Ersteller: '{modulVersion.Ersteller}'");
                     System.Diagnostics.Debug.WriteLine($"   Ersteller Länge: {modulVersion.Ersteller?.Length ?? 0}");
                     System.Diagnostics.Debug.WriteLine($"   CurrentUser Länge: {currentUser?.Length ?? 0}");
-                    
+
                     // ✅ BERECHTIGUNGSPRÜFUNG: Ersteller ODER Admin
                     bool istErsteller = !string.IsNullOrEmpty(modulVersion.Ersteller) &&
                                        !string.IsNullOrEmpty(currentUser) &&
                                        modulVersion.Ersteller.Trim().Equals(currentUser.Trim(), StringComparison.OrdinalIgnoreCase);
-                    
+
                     bool istAdmin = rolle == "Admin";
-                    
+
                     System.Diagnostics.Debug.WriteLine($"📊 BERECHTIGUNGSPRÜFUNG:");
                     System.Diagnostics.Debug.WriteLine($"   istErsteller: {istErsteller}");
                     System.Diagnostics.Debug.WriteLine($"   istAdmin: {istAdmin}");
                     System.Diagnostics.Debug.WriteLine($"   Ersteller (trimmed): '{modulVersion.Ersteller?.Trim()}'");
                     System.Diagnostics.Debug.WriteLine($"   CurrentUser (trimmed): '{currentUser?.Trim()}'");
-                    
+
                     if (!istErsteller && !istAdmin)
                     {
                         System.Diagnostics.Debug.WriteLine($"❌ BERECHTIGUNG VERWEIGERT!");
                         MessageBox.Show($"Sie können dieses Modul nicht einreichen.\n\nNur der Ersteller '{modulVersion.Ersteller}' oder ein Admin können dieses Modul zur Genehmigung freigeben.");
                         return;
                     }
-                    
+
                     System.Diagnostics.Debug.WriteLine($"✅ BERECHTIGUNG ERTEILT (Ersteller: {istErsteller}, Admin: {istAdmin})");
-                    
+
                     // Status auf "InPruefungKoordination" setzen
                     ModulVersion.setStatus(versionsnummer, modulID, ModulVersion.Status.InPruefungKoordination);
-                    
+
                     // Benachrichtigung an alle Koordinatoren senden
                     BenachrichtigungsService.SendeBenachrichtigung(
                         "Koordination",
                         $"{currentUser} ({Benutzer.CurrentUser.RollenName}) hat das Modul '{modulVersion.Modul.ModulnameDE}' (Version {versionsnummer / 10.0:0.0}) zur Prüfung eingereicht.",
                         modulVersion.ModulVersionID
                     );
-                    
+
                     System.Diagnostics.Debug.WriteLine($"📤 Modul '{modulVersion.Modul.ModulnameDE}' erfolgreich eingereicht (Status: InPruefungKoordination)");
                 }
             }
@@ -100,11 +97,11 @@ namespace Modulverwaltungssoftware
                         var modulVersion = db.ModulVersion
                             .Include("Modul")
                             .FirstOrDefault(v => v.Versionsnummer == versionsnummer && v.ModulId == modulID);
-                        
+
                         if (modulVersion != null)
                         {
                             ModulVersion.setStatus(versionsnummer, modulID, ModulVersion.Status.Aenderungsbedarf);
-                            
+
                             // ✅ FIX: Benachrichtigung an ERSTELLER senden, nicht an "Dozent" (Rolle)
                             BenachrichtigungsService.SendeBenachrichtigung(
                                 modulVersion.Ersteller,  // ✅ Benutzername des Erstellers
@@ -166,11 +163,11 @@ namespace Modulverwaltungssoftware
                         var modulVersion = db.ModulVersion
                             .Include("Modul")
                             .FirstOrDefault(v => v.Versionsnummer == versionsnummer && v.ModulId == modulID);
-                        
+
                         if (modulVersion != null)
                         {
                             ModulVersion.setStatus(versionsnummer, modulID, ModulVersion.Status.Aenderungsbedarf);
-                            
+
                             // ✅ FIX: Benachrichtigung an ERSTELLER senden, nicht an "Dozent" (Rolle)
                             BenachrichtigungsService.SendeBenachrichtigung(
                                 modulVersion.Ersteller,  // ✅ Benutzername des Erstellers
@@ -202,11 +199,11 @@ namespace Modulverwaltungssoftware
                         var modulVersion = db.ModulVersion
                             .Include("Modul")
                             .FirstOrDefault(v => v.Versionsnummer == versionsnummer && v.ModulId == modulID);
-                        
+
                         if (modulVersion != null)
                         {
                             ModulVersion.setStatus(versionsnummer, modulID, ModulVersion.Status.Freigegeben);
-                            
+
                             // ✅ FIX: Benachrichtigung an ERSTELLER senden, nicht an "Dozent" (Rolle)
                             BenachrichtigungsService.SendeBenachrichtigung(
                                 modulVersion.Ersteller,  // ✅ Benutzername des Erstellers
@@ -243,7 +240,8 @@ namespace Modulverwaltungssoftware
             }
         } // Status auf Archiviert setzen
         public static Modul getModulDetails(int modulID) // Modul aus DB abrufen
-        {try
+        {
+            try
             {
                 using (var db = new Services.DatabaseContext())
                 {
@@ -264,7 +262,7 @@ namespace Modulverwaltungssoftware
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten");;
+                MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten"); ;
                 return null;
             }
         }

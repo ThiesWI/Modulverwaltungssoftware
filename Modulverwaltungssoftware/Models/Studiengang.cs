@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Windows;
-using System.Windows.Documents;
 
 namespace Modulverwaltungssoftware
 {
@@ -63,7 +62,7 @@ namespace Modulverwaltungssoftware
                 MessageBox.Show(ex.Message);
                 return -1;
             }
-            } // Modul erstellen
+        } // Modul erstellen
         public void removeModul(int modulID)
         {
             if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == false && Benutzer.CurrentUser.AktuelleRolle.DarfFreigeben == false)
@@ -71,10 +70,10 @@ namespace Modulverwaltungssoftware
                 MessageBox.Show("Der aktuelle Benutzer hat keine Berechtigung zum Löschen von Modulen.");
                 return;
             }
-            using (var db = new Services.DatabaseContext()) 
-            { 
+            using (var db = new Services.DatabaseContext())
+            {
                 var modul = db.Modul.Find(modulID);
-                if (modul == null) 
+                if (modul == null)
                 {
                     MessageBox.Show("Modul existiert nicht!");
                 }
@@ -111,6 +110,6 @@ namespace Modulverwaltungssoftware
                 return;
             }
         }
-        }
     }
+}
 

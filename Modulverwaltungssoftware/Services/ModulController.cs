@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Entity.Infrastructure;
-using System.Data.Entity.Validation;
 using System.Linq;
 using System.Windows;
 
@@ -12,7 +10,7 @@ namespace Modulverwaltungssoftware
     {
         public static int create(int modulID)
         {
-            if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == false ) { MessageBox.Show("Fehlende Berechtigungen zum Erstellen."); return 0; }
+            if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == false) { MessageBox.Show("Fehlende Berechtigungen zum Erstellen."); return 0; }
             try
             {
                 int neueVersionsnummer;
@@ -45,7 +43,7 @@ namespace Modulverwaltungssoftware
                         db.SaveChanges();
                         return 1;
                     }
-                    neueVersionsnummer = (alteVersion.Versionsnummer / 10 + 1)*10;
+                    neueVersionsnummer = (alteVersion.Versionsnummer / 10 + 1) * 10;
                     var neueVersion = new ModulVersion
                     {
                         ModulId = alteVersion.ModulId,
@@ -71,11 +69,11 @@ namespace Modulverwaltungssoftware
                     return neueVersionsnummer;
                 }
             }
-        catch(Exception ex)
-        {
-            MessageBox.Show($"Fehler beim Erstellen der neuen Modulversion: {ex.Message}");
-            return -1;
-        }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Fehler beim Erstellen der neuen Modulversion: {ex.Message}");
+                return -1;
+            }
         } // Neue Modulversion erstellen, basierend auf der letzten Version
         public static int create(int modulID, ModulVersion version)
         {
@@ -119,7 +117,7 @@ namespace Modulverwaltungssoftware
                         db.SaveChanges();
                         return version.Versionsnummer;
                     }
-                    int neueVersionsnummer = (alteVersion.Versionsnummer / 10 + 1)*10;
+                    int neueVersionsnummer = (alteVersion.Versionsnummer / 10 + 1) * 10;
                     var neueVersion = new ModulVersion
                     {
                         ModulId = version.ModulId,

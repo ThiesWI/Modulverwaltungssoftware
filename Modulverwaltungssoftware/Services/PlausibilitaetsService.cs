@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using Modulverwaltungssoftware.Helpers;
+﻿using Modulverwaltungssoftware.Helpers;
+using System.Collections.Generic;
 
 namespace Modulverwaltungssoftware
 {
@@ -17,9 +17,9 @@ namespace Modulverwaltungssoftware
             {
                 return "ECTS-Punkte müssen größer als 0 sein.";
             }
-            
+
             double stundenProEcts = (double)stunden / ects;
-            
+
             // ✅ KORRIGIERT: 28-32 Stunden pro ECTS IST der Standard (entspricht dem 30h-Standard)
             if (stundenProEcts >= HOURS_PER_ECTS_STANDARD_MIN && stundenProEcts <= HOURS_PER_ECTS_STANDARD_MAX)
             {
@@ -43,7 +43,8 @@ namespace Modulverwaltungssoftware
         }
         internal static bool pruefeWorkloadStandardIntern(int stunden, double ects)
         {
-            if (ects <= 0) {
+            if (ects <= 0)
+            {
                 return false;
             }
             double stundenProEcts = (double)stunden / ects;
@@ -149,7 +150,7 @@ namespace Modulverwaltungssoftware
         private static string fehlerListe(bool workload, bool typ, bool semester, bool pruefung, bool turnus, bool verantwortlicher, bool lehrinhalte, bool lernziele)
         {
             string fehlerMeldungen = "Fehler gefunden in folgenden Bereichen:\n";
-            if (workload && typ && semester && pruefung && turnus && verantwortlicher && lehrinhalte && lernziele == true) 
+            if (workload && typ && semester && pruefung && turnus && verantwortlicher && lehrinhalte && lernziele == true)
             {
                 return "Keine Fehler gefunden.";
             }
@@ -195,7 +196,7 @@ namespace Modulverwaltungssoftware
         public static ValidationResult ValidateModulVersion(ModulVersion v)
         {
             var result = new ValidationResult();
-            
+
             if (v == null || v.Modul == null)
             {
                 result.IsValid = false;
@@ -220,7 +221,7 @@ namespace Modulverwaltungssoftware
             // Prüfungsform prüfen
             var gueltigePruefungsformen = new List<string>
             {
-                "PL", "SP", "SL", "Klausur", "Mündliche Prüfung", "Projektarbeit", 
+                "PL", "SP", "SL", "Klausur", "Mündliche Prüfung", "Projektarbeit",
                 "Hausarbeit", "Präsentation", "Portfolio", "Referat"
             };
             if (string.IsNullOrWhiteSpace(v.Pruefungsform) || !gueltigePruefungsformen.Contains(v.Pruefungsform))
@@ -256,7 +257,7 @@ namespace Modulverwaltungssoftware
             // Workload prüfen
             int workloadGesamt = v.WorkloadPraesenz + v.WorkloadSelbststudium;
             double ects = v.EctsPunkte;
-            
+
             if (ects <= 0)
             {
                 result.AddError("ECTS", "ECTS-Punkte müssen größer als 0 sein.");

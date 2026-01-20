@@ -1,17 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace Modulverwaltungssoftware
 {
@@ -36,10 +27,10 @@ namespace Modulverwaltungssoftware
         {
             InitializeComponent();
             this.DataContext = this;
-            
+
             // Module beim Laden der Seite aktualisieren
             this.Loaded += StartPage_Loaded;
-            
+
             // ✨ SUCHFUNKTION: TextChanged Event für SearchBox
             SearchBox.TextChanged += SearchBox_TextChanged;
         }
@@ -49,7 +40,7 @@ namespace Modulverwaltungssoftware
         {
             // Module bei jedem Laden neu laden (auch nach Navigation zurück)
             LoadModulePreviews();
-            
+
             // ✨ "Neues Modul" Button nur für Admin & Dozent aktivieren
             UpdateNeuesModulButton();
         }
@@ -73,7 +64,7 @@ namespace Modulverwaltungssoftware
                     // ✅ FIX: NUR FREIGEGEBENE VERSIONEN HOLEN!
                     // StartPage zeigt KEINE Entwürfe, InPrüfung, Änderungsbedarf etc.
                     var freigegebeneVersion = db.ModulVersion
-                        .Where(v => v.ModulId == modul.ModulID && 
+                        .Where(v => v.ModulId == modul.ModulID &&
                                     v.ModulStatus == ModulVersion.Status.Freigegeben)
                         .OrderByDescending(v => v.Versionsnummer)
                         .FirstOrDefault();
@@ -83,7 +74,7 @@ namespace Modulverwaltungssoftware
                     {
                         // Versionsnummer formatieren
                         string versionDisplay = FormatVersionsnummer(freigegebeneVersion.Versionsnummer);
-                        
+
                         tempList.Add(new ModulePreview
                         {
                             Title = modul.ModulnameDE,
@@ -92,7 +83,7 @@ namespace Modulverwaltungssoftware
                             ContentPreview = GenerateContentPreview(freigegebeneVersion),
                             ModulId = modul.ModulID.ToString()
                         });
-                        
+
                         System.Diagnostics.Debug.WriteLine($"  ✅ Modul hinzugefügt: {modul.ModulnameDE} (Version {versionDisplay} - Freigegeben)");
                     }
                     else
@@ -165,9 +156,9 @@ namespace Modulverwaltungssoftware
             {
                 string rolle = Benutzer.CurrentUser?.RollenName ?? "Gast";
                 bool darfErstellen = rolle == "Admin" || rolle == "Dozent";
-                
+
                 neuesModulButton.IsEnabled = darfErstellen;
-                
+
                 // Tooltip setzen für deaktivierte Buttons
                 if (!darfErstellen)
                 {
@@ -177,7 +168,7 @@ namespace Modulverwaltungssoftware
                 {
                     neuesModulButton.ToolTip = "Neues Modul erstellen";
                 }
-                
+
                 System.Diagnostics.Debug.WriteLine($"'Neues Modul' Button: Rolle={rolle}, Enabled={darfErstellen}");
             }
         }
@@ -201,7 +192,7 @@ namespace Modulverwaltungssoftware
             for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(depObj); i++)
             {
                 var child = System.Windows.Media.VisualTreeHelper.GetChild(depObj, i);
-                
+
                 if (child is T tChild)
                     yield return tChild;
 

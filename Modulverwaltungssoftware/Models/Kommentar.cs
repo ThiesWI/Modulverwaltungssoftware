@@ -1,33 +1,29 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
-using System.Data.Entity.Validation;
-using System.Data.Entity.Infrastructure;
-using System.Data.Entity.Core;
-using System.Windows.Documents;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Windows;
 
 namespace Modulverwaltungssoftware
 {
     public class Kommentar
-    {   
+    {
         public int KommentarID { get; set; }
-        
+
         [StringLength(100)]
         public string FeldName { get; set; }  // z.B. "Titel", "ECTS", "Modultyp"
-        
+
         [Required]
         public string Text { get; set; }
-        
+
         public DateTime? ErstellungsDatum { get; set; }
-        
+
         [StringLength(100)]
         public string Ersteller { get; set; }  // Wer hat kommentiert
-        
+
         [Required]
         public int GehoertZuModulVersionID { get; set; }
-        
+
         [Required]
         public int GehoertZuModulID { get; set; }
 
@@ -80,9 +76,9 @@ namespace Modulverwaltungssoftware
                 var hoechsteVersionsnummer = db.ModulVersion
                     .Where(v => v.ModulId == modulID)
                     .Max(v => (int?)v.Versionsnummer) ?? 10;
-                
+
                 int neueVersionsnummer = hoechsteVersionsnummer + 1;
-                
+
                 // ✅ Problem 3 Fix: Prüfen ob Version bereits existiert
                 if (db.ModulVersion.Any(v => v.ModulId == modulID && v.Versionsnummer == neueVersionsnummer))
                     throw new InvalidOperationException($"Version {neueVersionsnummer / 10.0:0.0} existiert bereits!");
@@ -140,7 +136,7 @@ namespace Modulverwaltungssoftware
             using (var db = new Services.DatabaseContext())
             {
                 var erstellungsDatum = DateTime.Now;
-                
+
                 // Batch-Insert: Alle Kommentare erst sammeln, dann einmal SaveChanges
                 foreach (var feldKommentar in feldKommentare)
                 {

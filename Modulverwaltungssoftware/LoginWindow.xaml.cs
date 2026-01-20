@@ -1,18 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Entity.SqlServer;
-using System.Diagnostics.Eventing.Reader;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace Modulverwaltungssoftware
 {
@@ -30,14 +19,14 @@ namespace Modulverwaltungssoftware
             bool istKoordinationFlag = false; // Setze auf true, um als Koordination einzuloggen
             bool istGremiumFlag = false; // Setze auf true, um als Gremium einzuloggen
             bool istAdminFlag = false; // Setze auf true, um als Admin einzuloggen
-            
+
             if (autoLoginFlag) // Nur wenn aktiviert
             {
                 // ✅ FIX: Benutzer aus Datenbank laden statt manuell erstellen
                 using (var db = new Services.DatabaseContext())
                 {
                     Benutzer benutzer = null;
-                    
+
                     if (istDozentFlag)
                     {
                         benutzer = db.Benutzer.FirstOrDefault(b => b.Name == "Dr. Max Mustermann");
@@ -54,24 +43,24 @@ namespace Modulverwaltungssoftware
                     {
                         benutzer = db.Benutzer.FirstOrDefault(b => b.Name == "Philipp Admin");
                     }
-                    
+
                     if (benutzer != null)
                     {
                         System.Diagnostics.Debug.WriteLine($"✅ Auto-Login: Benutzer '{benutzer.Name}' aus DB geladen (Passwort vor Löschen: '{benutzer.Passwort}')");
-                        
+
                         // ⚠️ WICHTIG: Passwort nur aus dem IN-MEMORY Objekt löschen
                         // Entity Framework darf NICHT tracken, sonst wird DB geändert!
                         // LÖSUNG: Benutzer-Objekt detachen BEVOR wir Passwort löschen
                         db.Entry(benutzer).State = System.Data.Entity.EntityState.Detached;
-                        
+
                         // Jetzt können wir das Passwort sicher löschen (nur im Speicher)
                         benutzer.Passwort = null;
-                        
+
                         // ✅ AktuelleRolle wird automatisch über die Property gesetzt
                         Benutzer.CurrentUser = benutzer;
-                        
+
                         System.Diagnostics.Debug.WriteLine($"✅ Auto-Login erfolgreich: {benutzer.Name} (Rolle: {benutzer.RollenName}, ID: {benutzer.BenutzerID})");
-                        
+
                         var mainWindow = new MainWindow();
                         mainWindow.Show();
                         this.Close();

@@ -1,14 +1,9 @@
 ﻿using Newtonsoft.Json;
-using SQLitePCL;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
-using System.Data.Entity.Validation;
 using System.Linq;
-using System.Transactions;
 using System.Windows;
 
 namespace Modulverwaltungssoftware
@@ -141,20 +136,20 @@ namespace Modulverwaltungssoftware
                 // ❌ Problem: Dozenten haben DarfStatusAendern = false, können also nicht einreichen!
                 //
                 // NEUE LOGIK: Keine Berechtigungsprüfung hier, nur Status setzen
-                
+
                 System.Diagnostics.Debug.WriteLine($"🔄 setStatus: versionID={versionID}, modulID={modulID}, neuerStatus={neuerStatus}");
-                
+
                 using (var db = new Services.DatabaseContext())
                 {
                     var modulVersion = db.ModulVersion.FirstOrDefault(mv => mv.Versionsnummer == versionID && mv.ModulId == modulID);
                     if (modulVersion != null)
                     {
                         System.Diagnostics.Debug.WriteLine($"   Alter Status: {modulVersion.ModulStatus} → Neuer Status: {neuerStatus}");
-                        
+
                         modulVersion.ModulStatus = neuerStatus;
                         modulVersion.LetzteAenderung = DateTime.Now;
                         db.SaveChanges();
-                        
+
                         System.Diagnostics.Debug.WriteLine($"✅ Status erfolgreich geändert!");
                     }
                     else

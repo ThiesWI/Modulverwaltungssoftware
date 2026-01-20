@@ -1,6 +1,4 @@
 using System.Data.Entity.Migrations;
-using System.Data.Entity.Migrations.Sql;
-using System.Data.SQLite.EF6;
 using System.Data.SQLite.EF6.Migrations; // Hinzugefügt
 
 namespace Modulverwaltungssoftware.Migrations

@@ -1,18 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Entity;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace Modulverwaltungssoftware
 {
@@ -47,7 +37,7 @@ namespace Modulverwaltungssoftware
         public CommentView()
         {
             InitializeComponent();
-            
+
             // ✨ SUCHFUNKTION: TextChanged Event für SearchBox
             var searchBox = FindName("SearchBox") as TextBox;
             if (searchBox != null)
@@ -99,23 +89,23 @@ namespace Modulverwaltungssoftware
                 listBox.SelectedItem = null;
                 return;
             }
-            
+
             // Nur das erste Item auswählen (Single-Selection-Modus)
             string firstItemToSelect = itemsToSelect[0].Trim();
-            
+
             foreach (var item in listBox.Items)
             {
                 if (item is ListBoxItem lbi)
                 {
                     string itemText = lbi.Content.ToString().Trim();
-                    
+
                     // Exakte Übereinstimmung bevorzugen
                     if (string.Equals(itemText, firstItemToSelect, StringComparison.OrdinalIgnoreCase))
                     {
                         listBox.SelectedItem = lbi;
                         return;
                     }
-                    
+
                     // Fallback: Teil-Übereinstimmung
                     if (itemText.Contains(firstItemToSelect) || firstItemToSelect.Contains(itemText))
                     {
@@ -124,7 +114,7 @@ namespace Modulverwaltungssoftware
                     }
                 }
             }
-            
+
             System.Diagnostics.Debug.WriteLine($"⚠️ Kein Match für '{firstItemToSelect}' in {listBox.Name} gefunden");
             listBox.SelectedItem = null;
         }
@@ -137,10 +127,10 @@ namespace Modulverwaltungssoftware
             try
             {
                 var feldKommentare = CollectComments();
-                
+
                 if (feldKommentare.Count == 0)
                 {
-                    MessageBox.Show("Bitte geben Sie mindestens einen Kommentar ein.", 
+                    MessageBox.Show("Bitte geben Sie mindestens einen Kommentar ein.",
                         "Keine Kommentare", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
@@ -196,19 +186,19 @@ namespace Modulverwaltungssoftware
 
                 // ✨ STATUS AUF ÄNDERUNGSBEDARF SETZEN
 
-                    var modulVersion = ModulRepository.getModulVersion(
-                        modulId,
-                        versionsnummer: ParseVersionsnummer(_version)
-                    );
+                var modulVersion = ModulRepository.getModulVersion(
+                    modulId,
+                    versionsnummer: ParseVersionsnummer(_version)
+                );
 
-                    if (modulVersion != null)
-                    {
-                        var alterStatus = modulVersion.ModulStatus;
-                        ModulVersion.setStatus(
-                            modulVersion.Versionsnummer,
-                            modulVersion.ModulId,
-                            ModulVersion.Status.Aenderungsbedarf
-                        );
+                if (modulVersion != null)
+                {
+                    var alterStatus = modulVersion.ModulStatus;
+                    ModulVersion.setStatus(
+                        modulVersion.Versionsnummer,
+                        modulVersion.ModulId,
+                        ModulVersion.Status.Aenderungsbedarf
+                    );
 
                     // Benachrichtigung an Ersteller
                     BenachrichtigungsService.SendeBenachrichtigung(
@@ -219,9 +209,9 @@ namespace Modulverwaltungssoftware
                             modulVersion.ModulVersionID
                         );
 
-                        System.Diagnostics.Debug.WriteLine($"Status geändert: {alterStatus} → Änderungsbedarf (durch {rolle})");
-                    }
-                
+                    System.Diagnostics.Debug.WriteLine($"Status geändert: {alterStatus} → Änderungsbedarf (durch {rolle})");
+                }
+
 
                 // Erfolgs-Meldung
                 MessageBox.Show(bestaetigungsText,
@@ -231,7 +221,7 @@ namespace Modulverwaltungssoftware
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Fehler beim Speichern der Kommentare: {ex.Message}", 
+                MessageBox.Show($"Fehler beim Speichern der Kommentare: {ex.Message}",
                     "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -240,14 +230,14 @@ namespace Modulverwaltungssoftware
         {
             if (string.IsNullOrEmpty(_modulId))
             {
-                MessageBox.Show("Fehler: Modul-ID nicht gesetzt.", 
+                MessageBox.Show("Fehler: Modul-ID nicht gesetzt.",
                     "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
 
             if (string.IsNullOrEmpty(_version))
             {
-                MessageBox.Show("Fehler: Version nicht gesetzt.", 
+                MessageBox.Show("Fehler: Version nicht gesetzt.",
                     "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
@@ -258,7 +248,7 @@ namespace Modulverwaltungssoftware
         private List<Kommentar.FeldKommentar> CollectComments()
         {
             var feldKommentare = new List<Kommentar.FeldKommentar>();
-            
+
             AddKommentarIfNotEmpty(feldKommentare, "Titel", TitelKommentarTextBox.Text);
             AddKommentarIfNotEmpty(feldKommentare, "Modultyp", ModultypKommentarTextBox.Text);
             AddKommentarIfNotEmpty(feldKommentare, "Studiengang", StudiengangKommentarTextBox.Text);

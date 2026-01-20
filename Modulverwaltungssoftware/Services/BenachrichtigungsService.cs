@@ -1,8 +1,6 @@
 ﻿using Modulverwaltungssoftware.Models;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity.Infrastructure;
-using System.Data.Entity.Validation;
 using System.Linq;
 using System.Windows;
 
@@ -24,7 +22,7 @@ namespace Modulverwaltungssoftware
                 {
                     // ✅ FIX: Wenn Empfänger eine ROLLE ist, an ALLE Benutzer mit dieser Rolle senden
                     var empfaengerRollen = new[] { "Gast", "Dozent", "Koordination", "Gremium", "Admin" };
-                    
+
                     if (empfaengerRollen.Contains(empfaenger))
                     {
                         // ROLLEN-BASIERTE BENACHRICHTIGUNG
@@ -32,9 +30,9 @@ namespace Modulverwaltungssoftware
                         var benutzerMitRolle = db.Benutzer
                             .Where(b => b.RollenName == empfaenger)
                             .ToList();
-                        
+
                         System.Diagnostics.Debug.WriteLine($"📨 Sende Benachrichtigung an ROLLE '{empfaenger}': {benutzerMitRolle.Count} Empfänger gefunden");
-                        
+
                         foreach (var benutzer in benutzerMitRolle)
                         {
                             var benachrichtigung = new Benachrichtigung
@@ -47,7 +45,7 @@ namespace Modulverwaltungssoftware
                                 Gelesen = false
                             };
                             db.Benachrichtigung.Add(benachrichtigung);
-                            
+
                             System.Diagnostics.Debug.WriteLine($"   → Benachrichtigung an '{benutzer.Name}' erstellt");
                         }
                     }
@@ -64,10 +62,10 @@ namespace Modulverwaltungssoftware
                             Gelesen = false
                         };
                         db.Benachrichtigung.Add(benachrichtigung);
-                        
+
                         System.Diagnostics.Debug.WriteLine($"📨 Benachrichtigung an Einzelbenutzer '{empfaenger}' erstellt");
                     }
-                    
+
                     db.SaveChanges();
                     System.Diagnostics.Debug.WriteLine($"✅ Benachrichtigungen erfolgreich gespeichert");
                 }
@@ -79,7 +77,7 @@ namespace Modulverwaltungssoftware
                 return;
             }
         } // Benachrichtigung "senden" (in DB speichern)
-        
+
         public static List<Benachrichtigung> EmpfangeBenachrichtigung()
         {
             try
@@ -104,7 +102,7 @@ namespace Modulverwaltungssoftware
                 return null;
             }
         } // Alle Benachrichtigungen mit istGelesen == false für aktuellen Benuter aus DB abfragen
-        
+
         public static void MarkiereAlsGelesen()
         {
             try

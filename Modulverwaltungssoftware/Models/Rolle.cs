@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-
-namespace Modulverwaltungssoftware
+﻿namespace Modulverwaltungssoftware
 {
     public class Rolle
     {

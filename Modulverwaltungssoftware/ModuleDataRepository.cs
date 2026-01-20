@@ -576,7 +576,7 @@ namespace Modulverwaltungssoftware
             if (version != null)
             {
                 version.Daten = daten;
-                
+
                 // Modulname synchronisieren mit dem Titel der neuesten Version
                 var neuesteVersion = modul.Versionen.OrderByDescending(v => v.ErstellDatum).FirstOrDefault();
                 if (neuesteVersion != null && neuesteVersion.Daten != null)
@@ -609,7 +609,7 @@ namespace Modulverwaltungssoftware
         {
             var modul = GetModule(modulId);
             var version = modul?.Versionen.FirstOrDefault(v => v.VersionsNummer == versionNummer);
-            
+
             if (version != null)
             {
                 version.HasComments = true;

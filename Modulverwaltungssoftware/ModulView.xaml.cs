@@ -2,17 +2,9 @@ using PDF_Test;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace Modulverwaltungssoftware
 {
@@ -30,10 +22,10 @@ namespace Modulverwaltungssoftware
         {
             InitializeComponent();
             this.DataContext = this;
-            
+
             // ? SUCHFUNKTION: TextChanged Event für SearchBox
             SearchBox.TextChanged += SearchBox_TextChanged;
-            
+
             // ? BUTTON-STEUERUNG: Buttons setzen nach dem Laden der Page
             this.Loaded += ModulView_Loaded;
         }
@@ -70,7 +62,7 @@ namespace Modulverwaltungssoftware
                 return v.hatKommentar ? $"{displayVersion}K" : displayVersion;
             });
             UpdateVersions(versionDisplay);
-            
+
             // DEBUG: Versionsnummern-Ausgabe
             System.Diagnostics.Debug.WriteLine($"Versionen für Modul {modulId}:");
             foreach (var v in versionen)
@@ -99,13 +91,13 @@ namespace Modulverwaltungssoftware
             // Problem 3 Fix: Spezifische Version laden statt nur neueste!
             int modulId = int.Parse(_currentModulId);
             int versionsnummerInt = ParseVersionsnummer(versionNummer);
-            
+
             using (var db = new Services.DatabaseContext())
             {
                 var data = db.ModulVersion
                     .Include("Modul")
                     .FirstOrDefault(v => v.ModulId == modulId && v.Versionsnummer == versionsnummerInt);
-                    
+
                 if (data == null)
                     return;
 
@@ -144,17 +136,17 @@ namespace Modulverwaltungssoftware
                 SelectListBoxItems(SemesterListBox, new List<string> { data.Modul.EmpfohlenesSemester.ToString() });
                 SelectListBoxItems(PruefungsformListBox, new List<string> { data.Pruefungsform });
                 SelectListBoxItems(TurnusListBox, new List<string> { ConvertTurnusEnumToUIString(data.Modul.Turnus) });
-                
+
                 // DEBUG: Ausgabe zur Kontrolle
                 System.Diagnostics.Debug.WriteLine($"Lade Modul {data.Modul.ModulnameDE}:");
                 System.Diagnostics.Debug.WriteLine($"  Modultyp: {data.Modul.Modultyp} -> UI: {ConvertModultypEnumToUIString(data.Modul.Modultyp)}");
                 System.Diagnostics.Debug.WriteLine($"  Turnus: {data.Modul.Turnus} -> UI: {ConvertTurnusEnumToUIString(data.Modul.Turnus)}");
                 System.Diagnostics.Debug.WriteLine($"  Prüfungsform: {data.Pruefungsform}");
                 System.Diagnostics.Debug.WriteLine($"  Status: {data.ModulStatus}");
-                
+
                 // STATUS-BADGE aktualisieren
                 UpdateStatusBadge(data.ModulStatus);
-                
+
                 // ? BUTTON-STEUERUNG: Wenn Page bereits geladen ist (z.B. nach Einreichen), sofort Buttons updaten
                 // Ansonsten wird UpdateButtonStates() im Loaded-Event aufgerufen
                 if (_isModuleLoaded)
@@ -181,16 +173,16 @@ namespace Modulverwaltungssoftware
                 listBox.SelectedItem = null;
                 return;
             }
-            
+
             // Nur das erste Item auswählen (Single-Selection-Modus)
             string firstItemToSelect = itemsToSelect[0].Trim();
-            
+
             foreach (var item in listBox.Items)
             {
                 if (item is ListBoxItem lbi)
                 {
                     string itemText = lbi.Content.ToString().Trim();
-                    
+
                     // Exakte Übereinstimmung bevorzugen
                     if (string.Equals(itemText, firstItemToSelect, StringComparison.OrdinalIgnoreCase))
                     {
@@ -198,7 +190,7 @@ namespace Modulverwaltungssoftware
                         System.Diagnostics.Debug.WriteLine($"  ListBox '{listBox.Name}': Selektiere '{itemText}' (Exaktes Match: '{firstItemToSelect}')");
                         return;
                     }
-                    
+
                     // Fallback: Teil-Übereinstimmung
                     if (itemText.Contains(firstItemToSelect) || firstItemToSelect.Contains(itemText))
                     {
@@ -208,7 +200,7 @@ namespace Modulverwaltungssoftware
                     }
                 }
             }
-            
+
             System.Diagnostics.Debug.WriteLine($"?? Kein Match für '{firstItemToSelect}' in {listBox.Name} gefunden");
             listBox.SelectedItem = null;
         }
@@ -247,7 +239,7 @@ namespace Modulverwaltungssoftware
 
             // Daten aus der Datenbank laden
             var dbVersion = ModulRepository.getModulVersion(int.Parse(_currentModulId));
-            
+
             if (dbVersion == null)
             {
                 MessageBox.Show("Fehler beim Laden der Modulversion aus der Datenbank.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -283,12 +275,12 @@ namespace Modulverwaltungssoftware
 
             // ? Problem 2 Fix: Navigation basierend auf hatKommentar-DB-Feld
             bool hasComments = dbVersion.hatKommentar;
-            
+
             if (hasComments)
             {
                 // Kommentare aus der Datenbank laden
                 var kommentare = Kommentar.getKommentareFuerVersion(int.Parse(_currentModulId), dbVersion.ModulVersionID);
-                
+
                 // CommentData erstellen (auch wenn Liste leer ist!)
                 var commentData = new ModuleDataRepository.CommentData
                 {
@@ -296,7 +288,7 @@ namespace Modulverwaltungssoftware
                     SubmittedDate = DateTime.Now,
                     SubmittedBy = "Unbekannt"
                 };
-                
+
                 if (kommentare != null && kommentare.Count > 0)
                 {
                     // Kommentare in ModuleDataRepository.CommentData Format konvertieren
@@ -307,7 +299,7 @@ namespace Modulverwaltungssoftware
                         CommentDate = k.ErstellungsDatum ?? DateTime.Now,
                         Commenter = k.Ersteller ?? "Unbekannt"
                     }).ToList();
-                    
+
                     commentData.SubmittedDate = kommentare.First().ErstellungsDatum ?? DateTime.Now;
                     commentData.SubmittedBy = kommentare.First().Ersteller ?? "Unbekannt";
                 }
@@ -410,14 +402,14 @@ namespace Modulverwaltungssoftware
                                 .Where(v => v.ModulId == modulId)
                                 .OrderByDescending(v => v.Versionsnummer)
                                 .ToList();
-                            
+
                             var versionDisplay = verbleibendeVersionen.Select(v =>
                             {
                                 string displayVersion = FormatVersionsnummer(v.Versionsnummer);
                                 return v.hatKommentar ? $"{displayVersion}K" : displayVersion;
                             });
                             UpdateVersions(versionDisplay);
-                            
+
                             // Neueste verbleibende Version laden
                             if (verbleibendeVersionen.Any())
                             {
@@ -558,12 +550,12 @@ namespace Modulverwaltungssoftware
             bool isGremium = rolle == "Gremium";
             bool isDozent = rolle == "Dozent";
             bool isGast = rolle == "Gast";
-            
+
             // ? ROBUSTERE ERSTELLER-PRÜFUNG (case-insensitive + Null-Check + Trim)
-            bool isErsteller = !string.IsNullOrEmpty(data.Ersteller) && 
+            bool isErsteller = !string.IsNullOrEmpty(data.Ersteller) &&
                                !string.IsNullOrEmpty(currentUser) &&
                                data.Ersteller.Trim().Equals(currentUser.Trim(), StringComparison.OrdinalIgnoreCase);
-            
+
             var status = data.ModulStatus;
 
             // Finde alle Buttons (mit Null-Check)
@@ -629,11 +621,11 @@ namespace Modulverwaltungssoftware
                             bearbeitenButton.IsEnabled = isErsteller || isAdmin;
                             if (!bearbeitenButton.IsEnabled)
                                 bearbeitenButton.ToolTip = "Nur der Ersteller oder Admin können eigene Module im Entwurf bearbeiten";
-                            
+
                             System.Diagnostics.Debug.WriteLine($"?? ENTWURF: Bearbeiten={bearbeitenButton.IsEnabled} (isErsteller={isErsteller}, isAdmin={isAdmin})");
                         }
                     }
-                    
+
                     // ? LÖSCHEN: Dozent/Admin, wenn Ersteller ODER Admin
                     if (loeschenButton != null)
                     {
@@ -649,17 +641,17 @@ namespace Modulverwaltungssoftware
                                 loeschenButton.ToolTip = "Nur der Ersteller oder Admin können eigene Module im Entwurf löschen";
                         }
                     }
-                    
+
                     // ? EINREICHEN: Dozent/Admin, wenn Ersteller ODER Admin
                     if (einreichenButton != null)
                     {
                         einreichenButton.IsEnabled = isErsteller || isAdmin;
                         if (!einreichenButton.IsEnabled)
                             einreichenButton.ToolTip = "Nur der Ersteller oder Admin können Module einreichen";
-                        
+
                         System.Diagnostics.Debug.WriteLine($"?? ENTWURF: Einreichen={einreichenButton.IsEnabled} (isErsteller={isErsteller}, isAdmin={isAdmin})");
                     }
-                    
+
                     // ? KOMMENTIEREN: Im Entwurf deaktiviert
                     if (kommentierenButton != null && !isDozent)
                         kommentierenButton.IsEnabled = false;
@@ -680,7 +672,7 @@ namespace Modulverwaltungssoftware
                         if (!isAdmin)
                             loeschenButton.ToolTip = "Während der Prüfung kann das Modul nur vom Admin gelöscht werden";
                     }
-                    
+
                     // Koordination/Gremium dürfen einreichen & kommentieren (je nach Status)
                     if (status == ModulVersion.Status.InPruefungKoordination)
                     {
@@ -696,7 +688,7 @@ namespace Modulverwaltungssoftware
                         if (kommentierenButton != null && !isDozent)
                             kommentierenButton.IsEnabled = isGremium || isAdmin;
                     }
-                    
+
                     System.Diagnostics.Debug.WriteLine($"?? IN_PRÜFUNG: Bearbeiten={isAdmin}, Löschen={isAdmin}, Kommentieren={kommentierenButton?.IsEnabled}, Einreichen={einreichenButton?.IsEnabled}");
                     break;
 
@@ -777,25 +769,25 @@ namespace Modulverwaltungssoftware
             // ? GAST: ALLE BUTTONS DEAKTIVIEREN (außer Exportieren)
             if (isGast)
             {
-                if (bearbeitenButton != null) 
-                { 
-                    bearbeitenButton.IsEnabled = false; 
-                    bearbeitenButton.ToolTip = "Keine Berechtigung"; 
+                if (bearbeitenButton != null)
+                {
+                    bearbeitenButton.IsEnabled = false;
+                    bearbeitenButton.ToolTip = "Keine Berechtigung";
                 }
-                if (loeschenButton != null) 
-                { 
-                    loeschenButton.IsEnabled = false; 
-                    loeschenButton.ToolTip = "Keine Berechtigung"; 
+                if (loeschenButton != null)
+                {
+                    loeschenButton.IsEnabled = false;
+                    loeschenButton.ToolTip = "Keine Berechtigung";
                 }
-                if (kommentierenButton != null) 
-                { 
-                    kommentierenButton.IsEnabled = false; 
-                    kommentierenButton.ToolTip = "Keine Berechtigung"; 
+                if (kommentierenButton != null)
+                {
+                    kommentierenButton.IsEnabled = false;
+                    kommentierenButton.ToolTip = "Keine Berechtigung";
                 }
-                if (einreichenButton != null) 
-                { 
-                    einreichenButton.IsEnabled = false; 
-                    einreichenButton.ToolTip = "Keine Berechtigung"; 
+                if (einreichenButton != null)
+                {
+                    einreichenButton.IsEnabled = false;
+                    einreichenButton.ToolTip = "Keine Berechtigung";
                 }
                 System.Diagnostics.Debug.WriteLine("GAST: Alle Buttons initial deaktiviert (außer Exportieren)");
                 return;
@@ -804,26 +796,26 @@ namespace Modulverwaltungssoftware
             // ? KOORDINATION: BEARBEITEN & LÖSCHEN IMMER DEAKTIVIERT
             if (isKoordination)
             {
-                if (bearbeitenButton != null) 
-                { 
-                    bearbeitenButton.IsEnabled = false; 
-                    bearbeitenButton.ToolTip = "Koordination darf nicht bearbeiten"; 
+                if (bearbeitenButton != null)
+                {
+                    bearbeitenButton.IsEnabled = false;
+                    bearbeitenButton.ToolTip = "Koordination darf nicht bearbeiten";
                 }
-                if (loeschenButton != null) 
-                { 
-                    loeschenButton.IsEnabled = false; 
-                    loeschenButton.ToolTip = "Koordination darf nicht löschen"; 
+                if (loeschenButton != null)
+                {
+                    loeschenButton.IsEnabled = false;
+                    loeschenButton.ToolTip = "Koordination darf nicht löschen";
                 }
                 // Kommentieren & Einreichen: Werden erst aktiv wenn Modul geladen ist
-                if (kommentierenButton != null) 
-                { 
-                    kommentierenButton.IsEnabled = false; 
-                    kommentierenButton.ToolTip = "Bitte wählen Sie zuerst ein Modul aus"; 
+                if (kommentierenButton != null)
+                {
+                    kommentierenButton.IsEnabled = false;
+                    kommentierenButton.ToolTip = "Bitte wählen Sie zuerst ein Modul aus";
                 }
-                if (einreichenButton != null) 
-                { 
-                    einreichenButton.IsEnabled = false; 
-                    einreichenButton.ToolTip = "Bitte wählen Sie zuerst ein Modul aus"; 
+                if (einreichenButton != null)
+                {
+                    einreichenButton.IsEnabled = false;
+                    einreichenButton.ToolTip = "Bitte wählen Sie zuerst ein Modul aus";
                 }
                 System.Diagnostics.Debug.WriteLine("KOORDINATION: Bearbeiten & Löschen deaktiviert");
                 return;
@@ -832,26 +824,26 @@ namespace Modulverwaltungssoftware
             // ? GREMIUM: BEARBEITEN & LÖSCHEN IMMER DEAKTIVIERT
             if (isGremium)
             {
-                if (bearbeitenButton != null) 
-                { 
-                    bearbeitenButton.IsEnabled = false; 
-                    bearbeitenButton.ToolTip = "Gremium darf nicht bearbeiten"; 
+                if (bearbeitenButton != null)
+                {
+                    bearbeitenButton.IsEnabled = false;
+                    bearbeitenButton.ToolTip = "Gremium darf nicht bearbeiten";
                 }
-                if (loeschenButton != null) 
-                { 
-                    loeschenButton.IsEnabled = false; 
-                    loeschenButton.ToolTip = "Gremium darf nicht löschen"; 
+                if (loeschenButton != null)
+                {
+                    loeschenButton.IsEnabled = false;
+                    loeschenButton.ToolTip = "Gremium darf nicht löschen";
                 }
                 // Kommentieren & Einreichen: Werden erst aktiv wenn Modul geladen ist
-                if (kommentierenButton != null) 
-                { 
-                    kommentierenButton.IsEnabled = false; 
-                    kommentierenButton.ToolTip = "Bitte wählen Sie zuerst ein Modul aus"; 
+                if (kommentierenButton != null)
+                {
+                    kommentierenButton.IsEnabled = false;
+                    kommentierenButton.ToolTip = "Bitte wählen Sie zuerst ein Modul aus";
                 }
-                if (einreichenButton != null) 
-                { 
-                    einreichenButton.IsEnabled = false; 
-                    einreichenButton.ToolTip = "Bitte wählen Sie zuerst ein Modul aus"; 
+                if (einreichenButton != null)
+                {
+                    einreichenButton.IsEnabled = false;
+                    einreichenButton.ToolTip = "Bitte wählen Sie zuerst ein Modul aus";
                 }
                 System.Diagnostics.Debug.WriteLine("GREMIUM: Bearbeiten & Löschen deaktiviert");
                 return;
@@ -860,26 +852,26 @@ namespace Modulverwaltungssoftware
             // ? DOZENT: KOMMENTIEREN IMMER DEAKTIVIERT
             if (isDozent)
             {
-                if (kommentierenButton != null) 
-                { 
-                    kommentierenButton.IsEnabled = false; 
-                    kommentierenButton.ToolTip = "Dozenten dürfen nicht kommentieren"; 
+                if (kommentierenButton != null)
+                {
+                    kommentierenButton.IsEnabled = false;
+                    kommentierenButton.ToolTip = "Dozenten dürfen nicht kommentieren";
                 }
                 // Bearbeiten, Löschen & Einreichen: Werden erst aktiv wenn Modul geladen ist
-                if (bearbeitenButton != null) 
-                { 
-                    bearbeitenButton.IsEnabled = false; 
-                    bearbeitenButton.ToolTip = "Bitte wählen Sie zuerst ein Modul aus"; 
+                if (bearbeitenButton != null)
+                {
+                    bearbeitenButton.IsEnabled = false;
+                    bearbeitenButton.ToolTip = "Bitte wählen Sie zuerst ein Modul aus";
                 }
-                if (loeschenButton != null) 
-                { 
-                    loeschenButton.IsEnabled = false; 
-                    loeschenButton.ToolTip = "Bitte wählen Sie zuerst ein Modul aus"; 
+                if (loeschenButton != null)
+                {
+                    loeschenButton.IsEnabled = false;
+                    loeschenButton.ToolTip = "Bitte wählen Sie zuerst ein Modul aus";
                 }
-                if (einreichenButton != null) 
-                { 
-                    einreichenButton.IsEnabled = false; 
-                    einreichenButton.ToolTip = "Bitte wählen Sie zuerst ein Modul aus"; 
+                if (einreichenButton != null)
+                {
+                    einreichenButton.IsEnabled = false;
+                    einreichenButton.ToolTip = "Bitte wählen Sie zuerst ein Modul aus";
                 }
                 System.Diagnostics.Debug.WriteLine("DOZENT: Kommentieren deaktiviert, Rest initial deaktiviert");
                 return;
@@ -888,25 +880,25 @@ namespace Modulverwaltungssoftware
             // ? ADMIN: Alle Buttons initial deaktiviert bis Modul geladen ist
             if (isAdmin)
             {
-                if (bearbeitenButton != null) 
-                { 
-                    bearbeitenButton.IsEnabled = false; 
-                    bearbeitenButton.ToolTip = "Bitte wählen Sie zuerst ein Modul aus"; 
+                if (bearbeitenButton != null)
+                {
+                    bearbeitenButton.IsEnabled = false;
+                    bearbeitenButton.ToolTip = "Bitte wählen Sie zuerst ein Modul aus";
                 }
-                if (loeschenButton != null) 
-                { 
-                    loeschenButton.IsEnabled = false; 
-                    loeschenButton.ToolTip = "Bitte wählen Sie zuerst ein Modul aus"; 
+                if (loeschenButton != null)
+                {
+                    loeschenButton.IsEnabled = false;
+                    loeschenButton.ToolTip = "Bitte wählen Sie zuerst ein Modul aus";
                 }
-                if (kommentierenButton != null) 
-                { 
-                    kommentierenButton.IsEnabled = false; 
-                    kommentierenButton.ToolTip = "Bitte wählen Sie zuerst ein Modul aus"; 
+                if (kommentierenButton != null)
+                {
+                    kommentierenButton.IsEnabled = false;
+                    kommentierenButton.ToolTip = "Bitte wählen Sie zuerst ein Modul aus";
                 }
-                if (einreichenButton != null) 
-                { 
-                    einreichenButton.IsEnabled = false; 
-                    einreichenButton.ToolTip = "Bitte wählen Sie zuerst ein Modul aus"; 
+                if (einreichenButton != null)
+                {
+                    einreichenButton.IsEnabled = false;
+                    einreichenButton.ToolTip = "Bitte wählen Sie zuerst ein Modul aus";
                 }
                 System.Diagnostics.Debug.WriteLine("ADMIN: Alle Buttons initial deaktiviert bis Modul geladen");
                 return;
@@ -938,7 +930,7 @@ namespace Modulverwaltungssoftware
             for (int i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
             {
                 var child = VisualTreeHelper.GetChild(depObj, i);
-                
+
                 if (child is T tChild)
                     yield return tChild;
 
@@ -957,7 +949,7 @@ namespace Modulverwaltungssoftware
 
             // Daten aus der Datenbank laden
             var dbVersion = ModulRepository.getModulVersion(int.Parse(_currentModulId));
-            
+
             if (dbVersion == null)
             {
                 MessageBox.Show("Fehler beim Laden der Modulversion aus der Datenbank.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -1030,7 +1022,7 @@ namespace Modulverwaltungssoftware
                     {
                         case "Admin":
                             // ? ADMIN: KANN ALLES (StatusübergänGE wie Koordination/Gremium/Dozent)
-                            if (aktuellerStatus == ModulVersion.Status.Entwurf || 
+                            if (aktuellerStatus == ModulVersion.Status.Entwurf ||
                                 aktuellerStatus == ModulVersion.Status.Aenderungsbedarf)
                             {
                                 // Entwurf ? InPruefungKoordination
@@ -1109,7 +1101,7 @@ namespace Modulverwaltungssoftware
 
                         case "Dozent":
                             // Dozent: Entwurf ? InPruefungKoordination
-                            if (aktuellerStatus == ModulVersion.Status.Entwurf || 
+                            if (aktuellerStatus == ModulVersion.Status.Entwurf ||
                                 aktuellerStatus == ModulVersion.Status.Aenderungsbedarf)
                             {
                                 var result = MessageBox.Show(
@@ -1271,10 +1263,10 @@ namespace Modulverwaltungssoftware
             if (!string.IsNullOrEmpty(selectedVersion))
             {
                 // "K"-Suffix entfernen, falls vorhanden
-                string actualVersion = selectedVersion.EndsWith("K") 
-                    ? selectedVersion.Substring(0, selectedVersion.Length - 1) 
+                string actualVersion = selectedVersion.EndsWith("K")
+                    ? selectedVersion.Substring(0, selectedVersion.Length - 1)
                     : selectedVersion;
-                    
+
                 LoadModuleVersion(actualVersion);
                 MessageBox.Show($"Version {selectedVersion} geladen", "Version", MessageBoxButton.OK, MessageBoxImage.Information);
             }

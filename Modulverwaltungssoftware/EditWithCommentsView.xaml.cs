@@ -1,7 +1,6 @@
 ﻿using Modulverwaltungssoftware.Helpers;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -21,7 +20,7 @@ namespace Modulverwaltungssoftware
         public EditWithCommentsView()
         {
             InitializeComponent();
-            
+
             // ✨ SUCHFUNKTION: TextChanged Event für SearchBox
             var searchBox = FindName("SearchBox") as TextBox;
             if (searchBox != null)
@@ -110,23 +109,23 @@ namespace Modulverwaltungssoftware
                 listBox.SelectedItem = null;
                 return;
             }
-            
+
             // Nur das erste Item auswählen (Single-Selection-Modus)
             string firstItemToSelect = itemsToSelect[0].Trim();
-            
+
             foreach (var item in listBox.Items)
             {
                 if (item is ListBoxItem lbi)
                 {
                     string itemText = lbi.Content.ToString().Trim();
-                    
+
                     // Exakte Übereinstimmung bevorzugen
                     if (string.Equals(itemText, firstItemToSelect, StringComparison.OrdinalIgnoreCase))
                     {
                         listBox.SelectedItem = lbi;
                         return;
                     }
-                    
+
                     // Fallback: Teil-Übereinstimmung
                     if (itemText.Contains(firstItemToSelect) || firstItemToSelect.Contains(itemText))
                     {
@@ -135,7 +134,7 @@ namespace Modulverwaltungssoftware
                     }
                 }
             }
-            
+
             System.Diagnostics.Debug.WriteLine($"⚠️ Kein Match für '{firstItemToSelect}' in {listBox.Name} gefunden");
             listBox.SelectedItem = null;
         }
@@ -144,7 +143,7 @@ namespace Modulverwaltungssoftware
         {
             // WICHTIG: ALLE Kommentarfelder standardmäßig READ-ONLY setzen!
             SetAllCommentFieldsReadOnly();
-            
+
             if (comments == null || comments.FieldComments == null || comments.FieldComments.Count == 0)
             {
                 // Keine Kommentare vorhanden - alle Kommentarfelder bleiben leer und READ-ONLY
@@ -156,7 +155,7 @@ namespace Modulverwaltungssoftware
             foreach (var fieldComment in comments.FieldComments)
             {
                 TextBox kommentarBox = null;
-                
+
                 switch (fieldComment.FieldName)
                 {
                     case "Titel":
@@ -212,7 +211,7 @@ namespace Modulverwaltungssoftware
                 }
             }
         }
-        
+
         // Hilfsmethode: Alle Kommentarfelder auf READ-ONLY setzen
         private void SetAllCommentFieldsReadOnly()
         {
@@ -223,7 +222,7 @@ namespace Modulverwaltungssoftware
                 VerantwortlicherKommentarTextBox, VoraussetzungenKommentarTextBox, LernzieleKommentarTextBox,
                 LehrinhalteKommentarTextBox, LiteraturKommentarTextBox
             };
-            
+
             foreach (var box in kommentarBoxen)
             {
                 if (box != null)
@@ -239,7 +238,7 @@ namespace Modulverwaltungssoftware
         {
             // ✅ Alle Felder zurücksetzen
             ResetValidationHighlights();
-            
+
             // ✅ Basis-Validierung
             if (!ValidateBasicInputs(out double ects, out int workloadPraesenz, out int workloadSelbststudium))
             {
@@ -299,7 +298,7 @@ namespace Modulverwaltungssoftware
                 {
                     tempModulVersion.Literatur = new List<string>();
                 }
-                
+
                 // Modul-Objekt aus dem aktuellen Kontext holen
                 var modul = tempModulVersion.Modul;
 
@@ -495,7 +494,7 @@ namespace Modulverwaltungssoftware
         private int ParseVersionsnummer(string version)
         {
             string cleanVersion = version.TrimEnd('K');
-            if (decimal.TryParse(cleanVersion, System.Globalization.NumberStyles.Any, 
+            if (decimal.TryParse(cleanVersion, System.Globalization.NumberStyles.Any,
                 System.Globalization.CultureInfo.InvariantCulture, out decimal dec))
                 return (int)(dec * 10);
             return 10;
@@ -551,14 +550,14 @@ namespace Modulverwaltungssoftware
                     // (bedeutet: User hat auf das bereits ausgewählte Item geklickt)
                     var added = e.AddedItems[0];
                     var removed = e.RemovedItems[0];
-                    
+
                     if (added == removed)
                     {
                         // Abwählen durch erneutes Setzen auf null
                         listBox.SelectedItem = null;
                     }
                 }
-                
+
                 System.Diagnostics.Debug.WriteLine($"ListBox '{listBox.Name}': SelectedItem = {listBox.SelectedItem?.ToString() ?? "null"}");
             }
         }
@@ -655,7 +654,7 @@ namespace Modulverwaltungssoftware
                     {
                         trefferControl.Background = new SolidColorBrush(Color.FromArgb(100, 255, 255, 0)); // Gelb transparent
                     }
-                    
+
                     trefferAnzahl++;
 
                     if (ersterTreffer == null)

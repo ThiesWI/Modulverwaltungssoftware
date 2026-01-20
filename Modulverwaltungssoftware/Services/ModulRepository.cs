@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
-using System.Data.Entity.Validation;
 using System.Linq;
 using System.Windows; // <--- Diese using-Direktive ergänzen
 
@@ -218,7 +215,7 @@ namespace Modulverwaltungssoftware
                             .DefaultIfEmpty(0)
                             .Max();
 
-                        int neueVersionsnummer = (hoechsteVersionsnummer/10 + 1)*10;
+                        int neueVersionsnummer = (hoechsteVersionsnummer / 10 + 1) * 10;
 
                         var neueModulVersion = new ModulVersion
                         {
@@ -252,7 +249,7 @@ namespace Modulverwaltungssoftware
                         return true;
                     }
                     else
-                    MessageBox.Show("Module mit Status InPruefung dürfen nicht bearbeitet werden.");
+                        MessageBox.Show("Module mit Status InPruefung dürfen nicht bearbeitet werden.");
                     return false;
                 }
             }

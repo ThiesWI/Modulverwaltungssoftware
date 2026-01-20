@@ -1,18 +1,11 @@
-﻿using System;
+﻿using Modulverwaltungssoftware.Models;  // ✅ HINZUGEFÜGT für Benachrichtigung
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using Modulverwaltungssoftware.Models;  // ✅ HINZUGEFÜGT für Benachrichtigung
 
 
 namespace Modulverwaltungssoftware
@@ -74,7 +67,7 @@ namespace Modulverwaltungssoftware
 
                 // "Meine Projekte" bei jeder Navigation aktualisieren
                 RefreshMyProjects();
-                
+
                 // ✅ Benachrichtigungen bei jeder Navigation aktualisieren
                 LoadNotifications();
             };
@@ -86,9 +79,9 @@ namespace Modulverwaltungssoftware
             // ✅ INTELLIGENTE FILTERUNG FÜR "MEINE PROJEKTE"
             string currentUser = Benutzer.CurrentUser?.Name;
             string rolle = Benutzer.CurrentUser?.RollenName ?? "Gast";
-            
+
             System.Diagnostics.Debug.WriteLine($"🔍 RefreshMyProjects aufgerufen - User: {currentUser}, Rolle: {rolle}");
-            
+
             // ✅ NULL-CHECK: Falls CurrentUser nicht gesetzt ist
             if (Benutzer.CurrentUser == null)
             {
@@ -96,7 +89,7 @@ namespace Modulverwaltungssoftware
                 UpdateProjects(new List<string> { "Keine eigenen Projekte vorhanden" });
                 return;
             }
-            
+
             List<string> modulNamen = new List<string>();
 
             using (var db = new Services.DatabaseContext())
@@ -119,9 +112,9 @@ namespace Modulverwaltungssoftware
                             .Select(v => v.ModulId)
                             .Distinct()
                             .ToList();
-                        
+
                         System.Diagnostics.Debug.WriteLine($"🔍 Dozent '{currentUser}' - Gefundene ModulIDs: {string.Join(", ", dozentenModulIds)}");
-                        
+
                         meineModule = db.Modul.Where(m => dozentenModulIds.Contains(m.ModulID));
                         break;
 
@@ -132,9 +125,9 @@ namespace Modulverwaltungssoftware
                             .Select(v => v.ModulId)
                             .Distinct()
                             .ToList();
-                        
+
                         System.Diagnostics.Debug.WriteLine($"🔍 Koordination - Gefundene ModulIDs: {string.Join(", ", koordinationModulIds)}");
-                        
+
                         meineModule = db.Modul.Where(m => koordinationModulIds.Contains(m.ModulID));
                         break;
 
@@ -145,9 +138,9 @@ namespace Modulverwaltungssoftware
                             .Select(v => v.ModulId)
                             .Distinct()
                             .ToList();
-                        
+
                         System.Diagnostics.Debug.WriteLine($"🔍 Gremium - Gefundene ModulIDs: {string.Join(", ", gremiumModulIds)}");
-                        
+
                         meineModule = db.Modul.Where(m => gremiumModulIds.Contains(m.ModulID));
                         break;
 
@@ -183,7 +176,7 @@ namespace Modulverwaltungssoftware
             }
 
             UpdateProjects(modulNamen);
-            
+
             System.Diagnostics.Debug.WriteLine($"✅ 'Meine Projekte' geladen: Rolle={rolle}, Anzahl={modulNamen.Count}, Module: {string.Join(", ", modulNamen)}");
         }
 
@@ -273,14 +266,14 @@ namespace Modulverwaltungssoftware
             // ✨ Prüfe ob es die Meldung "Keine eigenen Projekte vorhanden" ist
             if (modulName == "Keine eigenen Projekte vorhanden")
             {
-                MessageBox.Show("Sie haben momentan keine eigenen Projekte.", 
+                MessageBox.Show("Sie haben momentan keine eigenen Projekte.",
                     "Information", MessageBoxButton.OK, MessageBoxImage.Information);
-                
+
                 // Popup schließen
                 var popup = this.FindName("ProjectsPopup") as System.Windows.Controls.Primitives.Popup;
                 if (popup != null)
                     popup.IsOpen = false;
-                
+
                 return;
             }
 
@@ -296,7 +289,7 @@ namespace Modulverwaltungssoftware
                 }
                 else
                 {
-                    MessageBox.Show($"Modul '{modulName}' konnte nicht gefunden werden.", 
+                    MessageBox.Show($"Modul '{modulName}' konnte nicht gefunden werden.",
                         "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
@@ -323,28 +316,28 @@ namespace Modulverwaltungssoftware
             try
             {
                 var ungelesene = BenachrichtigungsService.EmpfangeBenachrichtigung();
-                
+
                 if (ungelesene == null || ungelesene.Count == 0)
                 {
                     NotificationBadge.Visibility = Visibility.Collapsed;
                     NotificationsList.ItemsSource = null;
                     return;
                 }
-                
+
                 // ✅ FILTERUNG: Nur relevante Benachrichtigungen anzeigen
                 var relevanteNotifications = FilterRelevantNotifications(ungelesene);
-                
+
                 if (relevanteNotifications.Count == 0)
                 {
                     NotificationBadge.Visibility = Visibility.Collapsed;
                     NotificationsList.ItemsSource = null;
                     return;
                 }
-                
+
                 // Badge anzeigen mit Anzahl
                 NotificationBadge.Visibility = Visibility.Visible;
                 NotificationCount.Text = relevanteNotifications.Count > 99 ? "99+" : relevanteNotifications.Count.ToString();
-                
+
                 // Badge-Farbe basierend auf Priorität
                 if (relevanteNotifications.Any(n => n.Nachricht.Contains("Änderungsbedarf") || n.Nachricht.Contains("kommentiert")))
                 {
@@ -354,10 +347,10 @@ namespace Modulverwaltungssoftware
                 {
                     NotificationBadge.Background = new SolidColorBrush(Colors.OrangeRed); // Normal
                 }
-                
+
                 // Liste befüllen (nach Datum sortiert, neueste zuerst)
                 NotificationsList.ItemsSource = relevanteNotifications.OrderByDescending(n => n.GesendetAm).ToList();
-                
+
                 System.Diagnostics.Debug.WriteLine($"📬 {relevanteNotifications.Count} relevante Benachrichtigungen geladen");
             }
             catch (Exception ex)
@@ -373,17 +366,17 @@ namespace Modulverwaltungssoftware
         private List<Benachrichtigung> FilterRelevantNotifications(List<Benachrichtigung> alle)
         {
             string rolle = Benutzer.CurrentUser?.RollenName ?? "Gast";
-            
+
             // Für Dozenten, Admin und Gäste: Alle ungelesenen Benachrichtigungen anzeigen
             if (rolle == "Dozent" || rolle == "Admin" || rolle == "Gast")
             {
                 return alle;
             }
-            
+
             // Für Koordination und Gremium: Nur Benachrichtigungen zu Modulen anzeigen, 
             // die noch im entsprechenden Status sind
             var relevante = new List<Benachrichtigung>();
-            
+
             using (var db = new Services.DatabaseContext())
             {
                 foreach (var notification in alle)
@@ -394,17 +387,17 @@ namespace Modulverwaltungssoftware
                         relevante.Add(notification);
                         continue;
                     }
-                    
+
                     // ModulVersion-Status prüfen
                     var modulVersion = db.ModulVersion
                         .FirstOrDefault(v => v.ModulVersionID == notification.BetroffeneModulVersionID.Value);
-                    
+
                     if (modulVersion == null)
                     {
                         // Wenn ModulVersion nicht mehr existiert, Benachrichtigung ignorieren
                         continue;
                     }
-                    
+
                     // Koordination: Nur Benachrichtigungen zu Modulen mit Status "InPruefungKoordination"
                     if (rolle == "Koordination")
                     {
@@ -427,7 +420,7 @@ namespace Modulverwaltungssoftware
                     }
                 }
             }
-            
+
             return relevante;
         }
 
@@ -448,7 +441,7 @@ namespace Modulverwaltungssoftware
                         db.SaveChanges();
                     }
                 }
-                
+
                 // Zur ModulVersion navigieren (falls vorhanden)
                 if (notification.BetroffeneModulVersionID.HasValue && notification.BetroffeneModulVersionID.Value > 0)
                 {
@@ -457,7 +450,7 @@ namespace Modulverwaltungssoftware
                     {
                         var modulVersion = db.ModulVersion
                             .FirstOrDefault(v => v.ModulVersionID == notification.BetroffeneModulVersionID.Value);
-                        
+
                         if (modulVersion != null)
                         {
                             MainFrame.Navigate(new ModulView(modulVersion.ModulId));
@@ -467,12 +460,12 @@ namespace Modulverwaltungssoftware
                         }
                     }
                 }
-                
+
                 // Falls keine ModulVersion verknüpft, nur Popup schließen
                 NotificationsPopup.IsOpen = false;
                 LoadNotifications();
-                
-                MessageBox.Show(notification.Nachricht, "Benachrichtigung", 
+
+                MessageBox.Show(notification.Nachricht, "Benachrichtigung",
                     MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
@@ -485,8 +478,8 @@ namespace Modulverwaltungssoftware
             BenachrichtigungsService.MarkiereAlsGelesen();
             LoadNotifications();
             NotificationsPopup.IsOpen = false;
-            
-            MessageBox.Show("Alle Benachrichtigungen wurden als gelesen markieren.", 
+
+            MessageBox.Show("Alle Benachrichtigungen wurden als gelesen markieren.",
                 "Benachrichtigungen", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
