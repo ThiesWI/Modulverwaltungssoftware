@@ -1,188 +1,210 @@
-﻿using Modulverwaltungssoftware.Helpers;
-using System.Collections.Generic;
+﻿// <copyright file="PlausibilitaetsService.cs" company="Modulverwaltungssoftware">
+// Copyright (c) Modulverwaltungssoftware. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// </copyright>
 
 namespace Modulverwaltungssoftware
 {
-    public class PlausibilitaetsService
+    using System.Collections.Generic;
+    using Modulverwaltungssoftware.Helpers;
+
+    /// <summary>
+    /// Service for validating module data plausibility and adherence to academic standards.
+    /// Provides workload validation based on ECTS credit points and comprehensive form validation.
+    /// </summary>
+    public static class PlausibilitaetsService
     {
-        private const double ECTS_MIN = 2.5;
-        private const double ECTS_MAX = 30.0;
-        private const int Workload_Max = 900; // 30 ECTS * 30 Stunden
-        private const double HOURS_PER_ECTS_STANDARD_MIN = 28.0;
-        private const double HOURS_PER_ECTS_STANDARD_MAX = 32.0;
-        public static string pruefeWorkloadStandard(int stunden, double ects)
+        private const double EctsMin = 2.5;
+        private const double EctsMax = 30.0;
+        private const int WorkloadMax = 900;
+        private const double HoursPerEctsStandardMin = 28.0;
+        private const double HoursPerEctsStandardMax = 32.0;
+
+        /// <summary>
+        /// Validates workload hours against ECTS standard requirements.
+        /// The standard defines 28-32 hours per ECTS credit point.
+        /// </summary>
+        /// <param name="stunden">Total workload hours (presence + self-study).</param>
+        /// <param name="ects">ECTS credit points assigned to the module.</param>
+        /// <returns>A validation message indicating if the workload is within acceptable ranges.</returns>
+        public static string PruefeWorkloadStandard(int stunden, double ects)
         {
-            // Verhindere Division durch 0
             if (ects <= 0)
             {
                 return "ECTS-Punkte müssen größer als 0 sein.";
             }
 
-            double stundenProEcts = (double)stunden / ects;
+            double stundenProEcts = stunden / ects;
 
-            // ✅ KORRIGIERT: 28-32 Stunden pro ECTS IST der Standard (entspricht dem 30h-Standard)
-            if (stundenProEcts >= HOURS_PER_ECTS_STANDARD_MIN && stundenProEcts <= HOURS_PER_ECTS_STANDARD_MAX)
+            if (stundenProEcts >= HoursPerEctsStandardMin && stundenProEcts <= HoursPerEctsStandardMax)
             {
-                return "Der Workload entspricht dem Standard."; // ✅ KORRIGIERT
+                return "Der Workload entspricht dem Standard.";
             }
-            // Plausibilitätsprüfung: 75-450 Stunden Gesamtworkload (2.5-15 ECTS)
-            else if (stunden >= 60 && stunden <= 450)
+
+            if (stunden >= 60 && stunden <= 450)
             {
                 return "Der Workload liegt im akzeptablen Bereich.";
             }
-            // Warnung bei sehr hohem Workload (450-900 Stunden = 15-30 ECTS)
-            else if (stunden >= 450 && stunden <= Workload_Max)
+
+            if (stunden >= 450 && stunden <= WorkloadMax)
             {
                 return "Ungewöhnlich hoher Workload. Bitte stellen Sie sicher, dass dies beabsichtigt ist.";
             }
-            // Fehler bei unrealistischem Workload
-            else
-            {
-                return "Der Workload liegt außerhalb des üblichen Bereichs. Bitte prüfen Sie, ob ein Eingabefehler vorliegt.";
-            }
+
+            return "Der Workload liegt außerhalb des üblichen Bereichs. Bitte prüfen Sie, ob ein Eingabefehler vorliegt.";
         }
-        internal static bool pruefeWorkloadStandardIntern(int stunden, double ects)
+
+        /// <summary>
+        /// Internal validation method to check if workload meets strict standard requirements.
+        /// Used for binary validation (pass/fail) without detailed messages.
+        /// </summary>
+        /// <param name="stunden">Total workload hours.</param>
+        /// <param name="ects">ECTS credit points.</param>
+        /// <returns><c>true</c> if workload is within standard range; otherwise, <c>false</c>.</returns>
+        internal static bool PruefeWorkloadStandardIntern(int stunden, double ects)
         {
-            if (ects <= 0)
+            if (ects <= 0 || ects < EctsMin || ects > EctsMax)
             {
                 return false;
             }
-            double stundenProEcts = (double)stunden / ects;
-            if (ects < ECTS_MIN || ects > ECTS_MAX)
+
+            if (stunden <= 0 || stunden > WorkloadMax)
             {
                 return false;
             }
-            if (stunden <= 0 || stunden > Workload_Max)
-            {
-                return false;
-            }
-            if (stundenProEcts >= HOURS_PER_ECTS_STANDARD_MIN && stundenProEcts <= HOURS_PER_ECTS_STANDARD_MAX)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+
+            double stundenProEcts = stunden / ects;
+            return stundenProEcts >= HoursPerEctsStandardMin &&
+                   stundenProEcts <= HoursPerEctsStandardMax;
         }
-        public static string pruefeForm(ModulVersion v)
+
+        /// <summary>
+        /// Validates a complete module version form for all required fields and plausibility.
+        /// </summary>
+        /// <param name="v">The module version to validate.</param>
+        /// <returns>
+        /// A string containing error messages for each invalid field,
+        /// or "Keine Fehler gefunden." if all validations pass.
+        /// </returns>
+        /// <remarks>
+        /// Validates: module type, semester, exam form, schedule, ECTS, workload, responsible person, learning outcomes, and content.
+        /// </remarks>
+        public static string PruefeForm(ModulVersion v)
         {
             string modultyp = v.Modul.Modultyp.ToString();
             int semester = v.Modul.EmpfohlenesSemester;
             string pruefungsform = v.Pruefungsform;
             string turnus = v.Modul.Turnus.ToString();
             double ects = v.EctsPunkte;
-            int workloadPraesenz = v.WorkloadPraesenz;
-            int workloadSelbststudium = v.WorkloadSelbststudium;
-            string verantwortlicher = v.Ersteller;
-            List<string> lernziele = v.Lernergebnisse;
-            List<string> lehrinhalte = v.Inhaltsgliederung;
-            int version = v.Versionsnummer;
-            int workloadGesamt = workloadPraesenz + workloadSelbststudium;
-            bool workloadTest = pruefeWorkloadStandardIntern(workloadGesamt, ects);
-            bool typTest;
-            bool semesterTest;
-            bool pruefungsformTest;
-            bool turnusTest;
-            bool verantwortlicherTest;
-            bool lehrinhaltTest;
-            bool lernzieleTest;
-            if (modultyp == "Grundlagen" || modultyp == "Wahlpflicht")
-            {
-                typTest = true;
-            }
-            else
-            {
-                typTest = false;
-            }
-            if (semester >= 1 && semester <= 8)
-            {
-                semesterTest = true;
-            }
-            else
-            {
-                semesterTest = false;
-            }
+            int workloadGesamt = v.WorkloadPraesenz + v.WorkloadSelbststudium;
 
-            // Akzeptiere alle Prüfungsformen, die in der EditingView angeboten werden
+            bool workloadTest = PruefeWorkloadStandardIntern(workloadGesamt, ects);
+            bool typTest = modultyp == "Grundlagen" || modultyp == "Wahlpflicht";
+            bool semesterTest = semester >= 1 && semester <= 8;
+
             var gueltigePruefungsformen = new List<string>
             {
-                "PL", "SP", "SL", "Klausur", "Mündliche Prüfung", "Projektarbeit", "Hausarbeit", "Präsentation", "Portfolio", "Referat"
+                "PL",
+                "SP",
+                "SL",
+                "Klausur",
+                "Mündliche Prüfung",
+                "Projektarbeit",
+                "Hausarbeit",
+                "Präsentation",
+                "Portfolio",
+                "Referat",
             };
-            pruefungsformTest = !string.IsNullOrWhiteSpace(pruefungsform) && gueltigePruefungsformen.Contains(pruefungsform);
 
-            if (turnus == "JedesSemester" || turnus == "NurWintersemester" || turnus == "NurSommersemester")
-            {
-                turnusTest = true;
-            }
-            else
-            {
-                turnusTest = false;
-            }
-            if (!string.IsNullOrEmpty(verantwortlicher))
-            {
-                verantwortlicherTest = true;
-            }
-            else
-            {
-                verantwortlicherTest = false;
-            }
-            if (lernziele != null && lernziele.Count > 0)
-            {
-                lernzieleTest = true;
-            }
-            else
-            {
-                lernzieleTest = false;
-            }
-            if (lehrinhalte != null && lehrinhalte.Count > 0)
-            {
-                lehrinhaltTest = true;
-            }
-            else
-            {
-                lehrinhaltTest = false;
-            }
-            string fehler = fehlerListe(workloadTest, typTest, semesterTest, pruefungsformTest, turnusTest, verantwortlicherTest, lehrinhaltTest, lernzieleTest);
+            bool pruefungsformTest = !string.IsNullOrWhiteSpace(pruefungsform) &&
+                                     gueltigePruefungsformen.Contains(pruefungsform);
 
-            return fehler;
+            bool turnusTest = turnus == "JedesSemester" ||
+                             turnus == "NurWintersemester" ||
+                             turnus == "NurSommersemester";
+
+            bool verantwortlicherTest = !string.IsNullOrEmpty(v.Ersteller);
+            bool lernzieleTest = v.Lernergebnisse?.Count > 0;
+            bool lehrinhaltTest = v.Inhaltsgliederung?.Count > 0;
+
+            return FehlerListe(
+                workloadTest,
+                typTest,
+                semesterTest,
+                pruefungsformTest,
+                turnusTest,
+                verantwortlicherTest,
+                lehrinhaltTest,
+                lernzieleTest);
         }
-        private static string fehlerListe(bool workload, bool typ, bool semester, bool pruefung, bool turnus, bool verantwortlicher, bool lehrinhalte, bool lernziele)
+
+        /// <summary>
+        /// Generates a formatted error message listing all validation failures.
+        /// </summary>
+        /// <param name="workload">Indicates if workload validation passed.</param>
+        /// <param name="typ">Indicates if module type validation passed.</param>
+        /// <param name="semester">Indicates if semester validation passed.</param>
+        /// <param name="pruefung">Indicates if exam form validation passed.</param>
+        /// <param name="turnus">Indicates if schedule validation passed.</param>
+        /// <param name="verantwortlicher">Indicates if responsible person validation passed.</param>
+        /// <param name="lehrinhalte">Indicates if content validation passed.</param>
+        /// <param name="lernziele">Indicates if learning outcomes validation passed.</param>
+        /// <returns>
+        /// "Keine Fehler gefunden." if all validations pass;
+        /// otherwise, a multi-line string listing all validation errors.
+        /// </returns>
+        private static string FehlerListe(
+            bool workload,
+            bool typ,
+            bool semester,
+            bool pruefung,
+            bool turnus,
+            bool verantwortlicher,
+            bool lehrinhalte,
+            bool lernziele)
         {
-            string fehlerMeldungen = "Fehler gefunden in folgenden Bereichen:\n";
-            if (workload && typ && semester && pruefung && turnus && verantwortlicher && lehrinhalte && lernziele == true)
+            if (workload && typ && semester && pruefung && turnus && verantwortlicher && lehrinhalte && lernziele)
             {
                 return "Keine Fehler gefunden.";
             }
-            else
+
+            var fehlerMeldungen = "Fehler gefunden in folgenden Bereichen:\n";
+
             if (!workload)
             {
                 fehlerMeldungen += "Workload entspricht nicht dem Standard.\n";
             }
+
             if (!typ)
             {
                 fehlerMeldungen += "Ungültiger Modultyp.\n";
             }
+
             if (!semester)
             {
                 fehlerMeldungen += "Empfohlenes Semester außerhalb des gültigen Bereichs.\n";
             }
+
             if (!pruefung)
             {
                 fehlerMeldungen += "Ungültige Prüfungsform.\n";
             }
+
             if (!turnus)
             {
                 fehlerMeldungen += "Ungültiger Turnus.\n";
             }
+
             if (!verantwortlicher)
             {
                 fehlerMeldungen += "Kein Verantwortlicher angegeben.\n";
             }
+
             if (!lehrinhalte)
             {
                 fehlerMeldungen += "Keine Lehrinhalte angegeben.\n";
             }
+
             if (!lernziele)
             {
                 fehlerMeldungen += "Keine Lernziele angegeben.\n";
@@ -190,14 +212,25 @@ namespace Modulverwaltungssoftware
 
             return fehlerMeldungen;
         }
+
         /// <summary>
-        /// ✅ NEU: Validiert eine ModulVersion und gibt detaillierte Feldfehler zurück
+        /// Validates a module version and returns detailed field-specific errors.
+        /// Provides more granular validation results than <see cref="PruefeForm"/>.
         /// </summary>
+        /// <param name="v">The module version to validate.</param>
+        /// <returns>
+        /// A <see cref="ValidationResult"/> object containing:
+        /// <list type="bullet">
+        /// <item><description>Overall validation status (IsValid)</description></item>
+        /// <item><description>Field-specific error messages</description></item>
+        /// <item><description>Global error message if applicable</description></item>
+        /// </list>
+        /// </returns>
         public static ValidationResult ValidateModulVersion(ModulVersion v)
         {
             var result = new ValidationResult();
 
-            if (v == null || v.Modul == null)
+            if (v?.Modul == null)
             {
                 result.IsValid = false;
                 result.GlobalMessage = "Modulversion oder Modul-Daten fehlen.";
@@ -221,9 +254,18 @@ namespace Modulverwaltungssoftware
             // Prüfungsform prüfen
             var gueltigePruefungsformen = new List<string>
             {
-                "PL", "SP", "SL", "Klausur", "Mündliche Prüfung", "Projektarbeit",
-                "Hausarbeit", "Präsentation", "Portfolio", "Referat"
+                "PL",
+                "SP",
+                "SL",
+                "Klausur",
+                "Mündliche Prüfung",
+                "Projektarbeit",
+                "Hausarbeit",
+                "Präsentation",
+                "Portfolio",
+                "Referat",
             };
+
             if (string.IsNullOrWhiteSpace(v.Pruefungsform) || !gueltigePruefungsformen.Contains(v.Pruefungsform))
             {
                 result.AddError("Pruefungsform", "Ungültige Prüfungsform.");
@@ -243,13 +285,13 @@ namespace Modulverwaltungssoftware
             }
 
             // Lernziele prüfen
-            if (v.Lernergebnisse == null || v.Lernergebnisse.Count == 0)
+            if (v.Lernergebnisse?.Count == 0 || v.Lernergebnisse == null)
             {
                 result.AddError("Lernziele", "Keine Lernziele angegeben.");
             }
 
             // Lehrinhalte prüfen
-            if (v.Inhaltsgliederung == null || v.Inhaltsgliederung.Count == 0)
+            if (v.Inhaltsgliederung?.Count == 0 || v.Inhaltsgliederung == null)
             {
                 result.AddError("Lehrinhalte", "Keine Lehrinhalte angegeben.");
             }
@@ -262,7 +304,7 @@ namespace Modulverwaltungssoftware
             {
                 result.AddError("ECTS", "ECTS-Punkte müssen größer als 0 sein.");
             }
-            else if (!pruefeWorkloadStandardIntern(workloadGesamt, ects))
+            else if (!PruefeWorkloadStandardIntern(workloadGesamt, ects))
             {
                 result.AddError("Workload", "Workload entspricht nicht dem Standard (28-32 Stunden/ECTS).");
             }
