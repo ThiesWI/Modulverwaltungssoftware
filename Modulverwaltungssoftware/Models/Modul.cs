@@ -67,7 +67,7 @@ namespace Modulverwaltungssoftware
                     }
                 }
             }
-        } // List<string> zu DB-fähiger json konvertieren
+        }
 
         public Modul()
         {

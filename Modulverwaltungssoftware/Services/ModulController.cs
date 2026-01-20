@@ -8,6 +8,9 @@ namespace Modulverwaltungssoftware
 {
     public class ModulController
     {
+        /// <summary>
+        /// Erstellt eine neue Modulversion basierend auf der neuesten Version.
+        /// </summary>
         public static int create(int modulID)
         {
             if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == false) { MessageBox.Show("Fehlende Berechtigungen zum Erstellen."); return 0; }
@@ -74,7 +77,11 @@ namespace Modulverwaltungssoftware
                 MessageBox.Show($"Fehler beim Erstellen der neuen Modulversion: {ex.Message}");
                 return -1;
             }
-        } // Neue Modulversion erstellen, basierend auf der letzten Version
+        }
+
+        /// <summary>
+        /// Erstellt eine neue Modulversion mit den angegebenen Daten.
+        /// </summary>
         public static int create(int modulID, ModulVersion version)
         {
             if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == false) { MessageBox.Show("Fehlende Berechtigungen zum Erstellen."); return 0; }
@@ -145,7 +152,6 @@ namespace Modulverwaltungssoftware
                     mod.Voraussetzungen = version.Modul.Voraussetzungen;
                     db.SaveChanges();
 
-                    // Erfolgsmeldung nur im Frontend!
                     return neueVersionsnummer;
                 }
             }
@@ -154,6 +160,6 @@ namespace Modulverwaltungssoftware
                 MessageBox.Show($"Fehler beim Erstellen der neuen Modulversion: {ex.Message}");
                 return -1;
             }
-        } // Neue Modulversion erstellen, basierend auf der letzten Version
+        }
     }
 }

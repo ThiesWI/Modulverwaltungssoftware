@@ -20,6 +20,10 @@ namespace Modulverwaltungssoftware
         public int GesamtECTS { get; set; }
         public DateTime GueltigAb { get; set; }
         public string Verantwortlicher { get; set; }
+
+        /// <summary>
+        /// Ruft alle Module ab, die mindestens eine freigegebene Version haben.
+        /// </summary>
         public List<Modul> getAktuelleModule()
         {
             using (var db = new Services.DatabaseContext())
@@ -31,7 +35,11 @@ namespace Modulverwaltungssoftware
                     .OrderBy(m => m.ModulnameDE);
                 return query.ToList();
             }
-        } // Alle Module abrufen, die mindestens eine aktive Version haben.
+        }
+
+        /// <summary>
+        /// Fügt ein neues Modul zur Datenbank hinzu.
+        /// </summary>
         public static int addModul(Modul modul)
         {
             if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == false)
@@ -62,7 +70,11 @@ namespace Modulverwaltungssoftware
                 MessageBox.Show(ex.Message);
                 return -1;
             }
-        } // Modul erstellen
+        }
+
+        /// <summary>
+        /// Löscht ein Modul und alle zugehörigen Versionen.
+        /// </summary>
         public void removeModul(int modulID)
         {
             if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == false && Benutzer.CurrentUser.AktuelleRolle.DarfFreigeben == false)
@@ -78,11 +90,15 @@ namespace Modulverwaltungssoftware
                     MessageBox.Show("Modul existiert nicht!");
                 }
                 db.Modul.Remove(modul);
-                db.ModulVersion.RemoveRange(db.ModulVersion.Where(mv => mv.ModulId == modulID)); // Alle zugehörigen ModulVersionen löschen
+                db.ModulVersion.RemoveRange(db.ModulVersion.Where(mv => mv.ModulId == modulID));
                 db.SaveChanges();
             }
-        } // Modul und alle zugehörigen ModulVersionen löschen
-        public void removeModulVersion(int modulID, int versionsnummer) // eine spezifische ModulVersion löschen
+        }
+
+        /// <summary>
+        /// Löscht eine spezifische Version eines Moduls.
+        /// </summary>
+        public void removeModulVersion(int modulID, int versionsnummer)
         {
             try
             {

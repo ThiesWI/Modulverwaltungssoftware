@@ -6,6 +6,9 @@ namespace Modulverwaltungssoftware.Services
 {
     public class LoginService
     {
+        /// <summary>
+        /// Authentifiziert einen Benutzer und setzt CurrentUser bei Erfolg.
+        /// </summary>
         public static bool Login(string benutzernameOderEmail, string passwort)
         {
             using (var db = new DatabaseContext())
@@ -23,7 +26,6 @@ namespace Modulverwaltungssoftware.Services
 
                     if (benutzer == null)
                     {
-                        // Debug: Prüfe ob User existiert (ohne Passwort-Check)
                         var userExists = db.Benutzer
                             .FirstOrDefault(b => b.Name == benutzernameOderEmail || b.Email == benutzernameOderEmail);
 
@@ -45,11 +47,8 @@ namespace Modulverwaltungssoftware.Services
                     {
                         System.Diagnostics.Debug.WriteLine($"✅ LOGIN ERFOLGREICH: {benutzer.Name} (Rolle: {benutzer.RollenName})");
 
-                        // ⚠️ WICHTIG: Benutzer-Objekt von Entity Framework detachen
-                        // Sonst wird beim Löschen des Passworts die DB geändert!
                         db.Entry(benutzer).State = System.Data.Entity.EntityState.Detached;
 
-                        // Jetzt sicher: Passwort nur aus dem IN-MEMORY Objekt löschen
                         benutzer.Passwort = null;
                         Benutzer.CurrentUser = benutzer;
                         return true;
@@ -62,6 +61,6 @@ namespace Modulverwaltungssoftware.Services
                     return false;
                 }
             }
-        } // Nutzerdaten mit DB abgleichen, bei Erfolg Passwort aus Arbeitsspeicher löschen und Nutzerdaten in Benutzer.CurrentUser hinterlegen
+        }
     }
 }

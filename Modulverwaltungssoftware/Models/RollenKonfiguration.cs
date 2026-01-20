@@ -48,7 +48,11 @@ namespace Modulverwaltungssoftware.Models
                 DarfKommentieren = true,
                 DarfStatusAendern = true
             }
-        }; // Liste aller vorhandenen Rollen und Berechtigungen
+        };
+
+        /// <summary>
+        /// Ruft eine Rolle anhand ihres Namens ab.
+        /// </summary>
         public static Rolle GetRolleByName(string rollenName)
         {
             return Rollen.FirstOrDefault(r => r.RollenName.Equals(rollenName, StringComparison.OrdinalIgnoreCase));

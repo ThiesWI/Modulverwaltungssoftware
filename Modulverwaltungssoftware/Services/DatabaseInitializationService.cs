@@ -7,18 +7,19 @@ namespace Modulverwaltungssoftware.Services
 {
     public class DatabaseInitializationService
     {
+        /// <summary>
+        /// Initialisiert die Datenbank mit Testdaten.
+        /// </summary>
         public static void InitializeDatabase()
         {
             using (var db = new DatabaseContext())
             {
-                // Ensure database is created
                 db.Database.CreateIfNotExists();
-                // Apply any pending migrations
                 var migrator = new System.Data.Entity.Migrations.DbMigrator(new Migrations.Configuration());
                 migrator.Update();
                 if (db.Benutzer.Any())
                 {
-                    return; // DB has been seeded
+                    return;
                 }
                 using (var transaction = db.Database.BeginTransaction())
                 {
@@ -33,28 +34,28 @@ namespace Modulverwaltungssoftware.Services
                         };
                         var dozent = new Benutzer
                         {
-                            Name = "Dr. Max Mustermann",  // ✅ Geändert, um mit Auto-Login übereinzustimmen
+                            Name = "Dr. Max Mustermann",
                             Email = "max.mustermann@hs-example.de",
                             Passwort = "dozent123",
                             RollenName = "Dozent",
                         };
                         var koordination = new Benutzer
                         {
-                            Name = "Sabine Beispiel",  // ✅ Geändert, um mit Auto-Login übereinzustimmen
+                            Name = "Sabine Beispiel",
                             Email = "sabine.beispiel@hs-example.de",
                             Passwort = "koordination123",
                             RollenName = "Koordination",
                         };
                         var gremium = new Benutzer
                         {
-                            Name = "Prof. Erika Musterfrau",  // ✅ Geändert, um mit Auto-Login übereinzustimmen
+                            Name = "Prof. Erika Musterfrau",
                             Email = "erika.musterfrau@hs-example.de",
                             Passwort = "gremium123",
                             RollenName = "Gremium",
                         };
                         var admin = new Benutzer
                         {
-                            Name = "Philipp Admin",  // ✅ Geändert, um mit Auto-Login übereinzustimmen
+                            Name = "Philipp Admin",
                             Email = "admin@hs-example.de",
                             Passwort = "admin123",
                             RollenName = "Admin",
@@ -68,8 +69,6 @@ namespace Modulverwaltungssoftware.Services
 
                         db.SaveChanges();
 
-
-                        // --- SCHRITT 2: STUDIENGANG ERSTELLEN ---
                         var studiengangsDaten = new[]
                         {
                             ("B.Sc. WI",  "Wirtschaftsinformatik", "Business Informatics", 180, dozent),
@@ -94,11 +93,8 @@ namespace Modulverwaltungssoftware.Services
                             db.Studiengang.Add(neuerStudiengang);
                         }
 
-                        // --- SCHRITT 3: MODUL ERSTELLEN ---
-
                         var neueModule = new List<Modul>
                         {
-                            // --- MODUL: Software Engineering ---
                             new Modul
                             {
                                 GueltigAb = DateTime.Now,
@@ -114,10 +110,9 @@ namespace Modulverwaltungssoftware.Services
 
                                 ModulVersionen = new List<ModulVersion>
                                 {
-                                    // Veraltete Version
                                     new ModulVersion
                                     {
-                                        Versionsnummer = 10,  // ? FIX: 1.0 = 10 (nicht 1!)
+                                        Versionsnummer = 10,
                                         ModulStatus = ModulVersion.Status.Freigegeben,
                                         GueltigAbSemester = "WiSe 2021",
                                         EctsPunkte = 5,
@@ -125,14 +120,11 @@ namespace Modulverwaltungssoftware.Services
                                         Pruefungsform = "Klausur (90 min)",
                                         LernergebnisseDb = "Wasserfallmodell, V-Modell...",
                                         InhaltsgliederungDb = "1. Einführung\n2. Prozessmodelle",
-                
-                                        // Hier deine Anforderung: Zuweisung über den Namen
                                         Ersteller = dozent.Name
                                     },
-                                    // Aktuelle Version (Entwurf)
                                     new ModulVersion
                                     {
-                                        Versionsnummer = 20,  // ? FIX: 2.0 = 20 (nicht 2!)
+                                        Versionsnummer = 20,
                                         ModulStatus = ModulVersion.Status.Aenderungsbedarf,
                                         GueltigAbSemester = "WiSe 2324",
                                         EctsPunkte = 7.5,
@@ -162,7 +154,7 @@ namespace Modulverwaltungssoftware.Services
                                 {
                                     new ModulVersion
                                     {
-                                        Versionsnummer = 10,  // ? FIX: 1.0 = 10
+                                        Versionsnummer = 10,
                                         ModulStatus = ModulVersion.Status.Freigegeben,
                                         GueltigAbSemester = "WiSe 2223",
                                         EctsPunkte = 5,
@@ -192,7 +184,7 @@ namespace Modulverwaltungssoftware.Services
                                 {
                                     new ModulVersion
                                     {
-                                        Versionsnummer = 10,  // ? FIX: 1.0 = 10
+                                        Versionsnummer = 10,
                                         ModulStatus = ModulVersion.Status.InPruefungGremium,
                                         GueltigAbSemester = "SoSe 24",
                                         EctsPunkte = 2.5,
@@ -221,7 +213,7 @@ namespace Modulverwaltungssoftware.Services
                                 {
                                     new ModulVersion
                                     {
-                                        Versionsnummer = 10,  // ? FIX: 1.0 = 10
+                                        Versionsnummer = 10,
                                         ModulStatus = ModulVersion.Status.InPruefungKoordination,
                                         GueltigAbSemester = "SoSe 26",
                                         EctsPunkte = 5,
@@ -249,7 +241,7 @@ namespace Modulverwaltungssoftware.Services
                                 {
                                     new ModulVersion
                                     {
-                                        Versionsnummer = 10,  // ? FIX: 1.0 = 10
+                                        Versionsnummer = 10,
                                         ModulStatus = ModulVersion.Status.Freigegeben,
                                         GueltigAbSemester = "SoSe 21",
                                         EctsPunkte = 5,
@@ -277,7 +269,7 @@ namespace Modulverwaltungssoftware.Services
                                 {
                                     new ModulVersion
                                     {
-                                        Versionsnummer = 10,  // ? FIX: 1.0 = 10
+                                        Versionsnummer = 10,
                                         ModulStatus = ModulVersion.Status.Freigegeben,
                                         GueltigAbSemester = "SoSe 15",
                                         EctsPunkte = 10,
@@ -306,7 +298,7 @@ namespace Modulverwaltungssoftware.Services
                                 {
                                                                         new ModulVersion
                                     {
-                                        Versionsnummer = 10,  // ? FIX: 1.0 = 10
+                                        Versionsnummer = 10,
                                         ModulStatus = ModulVersion.Status.Archiviert,
                                         GueltigAbSemester = "SoSe 9999",
                                         EctsPunkte = 5,
@@ -318,7 +310,7 @@ namespace Modulverwaltungssoftware.Services
                                     },
                                     new ModulVersion
                                     {
-                                        Versionsnummer = 20,  // ? FIX: 1.0 = 10
+                                        Versionsnummer = 20,
                                         ModulStatus = ModulVersion.Status.Entwurf,
                                         GueltigAbSemester = "SoSe 26",
                                         EctsPunkte = 5,
@@ -355,7 +347,7 @@ namespace Modulverwaltungssoftware.Services
                                 {
                                     new ModulVersion
                                     {
-                                        Versionsnummer = 10,  // ? FIX: 1.0 = 10
+                                        Versionsnummer = 10,
                                         ModulStatus = ModulVersion.Status.Freigegeben,
                                         GueltigAbSemester = "WiSe 2425",
                                         EctsPunkte = 5,
@@ -392,7 +384,7 @@ namespace Modulverwaltungssoftware.Services
                                 {
                                     new ModulVersion
                                     {
-                                        Versionsnummer = 10,  // ? FIX: 1.0 = 10
+                                        Versionsnummer = 10,
                                         ModulStatus = ModulVersion.Status.Aenderungsbedarf,
                                         GueltigAbSemester = "SoSe 21",
                                         EctsPunkte = 5,
@@ -429,7 +421,7 @@ namespace Modulverwaltungssoftware.Services
                                 {
                                     new ModulVersion
                                     {
-                                        Versionsnummer = 10,  // ? FIX: 1.0 = 10
+                                        Versionsnummer = 10,
                                         ModulStatus = ModulVersion.Status.Freigegeben,
                                         GueltigAbSemester = "WiSe 1819",
                                         EctsPunkte = 5,
@@ -454,9 +446,7 @@ namespace Modulverwaltungssoftware.Services
 
                         db.Modul.AddRange(neueModule);
 
-                        // --- ABSCHLUSS ---
-
-                        db.SaveChanges(); // Alles in die DB schreiben
+                        db.SaveChanges();
 
                         var seModul = db.Modul.Include("ModulVersionen")
                 .FirstOrDefault(m => m.ModulnameDE == "Software Engineering I");
@@ -531,14 +521,13 @@ namespace Modulverwaltungssoftware.Services
 
                         var seedBenachrichtigungen = new List<Benachrichtigung>
 {
-    // --- GAST (Allgemeine Infos) ---
     new Benachrichtigung
     {
         Empfaenger = "Gast",
         Sender = "System",
         Nachricht = "Willkommen im Modul-Management-System. Sie haben Lesezugriff auf alle veröffentlichten Module.",
         GesendetAm = DateTime.Now.AddDays(-5),
-        Gelesen = true, // Schon gelesen
+        Gelesen = true,
         BetroffeneModulVersionID = null
     },
     new Benachrichtigung
@@ -551,7 +540,6 @@ namespace Modulverwaltungssoftware.Services
         BetroffeneModulVersionID = null
     },
 
-    // --- DOZENT (Handlungsbedarf & Feedback) ---
     new Benachrichtigung
     {
         Empfaenger = "Dozent",
@@ -559,7 +547,7 @@ namespace Modulverwaltungssoftware.Services
         Nachricht = "Ihr Modul 'Mathe I' wurde zur Überarbeitung zurückgegeben. Bitte prüfen Sie die ECTS-Verteilung.",
         GesendetAm = DateTime.Now.AddHours(-24),
         Gelesen = false,
-        BetroffeneModulVersionID = 1 // Annahme: Es gibt eine Version 1
+        BetroffeneModulVersionID = 1
     },
     new Benachrichtigung
     {
@@ -577,10 +565,9 @@ namespace Modulverwaltungssoftware.Services
         Nachricht = "Glückwunsch! Ihr Modul 'Informatik Grundlagen' wurde ohne Änderungen genehmigt.",
         GesendetAm = DateTime.Now.AddDays(-2),
         Gelesen = true,
-        BetroffeneModulVersionID = 5 // Annahme: Version 5 existiert
+        BetroffeneModulVersionID = 5
     },
 
-    // --- KOORDINATION (Prüfungsaufgaben) ---
     new Benachrichtigung
     {
         Empfaenger = "Koordination",
@@ -600,7 +587,6 @@ namespace Modulverwaltungssoftware.Services
         BetroffeneModulVersionID = 8
     },
 
-    // --- GREMIUM (Entscheidungen) ---
     new Benachrichtigung
     {
         Empfaenger = "Gremium",
@@ -616,11 +602,10 @@ namespace Modulverwaltungssoftware.Services
         Sender = "Dekan",
         Nachricht = "Bitte beachten Sie die neue Prüfungsordnung bei der Genehmigung von Master-Modulen.",
         GesendetAm = DateTime.Now.AddDays(-7),
-        Gelesen = true, // Alte Info
+        Gelesen = true,
         BetroffeneModulVersionID = null
     },
 
-    // --- ADMIN (Systemstatus) ---
     new Benachrichtigung
     {
         Empfaenger = "Admin",
@@ -641,19 +626,17 @@ namespace Modulverwaltungssoftware.Services
     }
 };
 
-                        // Speichern in die DB
-                        db.Benachrichtigung.AddRange(seedBenachrichtigungen);
-                        db.SaveChanges();
+db.Benachrichtigung.AddRange(seedBenachrichtigungen);
+db.SaveChanges();
 
-                        transaction.Commit(); // Transaktion bestätigen
+transaction.Commit();
 
-                        Console.WriteLine("Datenbank erfolgreich befüllt!");
+Console.WriteLine("Datenbank erfolgreich befüllt!");
                     }
                     catch (Exception ex)
                     {
-                        transaction.Rollback(); // Bei Fehler alles rückgängig machen
+                        transaction.Rollback();
                         Console.WriteLine("Fehler bei der Initialisierung: " + ex.Message);
-                        // Optional: Exception weiterwerfen, damit die App crasht und man den Fehler sieht
                         throw;
                     }
                 }
@@ -661,3 +644,4 @@ namespace Modulverwaltungssoftware.Services
         }
     }
 }
+

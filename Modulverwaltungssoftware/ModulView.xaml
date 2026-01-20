@@ -277,7 +277,7 @@
                 <Button Content="Kommentieren" Width="100" Height="35" Click="ModulversionKommentieren_Click"/>
             </StackPanel>
             <StackPanel Grid.Column="2" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,165,15,0">
-                <Button Content="Einreichen" Width="100" Height="35" Click="ModulversionEinreichen_Click"/>
+                <Button x:Name="EinreichenButton" Content="Einreichen" Width="100" Height="35" Click="ModulversionEinreichen_Click"/>
             </StackPanel>
         </Grid>
     </Grid>

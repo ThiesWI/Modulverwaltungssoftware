@@ -123,20 +123,14 @@ namespace Modulverwaltungssoftware
             Inhaltsgliederung = new List<string>();
             Literatur = new List<string>();
         }
+
+        /// <summary>
+        /// Setzt den Status einer Modulversion.
+        /// </summary>
         public static void setStatus(int versionID, int modulID, Status neuerStatus)
         {
             try
             {
-                // ✅ FIX: Berechtigungsprüfung ENTFERNT!
-                // Die aufrufende Methode (z.B. WorkflowController.starteGenehmigung) 
-                // prüft bereits die Berechtigung (Ersteller, Koordination, Gremium, Admin)
-                // 
-                // ALTE (FALSCHE) LOGIK:
-                // if (Benutzer.CurrentUser.AktuelleRolle.DarfStatusAendern == false && Benutzer.CurrentUser.RollenName != "Admin")
-                // ❌ Problem: Dozenten haben DarfStatusAendern = false, können also nicht einreichen!
-                //
-                // NEUE LOGIK: Keine Berechtigungsprüfung hier, nur Status setzen
-
                 System.Diagnostics.Debug.WriteLine($"🔄 setStatus: versionID={versionID}, modulID={modulID}, neuerStatus={neuerStatus}");
 
                 using (var db = new Services.DatabaseContext())
@@ -166,7 +160,11 @@ namespace Modulverwaltungssoftware
                 return;
             }
         }
-        public static bool setDaten(ModulVersion version) //Setzt die Daten der Modulversion in der DB
+
+        /// <summary>
+        /// Setzt die Daten einer Modulversion in der Datenbank.
+        /// </summary>
+        public static bool setDaten(ModulVersion version)
         {
             string fehlermeldung = PlausibilitaetsService.pruefeForm(version);
             if (fehlermeldung != "Keine Fehler gefunden.")
@@ -181,7 +179,6 @@ namespace Modulverwaltungssoftware
                     var modulVersion = db.ModulVersion.FirstOrDefault(mv => mv.Versionsnummer == version.Versionsnummer && mv.ModulId == version.ModulId);
                     if (modulVersion == null)
                     {
-                        // NEU: Alle Parameter direkt übernehmen!
                         if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == true)
                         {
                             modulVersion = new ModulVersion

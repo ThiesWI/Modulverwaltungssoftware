@@ -11,7 +11,7 @@ namespace Modulverwaltungssoftware
         public int KommentarID { get; set; }
 
         [StringLength(100)]
-        public string FeldName { get; set; }  // z.B. "Titel", "ECTS", "Modultyp"
+        public string FeldName { get; set; }
 
         [Required]
         public string Text { get; set; }
@@ -19,7 +19,7 @@ namespace Modulverwaltungssoftware
         public DateTime? ErstellungsDatum { get; set; }
 
         [StringLength(100)]
-        public string Ersteller { get; set; }  // Wer hat kommentiert
+        public string Ersteller { get; set; }
 
         [Required]
         public int GehoertZuModulVersionID { get; set; }
@@ -27,14 +27,16 @@ namespace Modulverwaltungssoftware
         [Required]
         public int GehoertZuModulID { get; set; }
 
-        // Legacy-Methode (für Rückwärtskompatibilität)
+        /// <summary>
+        /// Fügt einen einfachen Kommentar zur Datenbank hinzu (Legacy-Methode).
+        /// </summary>
         public static void addKommentar(int modulID, int modulVersionID, string text)
         {
-            if (Benutzer.CurrentUser.AktuelleRolle.DarfKommentieren == false) // Berechtigungsabfrage
+            if (Benutzer.CurrentUser.AktuelleRolle.DarfKommentieren == false)
             { MessageBox.Show("Der aktuelle Benutzer hat keine Berechtigung zum Kommentieren."); return; }
             using (var db = new Services.DatabaseContext())
             {
-                var neuerKommentar = new Kommentar // Kommentar anlegen
+                var neuerKommentar = new Kommentar
                 {
                     FeldName = null,
                     Text = text,
@@ -45,7 +47,7 @@ namespace Modulverwaltungssoftware
                 };
                 db.Kommentar.Add(neuerKommentar);
 
-                var modulVersion = db.ModulVersion.Find(modulVersionID); // ModulVersion als kommentiert markieren, falls diese existiert
+                var modulVersion = db.ModulVersion.Find(modulVersionID);
                 if (modulVersion != null)
                 {
                     modulVersion.hatKommentar = true;
@@ -55,7 +57,9 @@ namespace Modulverwaltungssoftware
             }
         }
 
-        // Neue Methode: Speichere feldspezifische Kommentare und erstelle neue Version
+        /// <summary>
+        /// Speichert feldspezifische Kommentare und erstellt eine neue Modulversion.
+        /// </summary>
         public static int addFeldKommentareMitNeuerVersion(int modulID, int altModulVersionID, List<FeldKommentar> feldKommentare, string ersteller)
         {
             if (Benutzer.CurrentUser.AktuelleRolle.DarfKommentieren == false) { MessageBox.Show("Fehlende Berechtigungen zum Kommentieren"); return 0; }
@@ -64,7 +68,6 @@ namespace Modulverwaltungssoftware
 
             using (var db = new Services.DatabaseContext())
             {
-                // Alte Version laden
                 var alteVersion = db.ModulVersion
                     .Include("Modul")
                     .FirstOrDefault(v => v.ModulVersionID == altModulVersionID && v.ModulId == modulID);
@@ -72,18 +75,15 @@ namespace Modulverwaltungssoftware
                 if (alteVersion == null)
                     throw new InvalidOperationException("Die zu kommentierende Modulversion wurde nicht gefunden.");
 
-                // ✅ Problem 4 Fix: Höchste Versionsnummer für dieses Modul finden
                 var hoechsteVersionsnummer = db.ModulVersion
                     .Where(v => v.ModulId == modulID)
                     .Max(v => (int?)v.Versionsnummer) ?? 10;
 
                 int neueVersionsnummer = hoechsteVersionsnummer + 1;
 
-                // ✅ Problem 3 Fix: Prüfen ob Version bereits existiert
                 if (db.ModulVersion.Any(v => v.ModulId == modulID && v.Versionsnummer == neueVersionsnummer))
                     throw new InvalidOperationException($"Version {neueVersionsnummer / 10.0:0.0} existiert bereits!");
 
-                // Neue Version erstellen (Kopie der alten)
                 var neueVersion = new ModulVersion
                 {
                     ModulId = alteVersion.ModulId,
@@ -103,9 +103,8 @@ namespace Modulverwaltungssoftware
                 };
 
                 db.ModulVersion.Add(neueVersion);
-                db.SaveChanges(); // Speichern, um ModulVersionID zu erhalten
+                db.SaveChanges();
 
-                // Kommentare zur neuen Version hinzufügen
                 var erstellungsDatum = DateTime.Now;
                 foreach (var feldKommentar in feldKommentare)
                 {
@@ -126,7 +125,9 @@ namespace Modulverwaltungssoftware
             }
         }
 
-        // Neue Methode: Speichere mehrere feldspezifische Kommentare
+        /// <summary>
+        /// Speichert mehrere feldspezifische Kommentare zu einer Modulversion.
+        /// </summary>
         public static void addFeldKommentare(int modulID, int modulVersionID, List<FeldKommentar> feldKommentare, string ersteller)
         {
             if (Benutzer.CurrentUser.AktuelleRolle.DarfKommentieren == false) { MessageBox.Show("Fehlende Berechtigungen zum Kommentieren."); return; }
@@ -137,7 +138,6 @@ namespace Modulverwaltungssoftware
             {
                 var erstellungsDatum = DateTime.Now;
 
-                // Batch-Insert: Alle Kommentare erst sammeln, dann einmal SaveChanges
                 foreach (var feldKommentar in feldKommentare)
                 {
                     var neuerKommentar = new Kommentar
@@ -152,7 +152,6 @@ namespace Modulverwaltungssoftware
                     db.Kommentar.Add(neuerKommentar);
                 }
 
-                // ModulVersion als kommentiert markieren
                 var modulVersion = db.ModulVersion.Find(modulVersionID);
                 if (modulVersion != null)
                 {
@@ -163,7 +162,9 @@ namespace Modulverwaltungssoftware
             }
         }
 
-        // Lade alle Kommentare für ein Modul
+        /// <summary>
+        /// Lädt alle Kommentare für ein Modul.
+        /// </summary>
         public static List<Kommentar> getKommentare(int modulID)
         {
             using (var db = new Services.DatabaseContext())
@@ -175,7 +176,9 @@ namespace Modulverwaltungssoftware
             }
         }
 
-        // Lade alle Kommentare für eine spezifische Modulversion
+        /// <summary>
+        /// Lädt alle Kommentare für eine spezifische Modulversion.
+        /// </summary>
         public static List<Kommentar> getKommentareFuerVersion(int modulID, int modulVersionID)
         {
             using (var db = new Services.DatabaseContext())
@@ -198,14 +201,13 @@ namespace Modulverwaltungssoftware
                 if (modulVersion == null)
                     throw new InvalidOperationException("Modulversion nicht gefunden.");
 
-                string currentUser = Benutzer.CurrentUser?.Name ?? "Unbekannt";  // ✅ FIX: Aktueller User!
+                string currentUser = Benutzer.CurrentUser?.Name ?? "Unbekannt";
 
-                // Neue Version mit Kommentaren erstellen
                 int neueVersionID = Kommentar.addFeldKommentareMitNeuerVersion(
                     modulId,
                     modulVersion.ModulVersionID,
                     feldKommentare,
-                    currentUser  // ← Statt fest codiert!
+                    currentUser
                 );
             }
         }

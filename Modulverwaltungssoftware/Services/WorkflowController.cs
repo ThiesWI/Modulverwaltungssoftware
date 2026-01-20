@@ -6,11 +6,13 @@ namespace Modulverwaltungssoftware
 {
     public class WorkflowController
     {
+        /// <summary>
+        /// Reicht ein Modul zur Prüfung bei der Koordination ein.
+        /// </summary>
         public static void starteGenehmigung(int versionsnummer, int modulID)
         {
             try
             {
-                // ✅ FIX: Prüfe ob User der Ersteller ist ODER Admin, nicht DarfBearbeiten
                 string currentUser = Benutzer.CurrentUser?.Name;
                 string rolle = Benutzer.CurrentUser?.RollenName ?? "Gast";
 
@@ -61,10 +63,9 @@ namespace Modulverwaltungssoftware
 
                     System.Diagnostics.Debug.WriteLine($"✅ BERECHTIGUNG ERTEILT (Ersteller: {istErsteller}, Admin: {istAdmin})");
 
-                    // Status auf "InPruefungKoordination" setzen
+                    ModulVersion.setStatus(versionsnummer, modulID, ModulVersion.Status.InPruefungKoordination);
                     ModulVersion.setStatus(versionsnummer, modulID, ModulVersion.Status.InPruefungKoordination);
 
-                    // Benachrichtigung an alle Koordinatoren senden
                     BenachrichtigungsService.SendeBenachrichtigung(
                         "Koordination",
                         $"{currentUser} ({Benutzer.CurrentUser.RollenName}) hat das Modul '{modulVersion.Modul.ModulnameDE}' (Version {versionsnummer / 10.0:0.0}) zur Prüfung eingereicht.",
@@ -81,7 +82,11 @@ namespace Modulverwaltungssoftware
                 MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten");
                 return;
             }
-        } // Modul zur Prüfung einreichen für Dozent und Admin
+        }
+
+        /// <summary>
+        /// Lehnt ein Modul ab und setzt den Status auf Änderungsbedarf.
+        /// </summary>
         public static void lehneAb(int versionsnummer, int modulID)
         {
             try
@@ -102,9 +107,8 @@ namespace Modulverwaltungssoftware
                         {
                             ModulVersion.setStatus(versionsnummer, modulID, ModulVersion.Status.Aenderungsbedarf);
 
-                            // ✅ FIX: Benachrichtigung an ERSTELLER senden, nicht an "Dozent" (Rolle)
                             BenachrichtigungsService.SendeBenachrichtigung(
-                                modulVersion.Ersteller,  // ✅ Benutzername des Erstellers
+                                modulVersion.Ersteller,
                                 $"{Benutzer.CurrentUser.Name} ({Benutzer.CurrentUser.RollenName}) hat Ihr Modul '{modulVersion.Modul.ModulnameDE}' abgelehnt. Bitte überarbeiten Sie das Modul entsprechend der Kommentare.",
                                 modulVersion.ModulVersionID
                             );
@@ -117,7 +121,11 @@ namespace Modulverwaltungssoftware
                 MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten");
                 return;
             }
-        } // Ablehnen für Koordination + Admin
+        }
+
+        /// <summary>
+        /// Leitet ein Modul von der Koordination an das Gremium weiter.
+        /// </summary>
         public static void leiteWeiter(int versionsnummer, int modulID)
         {
             try
@@ -147,7 +155,11 @@ namespace Modulverwaltungssoftware
                 MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten"); ;
                 return;
             }
-        } // Modul-Entwurf an Gremium weiterleiten (Koordination + Admin)
+        }
+
+        /// <summary>
+        /// Lehnt ein Modul final durch das Gremium ab.
+        /// </summary>
         public static void lehneFinalAb(int versionsnummer, int modulID)
         {
             try
@@ -168,9 +180,8 @@ namespace Modulverwaltungssoftware
                         {
                             ModulVersion.setStatus(versionsnummer, modulID, ModulVersion.Status.Aenderungsbedarf);
 
-                            // ✅ FIX: Benachrichtigung an ERSTELLER senden, nicht an "Dozent" (Rolle)
                             BenachrichtigungsService.SendeBenachrichtigung(
-                                modulVersion.Ersteller,  // ✅ Benutzername des Erstellers
+                                modulVersion.Ersteller,
                                 $"{Benutzer.CurrentUser.Name} ({Benutzer.CurrentUser.RollenName}) hat Ihr Modul '{modulVersion.Modul.ModulnameDE}' final abgelehnt. Bitte überarbeiten Sie das Modul entsprechend der Kommentare.",
                                 modulVersion.ModulVersionID
                             );
@@ -183,7 +194,11 @@ namespace Modulverwaltungssoftware
                 MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten"); ;
                 return;
             }
-        } // Ablehnen für Gremium + Admin
+        }
+
+        /// <summary>
+        /// Schließt den Genehmigungsprozess ab und setzt den Status auf Freigegeben.
+        /// </summary>
         public static void schliesseGenehmigungAb(int versionsnummer, int modulID)
         {
             try
@@ -204,9 +219,8 @@ namespace Modulverwaltungssoftware
                         {
                             ModulVersion.setStatus(versionsnummer, modulID, ModulVersion.Status.Freigegeben);
 
-                            // ✅ FIX: Benachrichtigung an ERSTELLER senden, nicht an "Dozent" (Rolle)
                             BenachrichtigungsService.SendeBenachrichtigung(
-                                modulVersion.Ersteller,  // ✅ Benutzername des Erstellers
+                                modulVersion.Ersteller,
                                 $"Glückwunsch! Ihr Modul '{modulVersion.Modul.ModulnameDE}' wurde von {Benutzer.CurrentUser.Name} ({Benutzer.CurrentUser.RollenName}) freigegeben und ist jetzt offiziell veröffentlicht.",
                                 modulVersion.ModulVersionID
                             );
@@ -219,7 +233,11 @@ namespace Modulverwaltungssoftware
                 MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten");
                 return;
             }
-        } // Gremium + Admin only -> Modul freigeben
+        }
+
+        /// <summary>
+        /// Archiviert eine Modulversion.
+        /// </summary>
         public static void archiviereVersion(int modulID, int versionID)
         {
             try
@@ -238,8 +256,12 @@ namespace Modulverwaltungssoftware
                 MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten"); ;
                 return;
             }
-        } // Status auf Archiviert setzen
-        public static Modul getModulDetails(int modulID) // Modul aus DB abrufen
+        }
+
+        /// <summary>
+        /// Ruft die Details eines Moduls aus der Datenbank ab.
+        /// </summary>
+        public static Modul getModulDetails(int modulID)
         {
             try
             {

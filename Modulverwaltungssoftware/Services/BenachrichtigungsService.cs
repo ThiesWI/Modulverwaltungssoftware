@@ -8,6 +8,9 @@ namespace Modulverwaltungssoftware
 {
     public class BenachrichtigungsService
     {
+        /// <summary>
+        /// Sendet eine Benachrichtigung an einen Benutzer oder alle Benutzer einer Rolle.
+        /// </summary>
         public static void SendeBenachrichtigung(string empfaenger, string nachricht, int betroffeneModulVersionID = 0)
         {
             try
@@ -20,13 +23,10 @@ namespace Modulverwaltungssoftware
 
                 using (var db = new Services.DatabaseContext())
                 {
-                    // ✅ FIX: Wenn Empfänger eine ROLLE ist, an ALLE Benutzer mit dieser Rolle senden
                     var empfaengerRollen = new[] { "Gast", "Dozent", "Koordination", "Gremium", "Admin" };
 
                     if (empfaengerRollen.Contains(empfaenger))
                     {
-                        // ROLLEN-BASIERTE BENACHRICHTIGUNG
-                        // Hole alle Benutzer mit dieser Rolle
                         var benutzerMitRolle = db.Benutzer
                             .Where(b => b.RollenName == empfaenger)
                             .ToList();
@@ -39,7 +39,7 @@ namespace Modulverwaltungssoftware
                             {
                                 BetroffeneModulVersionID = betroffeneModulVersionID > 0 ? (int?)betroffeneModulVersionID : null,
                                 Sender = Benutzer.CurrentUser.Name,
-                                Empfaenger = benutzer.Name,  // ✅ BENUTZERNAME, nicht Rolle!
+                                Empfaenger = benutzer.Name,
                                 Nachricht = nachricht,
                                 GesendetAm = System.DateTime.Now,
                                 Gelesen = false
@@ -51,12 +51,11 @@ namespace Modulverwaltungssoftware
                     }
                     else
                     {
-                        // EINZELBENUTZER-BENACHRICHTIGUNG
                         var benachrichtigung = new Benachrichtigung
                         {
                             BetroffeneModulVersionID = betroffeneModulVersionID > 0 ? (int?)betroffeneModulVersionID : null,
                             Sender = Benutzer.CurrentUser.Name,
-                            Empfaenger = empfaenger,  // Direkter Benutzername
+                            Empfaenger = empfaenger,
                             Nachricht = nachricht,
                             GesendetAm = System.DateTime.Now,
                             Gelesen = false
@@ -76,8 +75,11 @@ namespace Modulverwaltungssoftware
                 MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten");
                 return;
             }
-        } // Benachrichtigung "senden" (in DB speichern)
+        }
 
+        /// <summary>
+        /// Ruft alle ungelesenen Benachrichtigungen für den aktuellen Benutzer ab.
+        /// </summary>
         public static List<Benachrichtigung> EmpfangeBenachrichtigung()
         {
             try
@@ -101,8 +103,11 @@ namespace Modulverwaltungssoftware
                 MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten"); ;
                 return null;
             }
-        } // Alle Benachrichtigungen mit istGelesen == false für aktuellen Benuter aus DB abfragen
+        }
 
+        /// <summary>
+        /// Markiert alle Benachrichtigungen des aktuellen Benutzers als gelesen.
+        /// </summary>
         public static void MarkiereAlsGelesen()
         {
             try
@@ -131,6 +136,6 @@ namespace Modulverwaltungssoftware
                 MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten"); ;
                 return;
             }
-        }   // Alle Benachrichtigungen für aktuellen Benutzer als gelesen markieren
+        }
     }
 }

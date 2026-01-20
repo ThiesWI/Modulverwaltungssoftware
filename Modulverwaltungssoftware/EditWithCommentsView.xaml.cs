@@ -21,7 +21,6 @@ namespace Modulverwaltungssoftware
         {
             InitializeComponent();
 
-            // ✨ SUCHFUNKTION: TextChanged Event für SearchBox
             var searchBox = FindName("SearchBox") as TextBox;
             if (searchBox != null)
                 searchBox.TextChanged += SearchBox_TextChanged;
@@ -110,7 +109,6 @@ namespace Modulverwaltungssoftware
                 return;
             }
 
-            // Nur das erste Item auswählen (Single-Selection-Modus)
             string firstItemToSelect = itemsToSelect[0].Trim();
 
             foreach (var item in listBox.Items)

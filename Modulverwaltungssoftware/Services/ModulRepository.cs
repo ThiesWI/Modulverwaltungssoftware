@@ -7,13 +7,15 @@ namespace Modulverwaltungssoftware
 {
     public class ModulRepository
     {
+        /// <summary>
+        /// Ruft die neueste Version eines Moduls ab.
+        /// </summary>
         public static ModulVersion getModulVersion(int modulID)
         {
             try
             {
                 using (var db = new Services.DatabaseContext())
                 {
-                    // Neueste Version laden (unabhängig vom Status)
                     var version = db.ModulVersion
                         .Include("Modul")
                         .Include("Kommentar")
@@ -29,14 +31,17 @@ namespace Modulverwaltungssoftware
                 MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten"); ;
                 return null;
             }
-        } // aktuellste ModulVersion für Modul aus DB abrufen
+        }
+
+        /// <summary>
+        /// Ruft eine spezifische Version eines Moduls ab.
+        /// </summary>
         public static ModulVersion getModulVersion(int modulID, int versionsnummer)
         {
             try
             {
                 using (var db = new Services.DatabaseContext())
                 {
-                    // Neueste Version laden (unabhängig vom Status)
                     var version = db.ModulVersion
                         .Include("Modul")
                         .Include("Kommentar")
@@ -52,7 +57,11 @@ namespace Modulverwaltungssoftware
                 MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten"); ;
                 return null;
             }
-        } // aktuellste ModulVersion für Modul aus DB abrufen
+        }
+
+        /// <summary>
+        /// Ruft alle Versionen eines Moduls ab, sortiert nach Versionsnummer absteigend.
+        /// </summary>
         public static List<ModulVersion> getAllModulVersionen(int modulID)
         {
             try
@@ -61,12 +70,11 @@ namespace Modulverwaltungssoftware
                 {
                     var versionen = db.ModulVersion
                         .Include("Modul")
-                        .Include("Kommentar") // Kommentare mitladen
+                        .Include("Kommentar")
                         .Where(v => v.ModulId == modulID)
                         .OrderByDescending(v => v.Versionsnummer)
                         .ToList();
 
-                    // Gib IMMER eine Liste zurück, auch wenn sie leer ist
                     return versionen;
                 }
             }
@@ -75,7 +83,11 @@ namespace Modulverwaltungssoftware
                 MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten"); ;
                 return null;
             }
-        } // alle Versionen von Modul abrufen
+        }
+
+        /// <summary>
+        /// Speichert oder aktualisiert eine Modulversion.
+        /// </summary>
         public static bool Speichere(ModulVersion version)
         {
             string fehlermeldung = PlausibilitaetsService.pruefeForm(version);
@@ -98,10 +110,8 @@ namespace Modulverwaltungssoftware
             {
                 using (var db = new Services.DatabaseContext())
                 {
-                    // Prüfe, ob das Modul existiert
                     var modul = db.Modul.FirstOrDefault(m => m.ModulID == version.ModulId);
 
-                    // 1. Modul existiert nicht: Modul anlegen und initiale Version speichern
                     if (modul == null)
                     {
                         if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == false)
@@ -137,13 +147,11 @@ namespace Modulverwaltungssoftware
                         return true;
                     }
 
-                    // 2. Modul existiert, Version im Entwurf/Aenderungsbedarf: Update bestehende Version
                     if (version.ModulStatus == ModulVersion.Status.Entwurf || version.ModulStatus == ModulVersion.Status.Aenderungsbedarf)
                     {
                         var modulVersion = db.ModulVersion.FirstOrDefault(mv => mv.ModulId == version.ModulId && mv.Versionsnummer == version.Versionsnummer);
                         if (modulVersion == null)
                         {
-                            // Neue Version anlegen
                             var neueVersion = new ModulVersion
                             {
                                 ModulId = version.ModulId,
@@ -176,7 +184,6 @@ namespace Modulverwaltungssoftware
                         }
                         else
                         {
-                            // Bestehende Version aktualisieren
                             modulVersion.GueltigAbSemester = version.GueltigAbSemester;
                             modulVersion.ModulStatus = version.ModulStatus;
                             modulVersion.LetzteAenderung = DateTime.Now;
@@ -206,7 +213,6 @@ namespace Modulverwaltungssoftware
                         return true;
                     }
 
-                    // 3. Modul existiert, Version ist freigegeben/archiviert/sonst: Neue Version anlegen
                     if (version.ModulStatus == ModulVersion.Status.Freigegeben || version.ModulStatus == ModulVersion.Status.Archiviert)
                     {
                         int hoechsteVersionsnummer = db.ModulVersion
@@ -259,6 +265,10 @@ namespace Modulverwaltungssoftware
                 return false;
             }
         }
+
+        /// <summary>
+        /// Durchsucht Module nach einem Suchbegriff in Name oder Studiengang.
+        /// </summary>
         public static List<Modul> sucheModule(string suchbegriff)
         {
             try
@@ -274,7 +284,8 @@ namespace Modulverwaltungssoftware
                     var result = db.Modul
                         .Where(m =>
                             (m.ModulnameDE != null && m.ModulnameDE.ToLower().Contains(term)) ||
-                            (m.ModulnameEN != null && m.ModulnameEN.ToLower().Contains(term)))
+                            (m.ModulnameEN != null && m.ModulnameEN.ToLower().Contains(term)) ||
+                            (m.Studiengang != null && m.Studiengang.ToLower().Contains(term)))
                         .ToList();
 
                     return result;
@@ -286,6 +297,10 @@ namespace Modulverwaltungssoftware
                 return null;
             }
         }
+
+        /// <summary>
+        /// Ruft alle gültigen Module ab.
+        /// </summary>
         public static List<Modul> getAllModule()
         {
             try
@@ -305,10 +320,10 @@ namespace Modulverwaltungssoftware
                 MessageBox.Show(ex.Message, "Ein Fehler ist aufgetreten"); ;
                 return null;
             }
-        } // alle gültigen Module abrufen
+        }
 
         /// <summary>
-        /// Gibt Module zurück die für den aktuellen Benutzer sichtbar sind (basierend auf Status und Rolle)
+        /// Ruft alle Module für den aktuellen Benutzer basierend auf seiner Rolle ab.
         /// </summary>
         public static List<Modul> GetModuleForUser()
         {
@@ -371,6 +386,10 @@ namespace Modulverwaltungssoftware
                 return null;
             }
         }
+
+        /// <summary>
+        /// Fügt ein neues Modul zur Datenbank hinzu.
+        /// </summary>
         public static int addModul(Modul modul)
         {
             if (Benutzer.CurrentUser.AktuelleRolle.DarfBearbeiten == false)

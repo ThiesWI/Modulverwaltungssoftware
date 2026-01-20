@@ -28,58 +28,45 @@ namespace Modulverwaltungssoftware
             InitializeComponent();
             this.DataContext = this;
 
-            // Module beim Laden der Seite aktualisieren
             this.Loaded += StartPage_Loaded;
 
-            // ✨ SUCHFUNKTION: TextChanged Event für SearchBox
             SearchBox.TextChanged += SearchBox_TextChanged;
         }
 
-        // Wird aufgerufen wenn die Seite geladen wird
         private void StartPage_Loaded(object sender, RoutedEventArgs e)
         {
-            // Module bei jedem Laden neu laden (auch nach Navigation zurück)
             LoadModulePreviews();
 
-            // ✨ "Neues Modul" Button nur für Admin & Dozent aktivieren
             UpdateNeuesModulButton();
         }
 
         private void LoadModulePreviews()
         {
-            // Collection leeren (wichtig bei erneutem Laden!)
             ModulePreviews.Clear();
 
-            // ✅ NUR FREIGEGEBENE MODULE FÜR STARTPAGE
-            // StartPage ist die öffentliche Übersicht → Nur Status.Freigegeben anzeigen!
             var alleModule = ModulRepository.GetModuleForUser();
 
-            // Temporäre Liste für Sortierung
             var tempList = new List<ModulePreview>();
 
             using (var db = new Services.DatabaseContext())
             {
                 foreach (var modul in alleModule)
                 {
-                    // ✅ FIX: NUR FREIGEGEBENE VERSIONEN HOLEN!
-                    // StartPage zeigt KEINE Entwürfe, InPrüfung, Änderungsbedarf etc.
                     var freigegebeneVersion = db.ModulVersion
                         .Where(v => v.ModulId == modul.ModulID &&
                                     v.ModulStatus == ModulVersion.Status.Freigegeben)
                         .OrderByDescending(v => v.Versionsnummer)
                         .FirstOrDefault();
 
-                    // ⚠️ WICHTIG: Nur Module MIT freigegebener Version anzeigen!
                     if (freigegebeneVersion != null)
                     {
-                        // Versionsnummer formatieren
                         string versionDisplay = FormatVersionsnummer(freigegebeneVersion.Versionsnummer);
 
                         tempList.Add(new ModulePreview
                         {
                             Title = modul.ModulnameDE,
                             Studiengang = modul.Studiengang,
-                            Version = $"{versionDisplay} (Freigegeben)",  // Status ist immer "Freigegeben"
+                            Version = $"{versionDisplay} (Freigegeben)",
                             ContentPreview = GenerateContentPreview(freigegebeneVersion),
                             ModulId = modul.ModulID.ToString()
                         });
@@ -93,12 +80,10 @@ namespace Modulverwaltungssoftware
                 }
             }
 
-            // ✅ ALPHABETISCH SORTIEREN (Case-Insensitive)
             var sortedModules = tempList
                 .OrderBy(m => m.Title, StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            // Sortierte Module zur ObservableCollection hinzufügen
             foreach (var module in sortedModules)
             {
                 ModulePreviews.Add(module);
@@ -107,7 +92,9 @@ namespace Modulverwaltungssoftware
             System.Diagnostics.Debug.WriteLine($"📋 StartPage: {sortedModules.Count} FREIGEGEBENE Module geladen (alphabetisch sortiert)");
         }
 
-        // Hilfsmethode: Konvertiere interne Versionsnummer zu Anzeige-Format (10 → "1.0")
+        /// <summary>
+        /// Konvertiert die interne Versionsnummer zum Anzeigeformat (z.B. 10 → "1.0").
+        /// </summary>
         private string FormatVersionsnummer(int versionsnummer)
         {
             decimal version = versionsnummer / 10.0m;
@@ -116,7 +103,6 @@ namespace Modulverwaltungssoftware
 
         private string GenerateContentPreview(ModulVersion data)
         {
-            // Kurze Vorschau aus Lernzielen oder Lehrinhalten generieren
             if (data.Lernergebnisse != null && data.Lernergebnisse.Any())
             {
                 var joined = string.Join("; ", data.Lernergebnisse);
@@ -173,9 +159,6 @@ namespace Modulverwaltungssoftware
             }
         }
 
-        /// <summary>
-        /// Findet einen Button anhand seines Content-Texts im Visual Tree
-        /// </summary>
         private Button FindButtonInVisualTree(string buttonContent)
         {
             return FindVisualChildren<Button>(this)
@@ -206,62 +189,61 @@ namespace Modulverwaltungssoftware
 
         }
 
-        /// <summary>
-        /// Filtert die Modul-Liste basierend auf dem Suchbegriff in der SearchBox
-        /// </summary>
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             string suchbegriff = SearchBox.Text?.Trim();
 
             if (string.IsNullOrEmpty(suchbegriff))
             {
-                // Leer → Alle Module anzeigen
                 LoadModulePreviews();
                 return;
             }
 
-            // Suche durchführen
             var gefundeneModule = ModulRepository.sucheModule(suchbegriff);
 
             if (gefundeneModule == null || gefundeneModule.Count == 0)
             {
-                // Keine Treffer → Liste leeren
                 ModulePreviews.Clear();
                 System.Diagnostics.Debug.WriteLine($"Suche '{suchbegriff}': Keine Treffer");
                 return;
             }
 
-            // Gefundene Module anzeigen
             ModulePreviews.Clear();
             var tempList = new List<ModulePreview>();
 
-            foreach (var modul in gefundeneModule)
+            using (var db = new Services.DatabaseContext())
             {
-                var neuesteVersion = ModulRepository.getModulVersion(modul.ModulID);
-
-                if (neuesteVersion != null)
+                foreach (var modul in gefundeneModule)
                 {
-                    string versionDisplay = FormatVersionsnummer(neuesteVersion.Versionsnummer);
+                    var freigegebeneVersion = db.ModulVersion
+                        .Where(v => v.ModulId == modul.ModulID &&
+                                    v.ModulStatus == ModulVersion.Status.Freigegeben)
+                        .OrderByDescending(v => v.Versionsnummer)
+                        .FirstOrDefault();
 
-                    tempList.Add(new ModulePreview
+                    if (freigegebeneVersion != null)
                     {
-                        Title = modul.ModulnameDE,
-                        Studiengang = neuesteVersion.Modul.Studiengang,
-                        Version = $"{versionDisplay} ({neuesteVersion.ModulStatus})",
-                        ContentPreview = GenerateContentPreview(neuesteVersion),
-                        ModulId = modul.ModulID.ToString()
-                    });
+                        string versionDisplay = FormatVersionsnummer(freigegebeneVersion.Versionsnummer);
+
+                        tempList.Add(new ModulePreview
+                        {
+                            Title = modul.ModulnameDE,
+                            Studiengang = modul.Studiengang,
+                            Version = $"{versionDisplay} (Freigegeben)",
+                            ContentPreview = GenerateContentPreview(freigegebeneVersion),
+                            ModulId = modul.ModulID.ToString()
+                        });
+                    }
                 }
             }
 
-            // Sortieren und hinzufügen
-            var sortedModules = tempList.OrderBy(m => m.Title).ToList();
+            var sortedModules = tempList.OrderBy(m => m.Title, StringComparer.OrdinalIgnoreCase).ToList();
             foreach (var module in sortedModules)
             {
                 ModulePreviews.Add(module);
             }
 
-            System.Diagnostics.Debug.WriteLine($"Suche '{suchbegriff}': {gefundeneModule.Count} Treffer");
+            System.Diagnostics.Debug.WriteLine($"Suche '{suchbegriff}': {tempList.Count} freigegebene Module gefunden");
         }
 
         private void ModulePreview_Click(object sender, RoutedEventArgs e)
@@ -269,14 +251,12 @@ namespace Modulverwaltungssoftware
             var preview = (sender as Button)?.DataContext as ModulePreview;
             if (preview != null)
             {
-                // Wenn ModulId vorhanden, zur ModulView navigieren
                 if (!string.IsNullOrEmpty(preview.ModulId))
                 {
                     this.NavigationService?.Navigate(new ModulView(int.Parse(preview.ModulId)));
                 }
                 else
                 {
-                    // Leeres Modul → zur EditingView für neues Modul
                     this.NavigationService?.Navigate(new EditingView(createNew: true));
                 }
             }

@@ -38,7 +38,6 @@ namespace Modulverwaltungssoftware
         {
             InitializeComponent();
 
-            // ✨ SUCHFUNKTION: TextChanged Event für SearchBox
             var searchBox = FindName("SearchBox") as TextBox;
             if (searchBox != null)
                 searchBox.TextChanged += SearchBox_TextChanged;
@@ -52,7 +51,6 @@ namespace Modulverwaltungssoftware
             LoadModuleData();
         }
 
-        // Legacy-Konstruktor (falls noch verwendet)
         public CommentView(ModuleData moduleData, string version) : this(moduleData, null, version)
         {
         }
@@ -62,9 +60,8 @@ namespace Modulverwaltungssoftware
             if (_moduleData == null)
                 return;
 
-            // Linke Spalte (read-only) befüllen
             TitelTextBox.Text = _moduleData.Titel;
-            VersionTextBox.Text = _version; // Version anzeigen
+            VersionTextBox.Text = _version;
             StudiengangTextBox.Text = _moduleData.Studiengang;
             EctsTextBox.Text = _moduleData.Ects.ToString();
             WorkloadPraesenzTextBox.Text = _moduleData.WorkloadPraesenz.ToString();
@@ -75,7 +72,6 @@ namespace Modulverwaltungssoftware
             LehrinhalteTextBox.Text = _moduleData.Lehrinhalte;
             LiteraturTextBox.Text = _moduleData.Literatur;
 
-            // ListBoxen befüllen
             SelectListBoxItems(ModultypListBox, _moduleData.Modultypen);
             SelectListBoxItems(SemesterListBox, _moduleData.Semester);
             SelectListBoxItems(PruefungsformListBox, _moduleData.Pruefungsformen);
@@ -90,7 +86,6 @@ namespace Modulverwaltungssoftware
                 return;
             }
 
-            // Nur das erste Item auswählen (Single-Selection-Modus)
             string firstItemToSelect = itemsToSelect[0].Trim();
 
             foreach (var item in listBox.Items)
@@ -139,7 +134,6 @@ namespace Modulverwaltungssoftware
                 string rolle = Benutzer.CurrentUser?.RollenName ?? "Gast";
                 string currentUser = Benutzer.CurrentUser?.Name ?? "Unbekannt";
 
-                // ✨ STATUSWECHSEL BEI KOMMENTIERUNG
                 string statusInfoText = "";
                 string bestaetigungsText = "";
 
@@ -181,10 +175,7 @@ namespace Modulverwaltungssoftware
                 if (result != MessageBoxResult.Yes)
                     return;
 
-                // Kommentare speichern
                 Kommentar.SaveCommentsToDatabase(feldKommentare, int.Parse(_modulId));
-
-                // ✨ STATUS AUF ÄNDERUNGSBEDARF SETZEN
 
                 var modulVersion = ModulRepository.getModulVersion(
                     modulId,
@@ -200,7 +191,6 @@ namespace Modulverwaltungssoftware
                         ModulVersion.Status.Aenderungsbedarf
                     );
 
-                    // Benachrichtigung an Ersteller
                     BenachrichtigungsService.SendeBenachrichtigung(
                             modulVersion.Ersteller,
                             $"{currentUser} ({rolle}) hat Ihr Modul '{modulVersion.Modul.ModulnameDE}' kommentiert. " +
@@ -212,8 +202,6 @@ namespace Modulverwaltungssoftware
                     System.Diagnostics.Debug.WriteLine($"Status geändert: {alterStatus} → Änderungsbedarf (durch {rolle})");
                 }
 
-
-                // Erfolgs-Meldung
                 MessageBox.Show(bestaetigungsText,
                     "Kommentierung erfolgreich", MessageBoxButton.OK, MessageBoxImage.Information);
 

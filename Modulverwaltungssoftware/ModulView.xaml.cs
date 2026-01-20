@@ -13,36 +13,30 @@ namespace Modulverwaltungssoftware
         public System.Collections.ObjectModel.ObservableCollection<string> Versions { get; } =
             new System.Collections.ObjectModel.ObservableCollection<string>();
 
-        private string _currentModulId;  // Aktuelles Modul
-        private string _currentVersion;  // Aktuelle Version
-        private bool _isModuleLoaded = false;  // Flag um zu tracken ob ein Modul geladen wurde
-        private ModulVersion _loadedModulVersion = null;  // ? Zwischenspeicher für geladene ModulVersion
+        private string _currentModulId;
+        private string _currentVersion;
+        private bool _isModuleLoaded = false;
+        private ModulVersion _loadedModulVersion = null;
 
         public ModulView()
         {
             InitializeComponent();
             this.DataContext = this;
 
-            // ? SUCHFUNKTION: TextChanged Event für SearchBox
             SearchBox.TextChanged += SearchBox_TextChanged;
 
-            // ? BUTTON-STEUERUNG: Buttons setzen nach dem Laden der Page
             this.Loaded += ModulView_Loaded;
         }
 
         private void ModulView_Loaded(object sender, RoutedEventArgs e)
         {
-            // ? STRATEGIE: Wenn Modul geladen wurde, Button-States basierend auf Daten setzen
-            // Ansonsten: Initial alle Buttons deaktivieren
             if (_loadedModulVersion != null)
             {
-                // Modul wurde im Konstruktor geladen ? Buttons basierend auf Rolle + Status setzen
                 UpdateButtonStates(_loadedModulVersion);
                 System.Diagnostics.Debug.WriteLine("? Loaded-Event: UpdateButtonStates() mit geladenen Daten aufgerufen");
             }
             else
             {
-                // Keine Modul-Daten ? Buttons initial deaktivieren
                 UpdateButtonStatesInitial();
                 System.Diagnostics.Debug.WriteLine("? Loaded-Event: UpdateButtonStatesInitial() aufgerufen");
             }
@@ -55,7 +49,6 @@ namespace Modulverwaltungssoftware
             var versionen = ModulRepository.getAllModulVersionen(modulId);
             if (versionen == null || versionen.Count == 0) return;
 
-            // Versionen-Dropdown füllen (mit "K" für kommentierte Versionen)
             var versionDisplay = versionen.Select(v =>
             {
                 string displayVersion = FormatVersionsnummer(v.Versionsnummer);
@@ -63,14 +56,12 @@ namespace Modulverwaltungssoftware
             });
             UpdateVersions(versionDisplay);
 
-            // DEBUG: Versionsnummern-Ausgabe
             System.Diagnostics.Debug.WriteLine($"Versionen für Modul {modulId}:");
             foreach (var v in versionen)
             {
                 System.Diagnostics.Debug.WriteLine($"  - Versionsnummer DB: {v.Versionsnummer}, Anzeige: {FormatVersionsnummer(v.Versionsnummer)}");
             }
 
-            // Neueste Version laden
             var neuesteVersion = versionen
                 .OrderByDescending(v => v.Versionsnummer)
                 .FirstOrDefault();
@@ -79,7 +70,9 @@ namespace Modulverwaltungssoftware
                 LoadModuleVersion(FormatVersionsnummer(neuesteVersion.Versionsnummer));
         }
 
-        // Hilfsmethode: Konvertiere interne Versionsnummer zu Anzeige-Format (10 ? "1.0")
+        /// <summary>
+        /// Konvertiert die interne Versionsnummer zum Anzeigeformat (z.B. 10 ? "1.0").
+        /// </summary>
         private string FormatVersionsnummer(int versionsnummer)
         {
             decimal version = versionsnummer / 10.0m;
@@ -88,7 +81,6 @@ namespace Modulverwaltungssoftware
 
         private void LoadModuleVersion(string versionNummer)
         {
-            // Problem 3 Fix: Spezifische Version laden statt nur neueste!
             int modulId = int.Parse(_currentModulId);
             int versionsnummerInt = ParseVersionsnummer(versionNummer);
 
@@ -101,14 +93,12 @@ namespace Modulverwaltungssoftware
                 if (data == null)
                     return;
 
-                _currentVersion = versionNummer; // Aktuell geladene Version merken (z.B. "1.0")
-                _loadedModulVersion = data;  // ? Daten zwischenspeichern
+                _currentVersion = versionNummer;
+                _loadedModulVersion = data;
 
-                // Problem 2 Fix: Version-Feld zeigt "K" bei kommentierten Versionen
                 bool hasComments = data.hatKommentar;
                 string versionDisplay = hasComments ? $"{versionNummer}K" : versionNummer;
 
-                // Textfelder befüllen
                 TitelTextBox.Text = data.Modul.ModulnameDE;
                 VersionTextBox.Text = versionDisplay;
                 StudiengangTextBox.Text = data.Modul.Studiengang;
@@ -117,7 +107,6 @@ namespace Modulverwaltungssoftware
                 WorkloadSelbststudiumTextBox.Text = data.WorkloadSelbststudium.ToString();
                 VerantwortlicherTextBox.Text = data.Ersteller;
 
-                // Listen zu Strings zusammenfügen
                 VoraussetzungenTextBox.Text = data.Modul.Voraussetzungen != null
                     ? string.Join(Environment.NewLine, data.Modul.Voraussetzungen)
                     : string.Empty;
@@ -131,41 +120,36 @@ namespace Modulverwaltungssoftware
                     ? string.Join(Environment.NewLine, data.Literatur)
                     : string.Empty;
 
-                // ListBoxen korrekt befüllen
                 SelectListBoxItems(ModultypListBox, new List<string> { ConvertModultypEnumToUIString(data.Modul.Modultyp) });
                 SelectListBoxItems(SemesterListBox, new List<string> { data.Modul.EmpfohlenesSemester.ToString() });
                 SelectListBoxItems(PruefungsformListBox, new List<string> { data.Pruefungsform });
                 SelectListBoxItems(TurnusListBox, new List<string> { ConvertTurnusEnumToUIString(data.Modul.Turnus) });
 
-                // DEBUG: Ausgabe zur Kontrolle
                 System.Diagnostics.Debug.WriteLine($"Lade Modul {data.Modul.ModulnameDE}:");
                 System.Diagnostics.Debug.WriteLine($"  Modultyp: {data.Modul.Modultyp} -> UI: {ConvertModultypEnumToUIString(data.Modul.Modultyp)}");
                 System.Diagnostics.Debug.WriteLine($"  Turnus: {data.Modul.Turnus} -> UI: {ConvertTurnusEnumToUIString(data.Modul.Turnus)}");
                 System.Diagnostics.Debug.WriteLine($"  Prüfungsform: {data.Pruefungsform}");
                 System.Diagnostics.Debug.WriteLine($"  Status: {data.ModulStatus}");
 
-                // STATUS-BADGE aktualisieren
                 UpdateStatusBadge(data.ModulStatus);
 
-                // ? BUTTON-STEUERUNG: Wenn Page bereits geladen ist (z.B. nach Einreichen), sofort Buttons updaten
-                // Ansonsten wird UpdateButtonStates() im Loaded-Event aufgerufen
                 if (_isModuleLoaded)
                 {
-                    // Page ist bereits geladen ? Buttons sofort updaten (z.B. nach Statusänderung)
                     UpdateButtonStates(data);
                     System.Diagnostics.Debug.WriteLine("? LoadModuleVersion: UpdateButtonStates() direkt aufgerufen (Page bereits geladen)");
                 }
                 else
                 {
-                    // Page wird gerade geladen ? Buttons werden im Loaded-Event gesetzt
                     System.Diagnostics.Debug.WriteLine("?? LoadModuleVersion: UpdateButtonStates() wird im Loaded-Event aufgerufen");
                 }
             }
 
-            _isModuleLoaded = true;  // Modul wurde erfolgreich geladen
+            _isModuleLoaded = true;
         }
 
-        // Methode so anpassen, dass sie auch null akzeptiert und flexibles Matching verwendet
+        /// <summary>
+        /// Wählt Items in einer ListBox aus (Single-Selection-Modus).
+        /// </summary>
         private void SelectListBoxItems(ListBox listBox, List<string> itemsToSelect)
         {
             if (itemsToSelect == null || itemsToSelect.Count == 0)
@@ -174,7 +158,6 @@ namespace Modulverwaltungssoftware
                 return;
             }
 
-            // Nur das erste Item auswählen (Single-Selection-Modus)
             string firstItemToSelect = itemsToSelect[0].Trim();
 
             foreach (var item in listBox.Items)
@@ -434,7 +417,9 @@ namespace Modulverwaltungssoftware
             return 10;
         }
 
-        // Hilfsmethoden: Enum zu UI-String Konvertierung
+        /// <summary>
+        /// Konvertiert ein Modultyp-Enum zu einem UI-anzeigefreundlichen String.
+        /// </summary>
         private string ConvertModultypEnumToUIString(Modul.ModultypEnum modultyp)
         {
             switch (modultyp)
@@ -448,6 +433,9 @@ namespace Modulverwaltungssoftware
             }
         }
 
+        /// <summary>
+        /// Konvertiert ein Turnus-Enum zu einem UI-anzeigefreundlichen String.
+        /// </summary>
         private string ConvertTurnusEnumToUIString(Modul.TurnusEnum turnus)
         {
             switch (turnus)
@@ -563,7 +551,24 @@ namespace Modulverwaltungssoftware
             var bearbeitenButton = FindButtonInVisualTree("Bearbeiten");
             var loeschenButton = FindButtonInVisualTree("Löschen");
             var kommentierenButton = FindButtonInVisualTree("Kommentieren");
-            var einreichenButton = FindButtonInVisualTree("Einreichen");
+            var einreichenButton = FindName("EinreichenButton") as Button;
+
+            // ? DYNAMISCHE BUTTON-BESCHRIFTUNG basierend auf Rolle
+            if (einreichenButton != null)
+            {
+                if (isKoordination)
+                {
+                    einreichenButton.Content = "Weiterleiten";
+                }
+                else if (isGremium)
+                {
+                    einreichenButton.Content = "Freigeben";
+                }
+                else
+                {
+                    einreichenButton.Content = "Einreichen";
+                }
+            }
 
             System.Diagnostics.Debug.WriteLine($"?? UpdateButtonStates: Rolle={rolle}, Status={status}, Ersteller='{data.Ersteller}', CurrentUser='{currentUser}', isErsteller={isErsteller}");
 
@@ -759,7 +764,24 @@ namespace Modulverwaltungssoftware
             var bearbeitenButton = FindButtonInVisualTree("Bearbeiten");
             var loeschenButton = FindButtonInVisualTree("Löschen");
             var kommentierenButton = FindButtonInVisualTree("Kommentieren");
-            var einreichenButton = FindButtonInVisualTree("Einreichen");
+            var einreichenButton = FindName("EinreichenButton") as Button;
+
+            // ? DYNAMISCHE BUTTON-BESCHRIFTUNG basierend auf Rolle
+            if (einreichenButton != null)
+            {
+                if (isKoordination)
+                {
+                    einreichenButton.Content = "Weiterleiten";
+                }
+                else if (isGremium)
+                {
+                    einreichenButton.Content = "Freigeben";
+                }
+                else
+                {
+                    einreichenButton.Content = "Einreichen";
+                }
+            }
 
             System.Diagnostics.Debug.WriteLine($"UpdateButtonStatesInitial: Rolle={rolle}");
 

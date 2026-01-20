@@ -35,7 +35,7 @@ namespace PDF_Test
             string erstellungsDatum = (jetzt.Year + "_" + jetzt.Month + "_" + jetzt.Day).ToString();
             string dateipfad = GeneriereDateinamen(titel, version, erstellungsDatum);
 
-            var doc = Document.Create(container => // PDF-Dokument erstellen
+            var doc = Document.Create(container =>
             {
                 container.Page(page =>
                 {
@@ -43,12 +43,12 @@ namespace PDF_Test
                     page.Size(PageSizes.A4);
                     page.PageColor(Colors.White);
                     page.DefaultTextStyle(x => x.FontSize(12).FontColor(Colors.Black));
-                    page.Header() // Überschrift
+                    page.Header()
                         .Text(ueberschrift)
                         .FontSize(12)
                         .Bold()
                         .FontColor(Colors.Black);
-                    page.Content() // Content-Layer
+                    page.Content()
                         .PaddingVertical(1, Unit.Centimetre)
                         .Column(column =>
                         {
@@ -185,24 +185,28 @@ namespace PDF_Test
                                 });
                             });
                         });
-                    page.Footer() // Footer mit Datum und Version
+                    page.Footer()
                         .AlignCenter()
                         .Text($"Letze Änderung: {erstellungsDatum} | Version: {version}")
                         .FontSize(10)
                         .FontColor(Colors.Grey.Darken1);
                 });
             });
-            doc.GeneratePdf(dateipfad); // PDF speichern
+            doc.GeneratePdf(dateipfad);
         }
-        public static string GeneriereDateinamen(string titel, int version, string datum) // Dateinamen mit Datum und Version generieren
+
+        /// <summary>
+        /// Generiert einen Dateinamen für das PDF-Dokument.
+        /// </summary>
+        public static string GeneriereDateinamen(string titel, int version, string datum)
         {
             string pfad = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
             string bereinigterTitel = titel;
-            foreach (char c in Path.GetInvalidFileNameChars()) // Ungültige Zeichen ersetzen
+            foreach (char c in Path.GetInvalidFileNameChars())
             {
                 bereinigterTitel = bereinigterTitel.Replace(c, '_');
             }
-            if (bereinigterTitel.Length > 30) // Titel auf 30 Zeichen kürzen
+            if (bereinigterTitel.Length > 30)
             {
                 string tempTitel = bereinigterTitel;
                 int letzterTrenner = 0;
