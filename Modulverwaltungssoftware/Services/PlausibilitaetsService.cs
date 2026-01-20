@@ -27,7 +27,7 @@ namespace Modulverwaltungssoftware
         /// <param name="stunden">Total workload hours (presence + self-study).</param>
         /// <param name="ects">ECTS credit points assigned to the module.</param>
         /// <returns>A validation message indicating if the workload is within acceptable ranges.</returns>
-        public static string PruefeWorkloadStandard(int stunden, double ects)
+        public static string pruefeWorkloadStandard(int stunden, double ects)
         {
             if (ects <= 0)
             {
@@ -89,7 +89,7 @@ namespace Modulverwaltungssoftware
         /// <remarks>
         /// Validates: module type, semester, exam form, schedule, ECTS, workload, responsible person, learning outcomes, and content.
         /// </remarks>
-        public static string PruefeForm(ModulVersion v)
+        public static string pruefeForm(ModulVersion v)
         {
             string modultyp = v.Modul.Modultyp.ToString();
             int semester = v.Modul.EmpfohlenesSemester;
